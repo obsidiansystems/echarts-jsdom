@@ -9,6 +9,8 @@ module Frontend where
 
 import Control.Arrow (first)
 import Control.Monad (join, void)
+import Control.Monad.Fix
+import Control.Monad.IO.Class
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import qualified Data.Aeson as Aeson
 import Data.Default (Default, def)
@@ -1091,10 +1093,19 @@ echarts
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
      , MonadHold t m
+     , MonadIO m
+     , MonadFix m
+     , TriggerEvent t m
      )
   => m ()
 echarts = el "main" $ do
-  dynamicTimeSeries "Test" (pure Map.empty)
+  t0 <- liftIO getCurrentTime
+  tick <- tickLossy 0.1 t0
+  b <- button "Stop"
+  moving <- hold True $ False <$ b
+  d <- foldDyn (\t -> Map.insertWith (++) "cpu" [(_tickInfo_lastUTC t, fromIntegral $ _tickInfo_n t)]) Map.empty $ gate moving tick
+  dynamicTimeSeries "Test" d
+  display d
 
 dynamicTimeSeries
   :: ( DomBuilder t m
