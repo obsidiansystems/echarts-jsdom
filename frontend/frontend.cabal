@@ -7,10 +7,11 @@ library
   hs-source-dirs: src
   build-depends: base
                , common
+               , iso8601-time
                , obelisk-frontend
+               , obelisk-generated-static
                , obelisk-route
                , reflex-dom
-               , obelisk-generated-static
                , text
   exposed-modules:
     Frontend

@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeFamilies #-}
 module Frontend where
 
+import Control.Arrow (first)
 import Control.Monad (join, void)
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import qualified Data.Aeson as Aeson
@@ -18,6 +19,7 @@ import Data.Scientific
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.ISO8601
 import qualified Data.Vector as V
 import GHC.Generics (Generic)
 import qualified JSDOM.Generated.Element as JSDOM
@@ -1044,7 +1046,11 @@ toEChartConfig c = EChartConfig
         let d' = case d of
               Nothing -> Nothing
               Just xs -> Just $ Aeson.Array $ V.fromList $
-                fmap (if timeX then Aeson.toJSON else (Aeson.toJSON . swap)) xs
+                -- Note: If more than three digits of precision is provided for
+                -- the seconds, echarts interprets that as a larger number of
+                -- milliseconds, not more precision.  E.g.: "0.123456" seconds
+                -- is interpreted as 123.456 seconds
+                ffor xs $ (if timeX then Aeson.toJSON else Aeson.toJSON . swap) . first formatISO8601Millis
         in EChartSeries (Just "line") n d' smooth
     swap (x, y) = (y, x)
 
