@@ -3,11 +3,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 module Frontend where
 
 import Control.Monad (join, void)
+import Control.Monad.Fix (MonadFix)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import qualified Data.Aeson as Aeson
@@ -18,11 +20,12 @@ import qualified Data.Map as Map
 import Data.Scientific
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import Data.Time
 import qualified Data.Vector as V
 import GHC.Generics (Generic)
 import qualified JSDOM.Generated.Element as JSDOM
-import JSDOM.Types hiding (Text)
+import JSDOM.Types hiding (Text, Event)
 import Language.Javascript.JSaddle.Evaluate
 import Language.Javascript.JSaddle.Object
 import Network.URI (parseURI, URI(..), URIAuth(..))
@@ -1074,13 +1077,12 @@ frontend = Frontend
     elAttr "script" ("type" =: "text/javascript" <> "src" =: static @"echarts.min.js") blank
   , _frontend_body = do
     Just r <- liftIO $ Obelisk.ExecutableConfig.get "config/common/route"
-    let Just (URI scheme (Just (URIAuth _ reg port)) _ _ _) = parseURI $ T.unpack r
+    let Just (URI scheme (Just auth)  _ _ _) = parseURI $ T.unpack $ T.strip r
         wsScheme = case scheme of
           "https:" -> "wss:"
           _ -> "ws:"
-        wsUrl = T.pack $ wsScheme <> reg <> port <> "/listen"
-    ws <- webSocket wsUrl def
-    prerender blank echarts
+        wsUrl = T.pack $ wsScheme <> (uriRegName auth) <> (uriPort auth) <> "/listen"
+    prerender blank (echarts wsUrl)
   }
 
 line :: Text -> [(Scientific, Scientific)] -> Series
@@ -1090,15 +1092,24 @@ smoothLine :: Text -> [(Scientific, Scientific)] -> Series
 smoothLine t xs = Series_Line (Just t) (Just xs) (Just True)
 
 echarts
-  :: ( DomBuilder t m
+  :: forall t m.
+     ( DomBuilder t m
      , PostBuild t m
      , PerformEvent t m
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
      , MonadHold t m
+     , TriggerEvent t m
+     , MonadJSM m
+     , HasJSContext m
+     , MonadFix m
      )
-  => m ()
-echarts = el "main" $ do
+  => Text
+  -> m ()
+echarts wsUrl = el "main" $ do
+  ws <- webSocket wsUrl $ def & webSocketConfig_send .~ (never :: Event t [Text])
+  receivedMessages :: Dynamic t [Text] <- foldDyn (\m ms -> ms ++ [T.decodeUtf8 m]) [] $ _webSocket_recv ws
+  display receivedMessages
   dynamicTimeSeries "Test" (pure Map.empty)
 
 dynamicTimeSeries
