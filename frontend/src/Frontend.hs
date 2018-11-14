@@ -1110,6 +1110,8 @@ echarts wsUrl = el "main" $ do
   ws <- webSocket wsUrl $ def & webSocketConfig_send .~ (never :: Event t [Text])
   receivedMessages :: Dynamic t [Text] <- foldDyn (\m ms -> ms ++ [T.decodeUtf8 m]) [] $ _webSocket_recv ws
   display receivedMessages
+  -- TODO: The receivedMessages need to be turned into Map Text [(UTCTime, Scientific)]
+  -- and passed into the dynamicTimeSeries below
   dynamicTimeSeries "Test" (pure Map.empty)
 
 dynamicTimeSeries
