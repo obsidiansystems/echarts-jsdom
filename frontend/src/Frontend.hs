@@ -1,11 +1,13 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 module Frontend where
 
+import Control.Monad (join)
 import Data.Aeson (ToJSON, genericToEncoding, defaultOptions, Options(..))
 import qualified Data.Aeson as Aeson
 import GHC.Generics (Generic)
@@ -14,6 +16,9 @@ import Data.Text (Text)
 import Obelisk.Frontend
 import Obelisk.Route
 import Reflex.Dom.Core
+import qualified Data.HashMap.Strict as HashMap
+import Data.List (foldl')
+import qualified Data.Vector as V
 
 import Common.Api
 import Common.Route
@@ -87,14 +92,29 @@ data Align = Align_Auto
            | Align_Center
            | Align_Right
 
+instance ToJSON Align where
+  toJSON a = Aeson.String $ alignToText a
+
 data VerticalAlign = VerticalAlign_Auto
                    | VerticalAlign_Top
                    | VerticalAlign_Middle
                    | VerticalAlign_Bottom
 
+instance ToJSON VerticalAlign where
+  toJSON VerticalAlign_Auto = Aeson.String "auto"
+  toJSON VerticalAlign_Top = Aeson.String "top"
+  toJSON VerticalAlign_Middle = Aeson.String "middle"
+  toJSON VerticalAlign_Bottom = Aeson.String "bottom"
+
 data SizeValue = SizeValue_Auto
                | SizeValue_Percent Int
                | SizeValue_Numeric Int
+
+sizeValueToSN :: SizeValue -> SN
+sizeValueToSN = \case
+  SizeValue_Auto -> SN_String "auto"
+  SizeValue_Percent n -> SN_String $ T.pack (show n) <> "%"
+  SizeValue_Numeric n -> SN_Number $ fromIntegral n
 
 data TextStyle = TextStyle
   { _textStyle_color :: Maybe Text
@@ -102,6 +122,7 @@ data TextStyle = TextStyle
   , _textStyle_align :: Maybe Align
   , _textStyle_verticalAlign :: Maybe VerticalAlign
   , _textStyle_lineHeight :: Maybe Int
+  , _textStyle_height :: Maybe SizeValue
   , _textStyle_width :: Maybe SizeValue
   , _textStyle_textBorder :: Maybe Border
   , _textStyle_textShadow :: Maybe Shadow
@@ -126,6 +147,20 @@ data PosAlign = PosAlign_Auto
               | PosAlign_Percent Int
               | PosAlign_Align Align
 
+posAlignToSN :: PosAlign -> SN
+posAlignToSN = \case
+  PosAlign_Auto -> SN_String "auto"
+  PosAlign_Pixel n -> SN_Number $ fromIntegral n
+  PosAlign_Percent n -> SN_String $ T.pack (show n) <> "%"
+  PosAlign_Align a -> SN_String $ alignToText a
+
+alignToText :: Align -> Text
+alignToText = \case
+  Align_Auto -> "auto"
+  Align_Center -> "center"
+  Align_Left -> "left"
+  Align_Right -> "right"
+
 data Position = Position
   { _position_zlevel :: Maybe Int
   , _position_z :: Maybe Int
@@ -143,6 +178,12 @@ data Size = Size
 data Orientation = Orientation_Horizontal
                  | Orientation_Vertical
                  | Orientation_Auto
+
+instance ToJSON Orientation where
+  toJSON = \case
+    Orientation_Auto -> Aeson.String "auto"
+    Orientation_Horizontal -> Aeson.String "horizontal"
+    Orientation_Vertical -> Aeson.String "vertical"
 
 data Title = Title
   { _title_show :: Maybe Bool
@@ -166,6 +207,10 @@ data Title = Title
 data LegendType = LegendType_Plain
                 | LegendType_Scroll
 
+instance ToJSON LegendType where
+  toJSON LegendType_Plain = Aeson.String "plain"
+  toJSON LegendType_Scroll = Aeson.String "scroll"
+
 data Icon = Icon_Circle
           | Icon_Rect
           | Icon_RoundRect
@@ -178,6 +223,21 @@ data Icon = Icon_Circle
           | Icon_DataURI Text
           | Icon_SVGPath Text
 
+instance ToJSON Icon where
+  toJSON = Aeson.String . \case
+    Icon_Circle -> "circle"
+    Icon_Rect -> "rect"
+    Icon_RoundRect -> "roundRect"
+    Icon_Triangle -> "triangle"
+    Icon_Diamond -> "diamond"
+    Icon_Pin -> "pin"
+    Icon_Arrow -> "arrow"
+    Icon_None -> "none"
+    Icon_Image url -> "image://" <> url
+    Icon_DataURI uri -> "image://" <> uri
+    Icon_SVGPath svg -> "path://" <> svg
+
+
 data LegendData = LegendData
   { _legendData_name :: Maybe Text
   , _legendData_icon :: Maybe Icon
@@ -186,6 +246,11 @@ data LegendData = LegendData
 
 data PageButtonPosition = PageButtonPosition_Start
                         | PageButtonPosition_End
+
+instance ToJSON PageButtonPosition where
+  toJSON = Aeson.String . \case
+    PageButtonPosition_Start -> "start"
+    PageButtonPosition_End -> "end"
 
 data Legend = Legend
   { _legend_type :: Maybe LegendType
@@ -359,10 +424,10 @@ data EChartTitle = EChartTitle
   , _eChartTitle_textStyle :: Maybe EChartTextStyle
   , _eChartTitle_subtext :: Maybe Text
   , _eChartTitle_sublink :: Maybe Text
-  , _eChartTitle_subtarget :: Maybe Text
+  , _eChartTitle_subtarget :: Maybe Target
   , _eChartTitle_subtextStyle :: Maybe EChartTextStyle
   , _eChartTitle_triggerEvent :: Maybe Bool
-  , _eChartTitle_padding :: Maybe Int
+  , _eChartTitle_padding :: Maybe (Int, Int, Int, Int)
   , _eChartTitle_itemGap :: Maybe Int
   , _eChartTitle_zlevel :: Maybe Int
   , _eChartTitle_z :: Maybe Int
@@ -373,7 +438,7 @@ data EChartTitle = EChartTitle
   , _eChartTitle_backgroundColor :: Maybe Text
   , _eChartTitle_borderColor :: Maybe Text
   , _eChartTitle_borderWidth :: Maybe Int
-  , _eChartTitle_borderRadius :: Maybe [Int]
+  , _eChartTitle_borderRadius :: Maybe (Int, Int, Int, Int)
   , _eChartTitle_shadowBlur :: Maybe Int
   , _eChartTitle_shadowColor :: Maybe Text
   , _eChartTitle_shadowOffsetX :: Maybe Int
@@ -389,12 +454,12 @@ instance ToJSON EChartTitle where
 
 data EChartTextStyle = EChartTextStyle
   { _eChartTextStyle_color :: Maybe Text
-  , _eChartTextStyle_fontStyle :: Maybe Text
-  , _eChartTextStyle_fontWeight :: Maybe Text
-  , _eChartTextStyle_fontFamily :: Maybe Text
-  , _eChartTextStyle_fontSize :: Maybe Text
-  , _eChartTextStyle_align :: Maybe Text
-  , _eChartTextStyle_verticalAlign :: Maybe Text
+  , _eChartTextStyle_fontStyle :: Maybe FontStyle
+  , _eChartTextStyle_fontWeight :: Maybe FontWeight
+  , _eChartTextStyle_fontFamily :: Maybe FontFamily
+  , _eChartTextStyle_fontSize :: Maybe Int
+  , _eChartTextStyle_align :: Maybe Align
+  , _eChartTextStyle_verticalAlign :: Maybe VerticalAlign
   , _eChartTextStyle_lineHeight :: Maybe Int
   , _eChartTextStyle_width :: Maybe SN
   , _eChartTextStyle_height :: Maybe SN
@@ -422,7 +487,7 @@ instance ToJSON SN where
   toJSON (SN_Number a) = Aeson.Number $ realToFrac a
 
 data EChartLegend = EChartLegend
-  { _eChartLegend_type :: Maybe Text
+  { _eChartLegend_type :: Maybe LegendType
   , _eChartLegend_show :: Maybe Bool
   , _eChartLegend_zlevel :: Maybe Int
   , _eChartLegend_z :: Maybe Int
@@ -432,9 +497,9 @@ data EChartLegend = EChartLegend
   , _eChartLegend_bottom :: Maybe SN
   , _eChartLegend_width :: Maybe SN
   , _eChartLegend_height :: Maybe SN
-  , _eChartLegend_orient :: Maybe Text
-  , _eChartLegend_align :: Maybe Text
-  , _eChartLegend_padding :: Maybe Int
+  , _eChartLegend_orient :: Maybe Orientation
+  , _eChartLegend_align :: Maybe Align
+  , _eChartLegend_padding :: Maybe (Int, Int, Int, Int)
   , _eChartLegend_itemGap :: Maybe Int
   , _eChartLegend_itemWidth :: Maybe Int
   , _eChartLegend_itemHeight :: Maybe Int
@@ -456,7 +521,7 @@ data EChartLegend = EChartLegend
   , _eChartLegend_scrollDataIndex :: Maybe Int
   , _eChartLegend_pageButtonItemGap :: Maybe Int
   , _eChartLegend_pageButtonGap :: Maybe Int
-  , _eChartLegend_pageButtonPosition :: Maybe Text
+  , _eChartLegend_pageButtonPosition :: Maybe PageButtonPosition
   , _eChartLegend_pageFormatter :: Maybe Text
   , _eChartLegend_pageTextStyle :: Maybe EChartTextStyle
   , _eChartLegend_animation :: Maybe Bool
@@ -565,7 +630,7 @@ data EChartAxisLabel = EChartAxisLabel
   , _eChartAxisLabel_fontWeight :: Maybe FontWeight
   , _eChartAxisLabel_fontFamily :: Maybe FontFamily
   , _eChartAxisLabel_fontSize :: Maybe Int
-  , _eChartAxisLabel_align :: Maybe Text
+  , _eChartAxisLabel_align :: Maybe Align
   , _eChartAxisLabel_verticalAlign :: Maybe Text
   , _eChartAxisLabel_lineHeight :: Maybe Int
   , _eChartAxisLabel_backgroundColor :: Maybe Text
@@ -627,7 +692,7 @@ instance ToJSON EChartConfig where
 toEChartConfig :: ChartOptions -> EChartConfig
 toEChartConfig c = EChartConfig
   { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
-  -- , _eChartConfig_legend = toEChartLegend $ _chartOptions_legend c
+  , _eChartConfig_legend = toEChartLegend $ _chartOptions_legend c
   -- , _eChartConfig_grid = toEChartGrid $ _chartOptions_grid c
   -- , _eChartConfig_xAxis = toEChartAxis $ _chartOptions_xAxis c
   -- , _eChartConfig_yAxis = toEChartAxis $ _chartOptions_yAxis c
@@ -637,21 +702,21 @@ toEChartConfig c = EChartConfig
     toEChartTextStyle :: TextStyle -> EChartTextStyle
     toEChartTextStyle t = EChartTextStyle
       { _eChartTextStyle_color = _textStyle_color t
-      , _eChartTextStyle_fontStyle = _textStyle_fontStyle t
-      , _eChartTextStyle_fontWeight = _textStyle_fontWeight t
-      , _eChartTextStyle_fontFamily = _textStyle_fontFamily t
-      , _eChartTextStyle_fontSize = _textStyle_fontSize t
+      , _eChartTextStyle_fontStyle = join $ fmap _font_style $ _textStyle_font t
+      , _eChartTextStyle_fontWeight = join $ fmap _font_weight $ _textStyle_font t
+      , _eChartTextStyle_fontFamily = join $ fmap _font_family $ _textStyle_font t
+      , _eChartTextStyle_fontSize = join $ fmap _font_size $ _textStyle_font t
       , _eChartTextStyle_align = _textStyle_align t
       , _eChartTextStyle_verticalAlign = _textStyle_verticalAlign t
       , _eChartTextStyle_lineHeight = _textStyle_lineHeight t
-      , _eChartTextStyle_width = _textStyle_width t
-      , _eChartTextStyle_height = _textStyle_height t
-      , _eChartTextStyle_textBorderColor = _textStyle_textBorderColor t
-      , _eChartTextStyle_textBorderWidth = _textStyle_textBorderWidth t
-      , _eChartTextStyle_textShadowColor = _textStyle_textShadowColor t
-      , _eChartTextStyle_textShadowBlur = _textStyle_textShadowBlur t
-      , _eChartTextStyle_textShadowOffsetX = _textStyle_textShadowOffsetX t
-      , _eChartTextStyle_textShadowOffsetY = _textStyle_textShadowOffsetY t
+      , _eChartTextStyle_width = fmap sizeValueToSN $ _textStyle_width t
+      , _eChartTextStyle_height = fmap sizeValueToSN $ _textStyle_height t
+      , _eChartTextStyle_textBorderColor = join $ fmap _border_color $ _textStyle_textBorder t
+      , _eChartTextStyle_textBorderWidth = join $ fmap _border_width $ _textStyle_textBorder t
+      , _eChartTextStyle_textShadowColor = join $ fmap _shadow_color $ _textStyle_textShadow t
+      , _eChartTextStyle_textShadowBlur = join $ fmap _shadow_blur $ _textStyle_textShadow t
+      , _eChartTextStyle_textShadowOffsetX = join $ fmap _shadow_offsetX $ _textStyle_textShadow t
+      , _eChartTextStyle_textShadowOffsetY = join $ fmap _shadow_offsetY $ _textStyle_textShadow t
       }
     toEChartTitle :: Title -> EChartTitle
     toEChartTitle t = EChartTitle
@@ -659,30 +724,81 @@ toEChartConfig c = EChartConfig
       , _eChartTitle_text = _title_text t
       , _eChartTitle_link = _title_link t
       , _eChartTitle_target = _title_target t
-      , _eChartTitle_textStyle = toEChartTextStyle $ _title_textStyle t
+      , _eChartTitle_textStyle = fmap toEChartTextStyle $ _title_textStyle t
       , _eChartTitle_subtext = _title_subtext t
       , _eChartTitle_sublink = _title_sublink t
       , _eChartTitle_subtarget = _title_subtarget t
-      , _eChartTitle_subtextStyle = toEChartTextStyle $ _title_subtextStyle t
+      , _eChartTitle_subtextStyle = fmap toEChartTextStyle $ _title_subtextStyle t
       , _eChartTitle_triggerEvent = _title_triggerEvent t
       , _eChartTitle_padding = _title_padding t
       , _eChartTitle_itemGap = _title_itemGap t
-      , _eChartTitle_zlevel = _title_zlevel t
-      , _eChartTitle_z = _title_z t
-      , _eChartTitle_left = _title_left t
-      , _eChartTitle_right = _title_right t
-      , _eChartTitle_top = _title_top t
-      , _eChartTitle_bottom = _title_bottom t
+      , _eChartTitle_zlevel = join $ fmap _position_zlevel $ _title_position t
+      , _eChartTitle_z = join $ fmap _position_z $ _title_position t
+      , _eChartTitle_left = fmap posAlignToSN $ join $ fmap _position_left $ _title_position t
+      , _eChartTitle_right = fmap posAlignToSN $ join $ fmap _position_right $ _title_position t
+      , _eChartTitle_top = fmap posAlignToSN $ join $ fmap _position_top $ _title_position t
+      , _eChartTitle_bottom = fmap posAlignToSN $ join $ fmap _position_bottom $ _title_position t
       , _eChartTitle_backgroundColor = _title_backgroundColor t
-      , _eChartTitle_borderColor = _title_borderColor t
-      , _eChartTitle_borderWidth = _title_borderWidth t
-      , _eChartTitle_borderRadius = _title_borderRadius t
-      , _eChartTitle_shadowBlur = _title_shadowBlur t
-      , _eChartTitle_shadowColor = _title_shadowColor t
-      , _eChartTitle_shadowOffsetX = _title_shadowOffsetX t
-      , _eChartTitle_shadowOffsetY = _title_shadowOffsetY t
+      , _eChartTitle_borderColor = join $ fmap _border_color $ _title_border t
+      , _eChartTitle_borderWidth = join $ fmap _border_width $ _title_border t
+      , _eChartTitle_borderRadius = join $ fmap _border_radius $ _title_border t
+      , _eChartTitle_shadowBlur = join $ fmap _shadow_blur $ _title_shadow t
+      , _eChartTitle_shadowColor = join $ fmap _shadow_color $ _title_shadow t
+      , _eChartTitle_shadowOffsetX = join $ fmap _shadow_offsetX $ _title_shadow t
+      , _eChartTitle_shadowOffsetY = join $ fmap _shadow_offsetY $ _title_shadow t
       }
-    -- toEChartLegend l = EChartLegend
+    fromPos a b = fmap posAlignToSN $ join $ fmap a b
+    toEChartLegend x = EChartLegend
+      { _eChartLegend_type = _legend_type x
+      , _eChartLegend_show = _legend_show x
+      , _eChartLegend_zlevel = join $ fmap _position_zlevel $ _legend_position x
+      , _eChartLegend_z = join $ fmap _position_z $ _legend_position x
+      , _eChartLegend_left = fromPos _position_left $ _legend_position x
+      , _eChartLegend_top = fromPos _position_top $ _legend_position x
+      , _eChartLegend_right = fromPos _position_right $ _legend_position x
+      , _eChartLegend_bottom = fromPos _position_bottom $ _legend_position x
+      , _eChartLegend_width = fmap sizeValueToSN $ join $ fmap _size_width $ _legend_size x
+      , _eChartLegend_height = fmap sizeValueToSN $ join $ fmap _size_height $ _legend_size x
+      , _eChartLegend_orient = _legend_orient x
+      , _eChartLegend_align = _legend_align x
+      , _eChartLegend_padding = _legend_padding x
+      , _eChartLegend_itemGap = _legend_itemGap x
+      , _eChartLegend_itemWidth = _legend_itemWidth x
+      , _eChartLegend_itemHeight = _legend_itemHeight x
+      , _eChartLegend_symbolKeepAspect = _legend_symbolKeepAspect x
+      , _eChartLegend_formatter = _legend_formatter x
+      , _eChartLegend_selectedMode = _legend_selectedMode x
+      , _eChartLegend_inactiveColor = _legend_inactiveColor x
+      , _eChartLegend_selected =
+        flip fmap (_legend_selected x) $ \s -> Aeson.Object $
+          HashMap.fromList $ fmap (\(k, v) -> (k, Aeson.toJSON v)) $ Map.toList s
+      , _eChartLegend_textStyle = fmap toEChartTextStyle $ _legend_textStyle x
+      , _eChartLegend_data =
+        let toLegendDataObject (k, v) = Aeson.Object $ HashMap.mapMaybe id $ HashMap.fromList
+              [ ("name", Just $ Aeson.toJSON k)
+              , ("icon", fmap Aeson.toJSON $ _legendData_icon v)
+              , ("textStyle", Aeson.toJSON . toEChartTextStyle <$> _legendData_textStyle v)
+              ]
+        in  flip fmap (_legend_data x) $ \d ->
+              Aeson.Array $ fmap toLegendDataObject $ V.fromList $ Map.toList d
+      , _eChartLegend_backgroundColor = _legend_backgroundColor x
+      , _eChartLegend_borderColor = join $ fmap _border_color $ _legend_border x
+      , _eChartLegend_borderWidth = join $ fmap _border_width $ _legend_border x
+      , _eChartLegend_borderRadius = join $ fmap _border_radius $ _legend_border x
+      , _eChartLegend_shadowBlur = join $ fmap _shadow_blur $ _legend_shadow x
+      , _eChartLegend_shadowColor = join $ fmap _shadow_color $ _legend_shadow x
+      , _eChartLegend_shadowOffsetX = join $ fmap _shadow_offsetX $ _legend_shadow x
+      , _eChartLegend_shadowOffsetY = join $ fmap _shadow_offsetY $ _legend_shadow x
+      , _eChartLegend_scrollDataIndex = _legend_scrollDataIndex x
+      , _eChartLegend_pageButtonItemGap = _legend_pageButtonItemGap x
+      , _eChartLegend_pageButtonGap = _legend_pageButtonGap x
+      , _eChartLegend_pageButtonPosition = _legend_pageButtonPosition x
+      , _eChartLegend_pageFormatter = _legend_pageFormatter x
+      , _eChartLegend_pageTextStyle = fmap toEChartTextStyle $ _legend_pageTextStyle x
+      , _eChartLegend_animation = _legend_animation x
+      , _eChartLegend_animationDurationUpdate = _legend_animationDurationUpdate x
+      }
+
 
 
 example :: JSDOM.Element -> JSM ()
