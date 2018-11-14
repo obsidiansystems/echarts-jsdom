@@ -8,6 +8,7 @@
 module Frontend where
 
 import Control.Monad (join, void)
+import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import qualified Data.Aeson as Aeson
 import Data.Default (Default, def)
@@ -24,6 +25,8 @@ import qualified JSDOM.Generated.Element as JSDOM
 import JSDOM.Types hiding (Text)
 import Language.Javascript.JSaddle.Evaluate
 import Language.Javascript.JSaddle.Object
+import Network.URI (parseURI, URI(..), URIAuth(..))
+import qualified Obelisk.ExecutableConfig
 import Obelisk.Frontend
 import Obelisk.Route
 import Reflex.Dom.Core
@@ -1069,7 +1072,15 @@ frontend = Frontend
     el "title" $ text "Obelisk Minimal Example"
     elAttr "meta" ("charset" =: "utf-8") blank
     elAttr "script" ("type" =: "text/javascript" <> "src" =: static @"echarts.min.js") blank
-  , _frontend_body = prerender blank echarts
+  , _frontend_body = do
+    Just r <- liftIO $ Obelisk.ExecutableConfig.get "config/common/route"
+    let Just (URI scheme (Just (URIAuth _ reg port)) _ _ _) = parseURI $ T.unpack r
+        wsScheme = case scheme of
+          "https:" -> "wss:"
+          _ -> "ws:"
+        wsUrl = T.pack $ wsScheme <> reg <> port <> "/listen"
+    ws <- webSocket wsUrl def
+    prerender blank echarts
   }
 
 line :: Text -> [(Scientific, Scientific)] -> Series
