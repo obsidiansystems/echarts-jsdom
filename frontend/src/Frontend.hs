@@ -7,38 +7,30 @@
 {-# LANGUAGE TypeFamilies #-}
 module Frontend where
 
-import Control.Monad (join)
-import Data.Aeson (ToJSON, genericToEncoding, defaultOptions, Options(..))
+import Control.Monad (join, void)
+import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import qualified Data.Aeson as Aeson
-import GHC.Generics (Generic)
-import qualified Data.Text as T
-import Data.Text (Text)
-import Obelisk.Frontend
-import Obelisk.Route
-import Reflex.Dom.Core
+import Data.Default (Default, def)
 import qualified Data.HashMap.Strict as HashMap
-import Data.List (foldl')
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Scientific
+import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Time
 import qualified Data.Vector as V
-
-import Common.Api
-import Common.Route
-import Obelisk.Generated.Static
-
-import JSDOM.Generated.Element hiding (Element)
+import GHC.Generics (Generic)
 import qualified JSDOM.Generated.Element as JSDOM
 import JSDOM.Types hiding (Text)
 import Language.Javascript.JSaddle.Evaluate
 import Language.Javascript.JSaddle.Object
-import Data.Map (Map)
-import qualified Data.Map as Map
+import Obelisk.Frontend
+import Obelisk.Route
+import Reflex.Dom.Core
 
-data ECharts = ECharts { unECharts :: JSVal }
-
-init :: JSDOM.Element -> JSM ECharts
-init e = do
-  f <- eval $ T.pack "(function(e) { return echarts['init'](e) })"
-  arg <- toJSVal e
-  ECharts <$> call f f [arg]
+-- import Common.Api
+import Common.Route
+import Obelisk.Generated.Static
 
 data Target = Target_Blank
             | Target_Self
@@ -204,6 +196,26 @@ data Title = Title
   , _title_position :: Maybe Position
   }
 
+instance Default Title where
+  def = Title
+    { _title_show = Nothing
+    , _title_text = Nothing
+    , _title_link = Nothing
+    , _title_target = Nothing
+    , _title_textStyle = Nothing
+    , _title_subtext = Nothing
+    , _title_sublink = Nothing
+    , _title_subtarget = Nothing
+    , _title_subtextStyle = Nothing
+    , _title_triggerEvent = Nothing
+    , _title_padding = Nothing
+    , _title_itemGap = Nothing
+    , _title_backgroundColor = Nothing
+    , _title_border = Nothing
+    , _title_shadow = Nothing
+    , _title_position = Nothing
+    }
+
 data LegendType = LegendType_Plain
                 | LegendType_Scroll
 
@@ -244,6 +256,9 @@ data LegendData = LegendData
   , _legendData_textStyle :: Maybe TextStyle
   }
 
+instance Default LegendData where
+  def = LegendData Nothing Nothing Nothing
+
 data PageButtonPosition = PageButtonPosition_Start
                         | PageButtonPosition_End
 
@@ -271,7 +286,7 @@ data Legend = Legend
   , _legend_textStyle :: Maybe TextStyle
   -- , _legend_tooltip :: TODO
   , _legend_data :: Maybe (Map Text LegendData)
-  , _legend_backgroundColor :: Text
+  , _legend_backgroundColor :: Maybe Text
   , _legend_border :: Maybe Border
   , _legend_shadow :: Maybe Shadow
   , _legend_scrollDataIndex :: Maybe Int
@@ -285,6 +300,37 @@ data Legend = Legend
   , _legend_animationDurationUpdate :: Maybe Int
   }
 
+instance Default Legend where
+  def = Legend
+    { _legend_type = Nothing
+    , _legend_show = Nothing
+    , _legend_position = Nothing
+    , _legend_size = Nothing
+    , _legend_orient = Nothing
+    , _legend_align = Nothing
+    , _legend_padding = Nothing
+    , _legend_itemGap = Nothing
+    , _legend_itemWidth = Nothing
+    , _legend_itemHeight = Nothing
+    , _legend_symbolKeepAspect = Nothing
+    , _legend_formatter = Nothing
+    , _legend_selectedMode = Nothing
+    , _legend_inactiveColor = Nothing
+    , _legend_selected = Nothing
+    , _legend_textStyle = Nothing
+    , _legend_data = Nothing
+    , _legend_backgroundColor = Nothing
+    , _legend_border = Nothing
+    , _legend_shadow = Nothing
+    , _legend_scrollDataIndex = Nothing
+    , _legend_pageButtonItemGap = Nothing
+    , _legend_pageButtonGap = Nothing
+    , _legend_pageButtonPosition = Nothing
+    , _legend_pageFormatter = Nothing
+    , _legend_pageTextStyle = Nothing
+    , _legend_animation = Nothing
+    , _legend_animationDurationUpdate = Nothing
+    }
 data Grid = Grid
   { _grid_show :: Maybe Bool
   , _grid_position :: Maybe Position
@@ -297,16 +343,34 @@ data Grid = Grid
   }
 
 data AxisPosition = AxisPosition_Top
-                   | AxisPosition_Bottom
+                  | AxisPosition_Bottom
+
+instance ToJSON AxisPosition where
+  toJSON = Aeson.String . \case
+    AxisPosition_Top -> "top"
+    AxisPosition_Bottom -> "bottom"
 
 data AxisType = AxisType_Value
                | AxisType_Category
                | AxisType_Time
                | AxisType_Log
 
+instance ToJSON AxisType where
+  toJSON = Aeson.String . \case
+    AxisType_Value -> "value"
+    AxisType_Category -> "category"
+    AxisType_Time -> "time"
+    AxisType_Log -> "log"
+
 data AxisNameLocation = AxisNameLocation_Start
-                       | AxisNameLocation_Center
-                       | AxisNameLocation_End
+                      | AxisNameLocation_Center
+                      | AxisNameLocation_End
+
+instance ToJSON AxisNameLocation where
+  toJSON = Aeson.String . \case
+    AxisNameLocation_Start -> "start"
+    AxisNameLocation_Center -> "center"
+    AxisNameLocation_End -> "end"
 
 data Axis = Axis
   { _axis_show :: Maybe Bool
@@ -339,6 +403,34 @@ data Axis = Axis
   , _axis_zlevel :: Maybe Int
   , _axis_z :: Maybe Int
   }
+
+instance Default Axis where
+  def = Axis
+    { _axis_show = Nothing
+    , _axis_gridIndex = Nothing
+    , _axis_position = Nothing
+    , _axis_offset = Nothing
+    , _axis_type = Nothing
+    , _axis_name = Nothing
+    , _axis_nameLocation = Nothing
+    , _axis_nameTextStyle = Nothing
+    , _axis_nameGap = Nothing
+    , _axis_nameRotate = Nothing
+    , _axis_inverse = Nothing
+    , _axis_boundaryGap = Nothing
+    , _axis_scale = Nothing
+    , _axis_minInterval = Nothing
+    , _axis_interval = Nothing
+    , _axis_logBase = Nothing
+    , _axis_silent = Nothing
+    , _axis_triggerEvent = Nothing
+    , _axis_axisLine = Nothing
+    , _axis_axisTick = Nothing
+    , _axis_axisLabel = Nothing
+    , _axis_data = Nothing
+    , _axis_zlevel = Nothing
+    , _axis_z = Nothing
+    }
 
 data AxisLine = AxisLine
   { _axisLine_show :: Maybe Bool
@@ -403,18 +495,27 @@ data AxisLabel = AxisLabel
 data Series =
     Series_Line
       { _seriesLine_name :: Maybe Text
-      , _seriesLine_data :: Maybe [Int]
+      , _seriesLine_data :: Maybe [(Scientific, Scientific)]
       , _seriesLine_smooth :: Maybe Bool
+      }
+  | Series_Timeline
+      { _seriesTimeline_name :: Maybe Text
+      , _seriesTimeline_timeAxisX :: Bool
+      , _seriesTimeline_data :: Maybe [(UTCTime, Scientific)]
+      , _seriesTimeline_smooth :: Maybe Bool
       }
 
 data ChartOptions = ChartOptions
   { _chartOptions_title :: Title
   , _chartOptions_legend :: Legend
-  , _chartOptions_grid :: Grid
+  -- , _chartOptions_grid :: Grid
   , _chartOptions_xAxis :: Axis
   , _chartOptions_yAxis :: Axis
-  , _chartOptions_series :: Series
+  , _chartOptions_series :: [Series]
   }
+
+instance Default ChartOptions where
+  def = ChartOptions def def def def []
 
 data EChartTitle = EChartTitle
   { _eChartTitle_show :: Maybe Bool
@@ -447,6 +548,10 @@ data EChartTitle = EChartTitle
   deriving (Generic)
 
 instance ToJSON EChartTitle where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartTitle_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartTitle_"
     , omitNothingFields = True
@@ -473,6 +578,10 @@ data EChartTextStyle = EChartTextStyle
   deriving (Generic)
 
 instance ToJSON EChartTextStyle where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartTextStyle_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartTextStyle_"
     , omitNothingFields = True
@@ -510,7 +619,7 @@ data EChartLegend = EChartLegend
   , _eChartLegend_selected :: Maybe Aeson.Value
   , _eChartLegend_textStyle :: Maybe EChartTextStyle
   , _eChartLegend_data :: Maybe Aeson.Value
-  , _eChartLegend_backgroundColor :: Text
+  , _eChartLegend_backgroundColor :: Maybe Text
   , _eChartLegend_borderColor :: Maybe Text
   , _eChartLegend_borderWidth :: Maybe Int
   , _eChartLegend_borderRadius :: Maybe (Int, Int, Int, Int)
@@ -530,6 +639,10 @@ data EChartLegend = EChartLegend
   deriving (Generic)
 
 instance ToJSON EChartLegend where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartLegend_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartLegend_"
     , omitNothingFields = True
@@ -538,11 +651,11 @@ instance ToJSON EChartLegend where
 data EChartAxis = EChartAxis
   { _eChartAxis_show :: Maybe Bool
   , _eChartAxis_gridIndex :: Maybe Int
-  , _eChartAxis_position :: Maybe Text
+  , _eChartAxis_position :: Maybe AxisPosition
   , _eChartAxis_offset :: Maybe Int
-  , _eChartAxis_type :: Maybe Text
+  , _eChartAxis_type :: Maybe AxisType
   , _eChartAxis_name :: Maybe Text
-  , _eChartAxis_nameLocation :: Maybe Text
+  , _eChartAxis_nameLocation :: Maybe AxisNameLocation
   , _eChartAxis_nameTextStyle :: Maybe EChartTextStyle
   , _eChartAxis_nameGap :: Maybe Int
   , _eChartAxis_nameRotate :: Maybe Int
@@ -564,6 +677,10 @@ data EChartAxis = EChartAxis
   deriving (Generic)
 
 instance ToJSON EChartAxis where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartAxis_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartAxis_"
     , omitNothingFields = True
@@ -581,6 +698,10 @@ data EChartAxisLine = EChartAxisLine
   deriving (Generic)
 
 instance ToJSON EChartAxisLine where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartAxisLine_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartAxisLine_"
     , omitNothingFields = True
@@ -591,14 +712,18 @@ data EChartLineStyle = EChartLineStyle
   , _eChartLineStyle_width :: Maybe Int
   , _eChartLineStyle_type :: Maybe LineStyleType
   , _eChartLineStyle_opacity :: Maybe Double
-  , _eChartShadow_color :: Maybe Text
-  , _eChartShadow_blur :: Maybe Int
-  , _eChartShadow_offsetX :: Maybe Int
-  , _eChartShadow_offsetY :: Maybe Int
+  , _eChartLineStyle_shadowColor :: Maybe Text
+  , _eChartLineStyle_shadowBlur :: Maybe Int
+  , _eChartLineStyle_shadowOffsetX :: Maybe Int
+  , _eChartLineStyle_shadowOffsetY :: Maybe Int
   }
   deriving (Generic)
 
 instance ToJSON EChartLineStyle where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartLineStyle_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartLineStyle_"
     , omitNothingFields = True
@@ -614,6 +739,10 @@ data EChartAxisTick = EChartAxisTick
   deriving (Generic)
 
 instance ToJSON EChartAxisTick where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartAxisTick_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartAxisTick_"
     , omitNothingFields = True
@@ -631,7 +760,7 @@ data EChartAxisLabel = EChartAxisLabel
   , _eChartAxisLabel_fontFamily :: Maybe FontFamily
   , _eChartAxisLabel_fontSize :: Maybe Int
   , _eChartAxisLabel_align :: Maybe Align
-  , _eChartAxisLabel_verticalAlign :: Maybe Text
+  , _eChartAxisLabel_verticalAlign :: Maybe VerticalAlign
   , _eChartAxisLabel_lineHeight :: Maybe Int
   , _eChartAxisLabel_backgroundColor :: Maybe Text
   , _eChartAxisLabel_borderColor :: Maybe Text
@@ -655,6 +784,10 @@ data EChartAxisLabel = EChartAxisLabel
   deriving (Generic)
 
 instance ToJSON EChartAxisLabel where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartAxisLabel_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartAxisLabel_"
     , omitNothingFields = True
@@ -663,12 +796,16 @@ instance ToJSON EChartAxisLabel where
 data EChartSeries = EChartSeries
   { _eChartSeries_type :: Maybe Text
   , _eChartSeries_name :: Maybe Text
-  , _eChartSeries_data :: Maybe [Int]
+  , _eChartSeries_data :: Maybe Aeson.Value
   , _eChartSeries_smooth :: Maybe Bool
   }
   deriving (Generic)
 
 instance ToJSON EChartSeries where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartSeries_"
+    , omitNothingFields = True
+    }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartSeries_"
     , omitNothingFields = True
@@ -684,19 +821,23 @@ data EChartConfig = EChartConfig
   deriving (Generic)
 
 instance ToJSON EChartConfig where
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartConfig_"
+  toJSON = genericToJSON (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartConfig_")
     , omitNothingFields = True
-    }
+    })
+  toEncoding = genericToEncoding (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartConfig_")
+    , omitNothingFields = True
+    })
 
 toEChartConfig :: ChartOptions -> EChartConfig
 toEChartConfig c = EChartConfig
   { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
   , _eChartConfig_legend = toEChartLegend $ _chartOptions_legend c
   -- , _eChartConfig_grid = toEChartGrid $ _chartOptions_grid c
-  -- , _eChartConfig_xAxis = toEChartAxis $ _chartOptions_xAxis c
-  -- , _eChartConfig_yAxis = toEChartAxis $ _chartOptions_yAxis c
-  -- , _eChartConfig_series = toEChartSeries $ _chartOptions_series c
+  , _eChartConfig_xAxis = toEChartAxis $ _chartOptions_xAxis c
+  , _eChartConfig_yAxis = toEChartAxis $ _chartOptions_yAxis c
+  , _eChartConfig_series = fmap toEChartSeries $ _chartOptions_series c
   }
   where
     toEChartTextStyle :: TextStyle -> EChartTextStyle
@@ -798,38 +939,129 @@ toEChartConfig c = EChartConfig
       , _eChartLegend_animation = _legend_animation x
       , _eChartLegend_animationDurationUpdate = _legend_animationDurationUpdate x
       }
+    toEChartAxis :: Axis -> EChartAxis
+    toEChartAxis x = EChartAxis
+      { _eChartAxis_show = _axis_show x
+      , _eChartAxis_gridIndex = _axis_gridIndex x
+      , _eChartAxis_zlevel = _axis_zlevel x
+      , _eChartAxis_z = _axis_z x
+      , _eChartAxis_offset = _axis_offset x
+      , _eChartAxis_type = _axis_type x
+      , _eChartAxis_name = _axis_name x
+      , _eChartAxis_nameLocation = _axis_nameLocation x
+      , _eChartAxis_nameTextStyle = fmap toEChartTextStyle $ _axis_nameTextStyle x
+      , _eChartAxis_nameGap = _axis_nameGap x
+      , _eChartAxis_nameRotate = _axis_nameRotate x
+      , _eChartAxis_inverse = _axis_inverse x
+      , _eChartAxis_boundaryGap = case _axis_boundaryGap x of
+          Nothing -> Nothing
+          Just (Left gap) -> Just $ Aeson.Bool gap
+          Just (Right (a, b)) -> Just $ Aeson.toJSON (sizeValueToSN a, sizeValueToSN b)
+      , _eChartAxis_scale = _axis_scale x
+      , _eChartAxis_minInterval = _axis_minInterval x
+      , _eChartAxis_interval = _axis_interval x
+      , _eChartAxis_logBase = _axis_logBase x
+      , _eChartAxis_silent = _axis_silent x
+      , _eChartAxis_triggerEvent = _axis_triggerEvent x
+      , _eChartAxis_axisLine = fmap toEChartAxisLine $ _axis_axisLine x
+      , _eChartAxis_axisTick = fmap toEChartAxisTick $ _axis_axisTick x
+      , _eChartAxis_axisLabel = fmap toEChartAxisLabel $ _axis_axisLabel x
+      , _eChartAxis_position = _axis_position x
+      , _eChartAxis_data = case _axis_data x of
+          Nothing -> Nothing
+          Just d -> Just $ Aeson.Array $ V.fromList $
+            fmap (\(k, v) -> Aeson.Object $ HashMap.fromList
+              [ ("value", Aeson.toJSON k)
+              , ("textStyle", Aeson.toJSON $ fmap toEChartTextStyle v)
+              ]) $ Map.toList d
+      }
+    toEChartAxisLabel x = EChartAxisLabel
+      { _eChartAxisLabel_show = _axisLabel_show x
+      , _eChartAxisLabel_inside = _axisLabel_inside x
+      , _eChartAxisLabel_rotate = _axisLabel_rotate x
+      , _eChartAxisLabel_margin = _axisLabel_margin x
+      , _eChartAxisLabel_showMinLabel = _axisLabel_showMinLabel x
+      , _eChartAxisLabel_showMaxLabel = _axisLabel_showMaxLabel x
+      , _eChartAxisLabel_fontStyle = join $ fmap _font_style $ _axisLabel_font x
+      , _eChartAxisLabel_fontWeight = join $ fmap _font_weight $ _axisLabel_font x
+      , _eChartAxisLabel_fontFamily = join $ fmap _font_family $ _axisLabel_font x
+      , _eChartAxisLabel_fontSize = join $ fmap _font_size $ _axisLabel_font x
+      , _eChartAxisLabel_align = _axisLabel_align x
+      , _eChartAxisLabel_verticalAlign = _axisLabel_verticalAlign x
+      , _eChartAxisLabel_lineHeight = _axisLabel_lineHeight x
+      , _eChartAxisLabel_backgroundColor = _axisLabel_backgroundColor x
+      , _eChartAxisLabel_borderColor = join $ fmap _border_color $ _axisLabel_border x
+      , _eChartAxisLabel_borderWidth = join $ fmap _border_width $ _axisLabel_border x
+      , _eChartAxisLabel_borderRadius = join $ fmap _border_radius $ _axisLabel_border x
+      , _eChartAxisLabel_shadowBlur = join $ fmap _shadow_blur $ _axisLabel_shadow x
+      , _eChartAxisLabel_shadowColor = join $ fmap _shadow_color $ _axisLabel_shadow x
+      , _eChartAxisLabel_shadowOffsetX = join $ fmap _shadow_offsetX $ _axisLabel_shadow x
+      , _eChartAxisLabel_shadowOffsetY = join $ fmap _shadow_offsetY $ _axisLabel_shadow x
+      , _eChartAxisLabel_padding = _axisLabel_padding x
+      , _eChartAxisLabel_width = fmap sizeValueToSN $ join $ fmap _size_width $ _axisLabel_size x
+      , _eChartAxisLabel_height = fmap sizeValueToSN $ join $ fmap _size_height $ _axisLabel_size x
+      , _eChartAxisLabel_textBorderColor = join $ fmap _border_color $ _axisLabel_textBorder x
+      , _eChartAxisLabel_textBorderWidth = join $ fmap _border_width $ _axisLabel_textBorder x
+      , _eChartAxisLabel_textBorderRadius = join $ fmap _border_radius $ _axisLabel_textBorder x
+      , _eChartAxisLabel_textShadowColor = join $ fmap _shadow_color $ _axisLabel_textShadow x
+      , _eChartAxisLabel_textShadowBlur = join $ fmap _shadow_blur $ _axisLabel_textShadow x
+      , _eChartAxisLabel_textShadowOffsetX = join $ fmap _shadow_offsetX $ _axisLabel_textShadow x
+      , _eChartAxisLabel_textShadowOffsetY = join $ fmap _shadow_offsetY $ _axisLabel_textShadow x
+      }
+    toEChartAxisTick x = EChartAxisTick
+      { _eChartAxisTick_show = _axisTick_show x
+      , _eChartAxisTick_alignWithLabel = _axisTick_alignWithLabel x
+      , _eChartAxisTick_inside = _axisTick_inside x
+      , _eChartAxisTick_length = _axisTick_length x
+      , _eChartAxisTick_lineStyle = fmap toEChartLineStyle $ _axisTick_lineStyle x
+      }
+    toEChartAxisLine a = EChartAxisLine
+      { _eChartAxisLine_onZero = _axisLine_onZero a
+      , _eChartAxisLine_onZeroAxisIndex = _axisLine_onZeroAxisIndex a
+      , _eChartAxisLine_show = _axisLine_show a
+      , _eChartAxisLine_symbol = _axisLine_symbol a
+      , _eChartAxisLine_symbolOffset = _axisLine_symbolOffset a
+      , _eChartAxisLine_lineStyle = fmap toEChartLineStyle $ _axisLine_lineStyle a
+      , _eChartAxisLine_symbolSize = _axisLine_symbolSize a
+      }
+    toEChartLineStyle x = EChartLineStyle
+      { _eChartLineStyle_color = _lineStyle_color x
+      , _eChartLineStyle_width = _lineStyle_width x
+      , _eChartLineStyle_type = _lineStyle_type x
+      , _eChartLineStyle_opacity = _lineStyle_opacity x
+      , _eChartLineStyle_shadowColor = join $ fmap _shadow_color $ _lineStyle_shadow  x
+      , _eChartLineStyle_shadowBlur = join $ fmap _shadow_blur $ _lineStyle_shadow x
+      , _eChartLineStyle_shadowOffsetX = join $ fmap _shadow_offsetX $ _lineStyle_shadow x
+      , _eChartLineStyle_shadowOffsetY = join $ fmap _shadow_offsetY $ _lineStyle_shadow x
+      }
+    toEChartSeries x = case x of
+      Series_Line n d smooth ->
+        let d' = case d of
+              Nothing -> Nothing
+              Just xs -> Just $ Aeson.Array $ V.fromList $ fmap Aeson.toJSON xs
+        in  EChartSeries (Just "line") n d' smooth
+      Series_Timeline n timeX d smooth ->
+        let d' = case d of
+              Nothing -> Nothing
+              Just xs -> Just $ Aeson.Array $ V.fromList $
+                fmap (if timeX then Aeson.toJSON else (Aeson.toJSON . swap)) xs
+        in EChartSeries (Just "line") n d' smooth
+    swap (x, y) = (y, x)
 
+data ECharts = ECharts { unECharts :: JSVal }
 
-
-example :: JSDOM.Element -> JSM ()
-example e = do
-  f <- eval $ T.unlines
-        [ "(function(e) {"
-        , "var myChart = echarts['init'](e);"
-        , "var option = { title: { text: 'Example' },"
-        , "               tooltip: {},"
-        , "               legend: { data: ['Sales'] },"
-        , "               xAxis: { data: ["
-        , "                 'shirt',"
-        , "                 'cardigan',"
-        , "                 'chiffon shirt',"
-        , "                 'pants',"
-        , "                 'heels',"
-        , "                 'socks' ]"
-        , "               },"
-        , "               yAxis: {},"
-        , "               series: [{"
-        , "                 name: 'Sales',"
-        , "                 type: 'bar',"
-        , "                 data: [5, 20, 36, 10, 10, 20]"
-        , "               }]"
-        , "             };"
-        , "myChart['setOption'](option);"
-        , "})"
-        ]
+init :: JSDOM.Element -> JSM ECharts
+init e = do
+  f <- eval $ T.pack "(function(e) { return echarts['init'](e) })"
   arg <- toJSVal e
-  call f f [arg]
-  return ()
+  ECharts <$> call f f [arg]
+
+setOption :: ECharts -> ChartOptions -> JSM ()
+setOption c opts = do
+  f <- eval $ T.pack "(function(e, opt) { e['setOption'](opt); })"
+  let chart = unECharts c
+  options <- toJSVal $ Aeson.toJSON $ toEChartConfig opts
+  void $ call f f [chart, options]
 
 frontend :: Frontend (R FrontendRoute)
 frontend = Frontend
@@ -840,18 +1072,36 @@ frontend = Frontend
   , _frontend_body = prerender blank echarts
   }
 
+line :: Text -> [(Scientific, Scientific)] -> Series
+line t xs = Series_Line (Just t) (Just xs) Nothing
+
+smoothLine :: Text -> [(Scientific, Scientific)] -> Series
+smoothLine t xs = Series_Line (Just t) (Just xs) (Just True)
+
+
 echarts
   :: ( DomBuilder t m
      , PostBuild t m
      , PerformEvent t m
      , MonadJSM (Performable m)
-     -- , TriggerEvent t m
      , GhcjsDomSpace ~ DomBuilderSpace m
      )
   => m ()
 echarts = el "main" $ do
   (e, _) <- elAttr' "div" ("style" =: "width:600px;height:400px;") blank
   p <- getPostBuild
-  performEvent_ $ ffor p $ \_ -> liftJSM $ example $ _element_raw e
+  chart <- performEvent $ ffor p $ \_ -> liftJSM $ Frontend.init $ _element_raw e
+  let opts = def
+        { _chartOptions_title = def { _title_text = Just "Example" }
+        , _chartOptions_legend = def { _legend_data = Just $ Map.singleton "Sales" def }
+        , _chartOptions_xAxis = def
+        , _chartOptions_yAxis = def
+          { _axis_type = Just AxisType_Value
+          }
+        , _chartOptions_series =
+          [ Series_Line (Just "Sales") (Just [(1, 5), (2, 20), (3, 36), (4, 10), (5, 10), (6, 20)]) (Just True)
+          , Series_Line (Just "Support") (Just [(1, 9), (2, 11), (3, 6), (4, 10), (5, 10), (6, 20)]) (Just True)
+          ]
+        }
+  performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts
   return ()
-
