@@ -52,7 +52,7 @@ data CpuStat
 getCpuStat :: IO (Maybe (CpuStat -> Word64))
 getCpuStat = do
   s <- readFile "/proc/stat"
-  evaluate $ length s -- Make readFile strict
+  _ <- evaluate $ length s -- Make readFile strict
   pure $ do
     cpuSummaryLine : _ <- pure $ lines s
     [user, nice, system, idle, iowait, irq, softirq, steal, guest, guestNice] <- pure $ map read $ words $ drop 4 cpuSummaryLine

@@ -1078,30 +1078,48 @@ line t xs = Series_Line (Just t) (Just xs) Nothing
 smoothLine :: Text -> [(Scientific, Scientific)] -> Series
 smoothLine t xs = Series_Line (Just t) (Just xs) (Just True)
 
-
 echarts
   :: ( DomBuilder t m
      , PostBuild t m
      , PerformEvent t m
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
+     , MonadHold t m
      )
   => m ()
 echarts = el "main" $ do
-  (e, _) <- elAttr' "div" ("style" =: "width:600px;height:400px;") blank
+  dynamicTimeSeries "Test" (pure Map.empty)
+
+dynamicTimeSeries
+  :: ( DomBuilder t m
+     , PerformEvent t m
+     , PostBuild t m
+     , MonadHold t m
+     , MonadJSM (Performable m)
+     , GhcjsDomSpace ~ DomBuilderSpace m
+     )
+  => Text
+  -> Dynamic t (Map Text [(UTCTime, Scientific)])
+  -> m ()
+dynamicTimeSeries title ts = do
+  e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px;") blank
   p <- getPostBuild
   chart <- performEvent $ ffor p $ \_ -> liftJSM $ Frontend.init $ _element_raw e
-  let opts = def
-        { _chartOptions_title = def { _title_text = Just "Example" }
-        , _chartOptions_legend = def { _legend_data = Just $ Map.singleton "Sales" def }
-        , _chartOptions_xAxis = def
-        , _chartOptions_yAxis = def
-          { _axis_type = Just AxisType_Value
-          }
-        , _chartOptions_series =
-          [ Series_Line (Just "Sales") (Just [(1, 5), (2, 20), (3, 36), (4, 10), (5, 10), (6, 20)]) (Just True)
-          , Series_Line (Just "Support") (Just [(1, 9), (2, 11), (3, 6), (4, 10), (5, 10), (6, 20)]) (Just True)
-          ]
+  let opts0 = def
+        { _chartOptions_title = def { _title_text = Just title }
+        , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time }
+        , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value }
+        , _chartOptions_series = []
         }
-  performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts
-  return ()
+  performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts0
+  mchart <- holdDyn Nothing $ Just <$> chart
+  let opts = leftmost
+        [ attach (current mchart) $ updated ts
+        , attachWith (\t c -> (c, t)) (current ts) (updated mchart)
+        ]
+  performEvent_ $ fforMaybe opts $ \case
+    (Nothing, _) -> Nothing
+    (Just c, ts') -> Just $ liftJSM $ setOption c $ opts0
+      { _chartOptions_series = ffor (Map.toList ts') $ \(k, vs) ->
+        Series_Timeline (Just k) True (Just vs) (Just True)
+      }
