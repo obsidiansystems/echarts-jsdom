@@ -8,11 +8,13 @@
 {-# LANGUAGE TypeFamilies #-}
 module Frontend where
 
+import Control.Arrow (first)
 import Control.Monad (join, void)
 import Control.Monad.Fix (MonadFix)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import qualified Data.Aeson as Aeson
+import qualified Data.ByteString.Lazy as LBS
 import Data.Default (Default, def)
 import qualified Data.HashMap.Strict as HashMap
 import Data.Map (Map)
@@ -20,8 +22,8 @@ import qualified Data.Map as Map
 import Data.Scientific
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 import Data.Time
+import Data.Time.ISO8601
 import qualified Data.Vector as V
 import GHC.Generics (Generic)
 import GHCJS.DOM.Types (Element)
@@ -1050,7 +1052,11 @@ toEChartConfig c = EChartConfig
         let d' = case d of
               Nothing -> Nothing
               Just xs -> Just $ Aeson.Array $ V.fromList $
-                fmap (if timeX then Aeson.toJSON else (Aeson.toJSON . swap)) xs
+                -- Note: If more than three digits of precision is provided for
+                -- the seconds, echarts interprets that as a larger number of
+                -- milliseconds, not more precision.  E.g.: "0.123456" seconds
+                -- is interpreted as 123.456 seconds
+                ffor xs $ (if timeX then Aeson.toJSON else Aeson.toJSON . swap) . first formatISO8601Millis
         in EChartSeries (Just "line") n d' smooth
     swap (x, y) = (y, x)
 
@@ -1099,20 +1105,20 @@ echarts
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
      , MonadHold t m
-     , TriggerEvent t m
-     , MonadJSM m
-     , HasJSContext m
      , MonadFix m
+     , TriggerEvent t m
+     , HasJSContext m
+     , MonadJSM m
      )
   => Text
   -> m ()
 echarts wsUrl = el "main" $ do
   ws <- webSocket wsUrl $ def & webSocketConfig_send .~ (never :: Event t [Text])
-  receivedMessages :: Dynamic t [Text] <- foldDyn (\m ms -> ms ++ [T.decodeUtf8 m]) [] $ _webSocket_recv ws
-  display receivedMessages
-  -- TODO: The receivedMessages need to be turned into Map Text [(UTCTime, Scientific)]
-  -- and passed into the dynamicTimeSeries below
-  dynamicTimeSeries "Test" (pure Map.empty)
+  receivedMessages :: Dynamic t [(UTCTime, Scientific)] <- foldDyn (\m ms -> case Aeson.decode (LBS.fromStrict m) of
+    Nothing -> ms
+    Just m' -> m' : ms) [] $ _webSocket_recv ws
+  dynamicTimeSeries "Test" $ Map.singleton "user" . reverse <$> receivedMessages
+
 
 dynamicTimeSeries
   :: ( DomBuilder t m

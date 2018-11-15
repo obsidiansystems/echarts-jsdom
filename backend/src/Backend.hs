@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 module Backend where
 
@@ -10,29 +11,51 @@ import Common.Route
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
-import Control.Monad.IO.Class
+import Data.Aeson
 import Data.Dependent.Sum (DSum (..))
 import Data.Functor.Identity
-import Data.IORef
-import qualified Data.Text as T
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Time
 import Data.Word
+import Network.WebSockets.Snap
+import qualified Network.WebSockets as WS
 import Obelisk.Backend
-import Snap
 
 backend :: Backend BackendRoute FrontendRoute
 backend = Backend
   { _backend_run = \serve -> do
-      latest <- newIORef Nothing
-      _ <- forkIO $ forever $ do
-        writeIORef latest =<< getCpuStat
-        threadDelay 5000
+      connections :: MVar (Int, Map Int WS.Connection) <- newMVar (0, Map.empty)
+      let loop mold = do
+            t <- getCurrentTime
+            stat <- getCpuStat
+            let x = do
+                  (oldt, oldstat) <- mold
+                  f <- stat
+                  let user = f CpuStat_User
+                      olduser = oldstat CpuStat_User
+                      pct :: Double = (realToFrac $ user - olduser) / (realToFrac $ diffUTCTime t oldt)
+                  return (pct, f)
+            case x of
+              Nothing -> do
+                threadDelay 100000
+                loop $ fmap (\a -> (t, a)) stat
+              Just (pct, stat') -> do
+                let msg = WS.Text (encode (t, pct)) Nothing
+                _ <- withMVar connections $ \(_, conns) ->
+                  forM conns $ \c -> WS.sendDataMessage c msg
+                threadDelay 100000
+                loop $ Just (t, stat')
+      _ <- forkIO $ loop Nothing
       serve $ \case
         BackendRoute_Missing :=> Identity () -> return ()
-        BackendRoute_Listen :=> Identity () -> do
-          liftIO (readIORef latest) >>= \case
-            Nothing -> writeText "No Data"
-            Just f -> forM_ [minBound..] $ \cs -> do
-              writeText $ T.pack (show (cs, f cs)) <> "\n"
+        BackendRoute_Listen :=> Identity () -> runWebSocketsSnap $ \c -> do
+          conn <- WS.acceptRequest c
+          modifyMVar_ connections $ \(next, conns) -> return (next + 1, Map.insert next conn conns)
+          _ <- forever $ do
+            _ <- WS.receiveDataMessage conn
+            return ()
+          return ()
   , _backend_routeEncoder = backendRouteEncoder
   }
 

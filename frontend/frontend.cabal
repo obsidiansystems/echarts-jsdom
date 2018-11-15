@@ -11,14 +11,15 @@ library
                , containers
                , data-default
                , ghcjs-dom
+               , iso8601-time
                , jsaddle
                , jsaddle-dom
                , network-uri
                , obelisk-executable-config
                , obelisk-frontend
+               , obelisk-generated-static
                , obelisk-route
                , reflex-dom
-               , obelisk-generated-static
                , scientific
                , text
                , time
