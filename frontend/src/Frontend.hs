@@ -35,7 +35,7 @@ import Obelisk.Frontend
 import Obelisk.Route
 import Reflex.Dom.Core
 
--- import Common.Api
+import Common.Types
 import Common.Route
 import Obelisk.Generated.Static
 
@@ -506,12 +506,15 @@ data Series =
       { _seriesLine_name :: Maybe Text
       , _seriesLine_data :: Maybe [(Scientific, Scientific)]
       , _seriesLine_smooth :: Maybe Bool
+      , _seriesLine_stack :: Maybe Text
       }
   | Series_Timeline
       { _seriesTimeline_name :: Maybe Text
       , _seriesTimeline_timeAxisX :: Bool
       , _seriesTimeline_data :: Maybe [(UTCTime, Scientific)]
       , _seriesTimeline_smooth :: Maybe Bool
+      , _seriesTimeline_stack :: Maybe Text
+      , _seriesTimeline_areaStyle :: Maybe () -- TODO
       }
 
 data ChartOptions = ChartOptions
@@ -810,6 +813,9 @@ data EChartSeries = EChartSeries
   , _eChartSeries_data :: Maybe Aeson.Value
   , _eChartSeries_smooth :: Maybe Bool
   , _eChartSeries_animation :: Maybe Bool
+  , _eChartSeries_stack :: Maybe Text
+  , _eChartSeries_areaStyle :: Maybe Text
+  , _eChartSeries_symbol :: Maybe Text
   }
   deriving (Generic)
 
@@ -1053,12 +1059,12 @@ toEChartConfig c = EChartConfig
       , _eChartLineStyle_shadowOffsetY = join $ fmap _shadow_offsetY $ _lineStyle_shadow x
       }
     toEChartSeries x = case x of
-      Series_Line n d smooth ->
+      Series_Line n d smooth stack ->
         let d' = case d of
               Nothing -> Nothing
               Just xs -> Just $ Aeson.Array $ V.fromList $ fmap Aeson.toJSON xs
-        in  EChartSeries (Just "line") n d' smooth Nothing
-      Series_Timeline n timeX d smooth ->
+        in  EChartSeries (Just "line") n d' smooth Nothing stack Nothing Nothing
+      Series_Timeline n timeX d smooth stack areaStyle ->
         let d' = case d of
               Nothing -> Nothing
               Just xs -> Just $ Aeson.Array $ V.fromList $
@@ -1070,7 +1076,16 @@ toEChartConfig c = EChartConfig
                   [ ("name", Aeson.String $ T.pack $ show t)
                   , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (formatISO8601Millis t, v))
                   ]
-        in EChartSeries (Just "line") n d' smooth Nothing
+        in  EChartSeries
+              { _eChartSeries_type = Just "line"
+              , _eChartSeries_name = n
+              , _eChartSeries_data = d'
+              , _eChartSeries_smooth = smooth
+              , _eChartSeries_animation = Nothing
+              , _eChartSeries_stack = stack
+              , _eChartSeries_areaStyle = "auto" <$ areaStyle -- TODO
+              , _eChartSeries_symbol = Just "none"
+              }
     swap (x, y) = (y, x)
 
 data ECharts = ECharts { unECharts :: JSVal }
@@ -1121,11 +1136,22 @@ echarts
   -> m ()
 echarts wsUrl = el "main" $ do
   ws <- webSocket wsUrl $ def & webSocketConfig_send .~ (never :: Event t [Text])
-  receivedMessages :: Dynamic t [(UTCTime, Scientific)] <- foldDyn (\m ms -> case Aeson.decode (LBS.fromStrict m) of
+  receivedMessages :: Dynamic t [(UTCTime, CpuStat Scientific)] <- foldDyn (\m ms -> case Aeson.decode (LBS.fromStrict m) of
     Nothing -> ms
     Just m' -> take 50 $ m' : ms) [] $ _webSocket_recv ws
-  dynamicTimeSeries "Test" $ Map.singleton "user" . reverse <$> receivedMessages
-
+  let cpuStatMap (t, c) = mconcat
+        [ "user" =: [(t, _cpuStat_user c)]
+        , "nice" =: [(t, _cpuStat_nice c)]
+        , "system" =: [(t, _cpuStat_system c)]
+        , "idle" =: [(t, _cpuStat_idle c)]
+        , "iowait" =: [(t, _cpuStat_iowait c)]
+        , "irq" =: [(t, _cpuStat_irq c)]
+        , "softirq" =: [(t, _cpuStat_softirq c)]
+        , "steal" =: [(t, _cpuStat_steal c)]
+        , "guest" =: [(t, _cpuStat_guest c)]
+        , "guestNice" =: [(t, _cpuStat_guestNice c)]
+        ]
+  dynamicTimeSeries "Test" $ Map.unionsWith (++) . fmap cpuStatMap . reverse <$> receivedMessages
 
 dynamicTimeSeries
   :: ( DomBuilder t m
@@ -1147,7 +1173,7 @@ dynamicTimeSeries title ts = do
         , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time }
         , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value
                                     , _axis_min = Just $ Left 0
-                                    , _axis_max = Just $ Left 100
+                                    , _axis_max = Just $ Left 101
                                     }
         , _chartOptions_series = []
         }
@@ -1160,6 +1186,6 @@ dynamicTimeSeries title ts = do
   performEvent_ $ fforMaybe opts $ \case
     (Nothing, _) -> Nothing
     (Just c, ts') -> Just $ liftJSM $ setOption c $ opts0
-      { _chartOptions_series = ffor (Map.toList ts') $ \(k, vs) ->
-        Series_Timeline (Just k) True (Just vs) (Just True)
+      { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) ->
+        Series_Timeline (Just k) True (Just vs) (Just True) (Just "Total") (Just ())
       }
