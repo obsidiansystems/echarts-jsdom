@@ -1147,7 +1147,7 @@ dynamicTimeSeries title ts = do
         , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time }
         , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value
                                     , _axis_min = Just $ Left 0
-                                    , _axis_max = Just $ Left 1600
+                                    , _axis_max = Just $ Left 100
                                     }
         , _chartOptions_series = []
         }

@@ -4,6 +4,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeFamilies #-}
 module Backend where
 
@@ -14,6 +15,7 @@ import Control.Monad
 import Data.Aeson
 import Data.Dependent.Sum (DSum (..))
 import Data.Functor.Identity
+import Data.List (isPrefixOf)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Time
@@ -32,9 +34,9 @@ backend = Backend
             let x = do
                   (oldt, oldstat) <- mold
                   f <- stat
-                  let user = f CpuStat_User
-                      olduser = oldstat CpuStat_User
-                      pct :: Double = (realToFrac $ user - olduser) / (realToFrac $ diffUTCTime t oldt)
+                  let (n, user) = f CpuStat_User
+                      (n', olduser) = oldstat CpuStat_User
+                      pct :: Double = (realToFrac $ user - olduser) / (realToFrac $ diffUTCTime t oldt) / realToFrac n
                   return (pct, f)
             case x of
               Nothing -> do
@@ -72,14 +74,15 @@ data CpuStat
    | CpuStat_GuestNice
    deriving (Show, Read, Eq, Ord, Enum, Bounded)
 
-getCpuStat :: IO (Maybe (CpuStat -> Word64))
+getCpuStat :: IO (Maybe (CpuStat -> (Int, Word64)))
 getCpuStat = do
   s <- readFile "/proc/stat"
   _ <- evaluate $ length s -- Make readFile strict
   pure $ do
-    cpuSummaryLine : _ <- pure $ lines s
-    [user, nice, system, idle, iowait, irq, softirq, steal, guest, guestNice] <- pure $ map read $ words $ drop 4 cpuSummaryLine
-    pure $ \case
+    let cpus = takeWhile (\x -> "cpu" `isPrefixOf` x) $ lines s
+    cpuSummaryLine : _ <- pure cpus
+    [_, user, nice, system, idle, iowait, irq, softirq, steal, guest, guestNice] <- pure $ map read $ words cpuSummaryLine
+    pure $ (length (tail cpus),) . \case
       CpuStat_User -> user
       CpuStat_Nice -> nice
       CpuStat_System -> system
