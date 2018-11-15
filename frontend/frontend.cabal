@@ -6,12 +6,24 @@ build-type: Simple
 library
   hs-source-dirs: src
   build-depends: base
+               , aeson
                , common
+               , containers
+               , data-default
+               , ghcjs-dom
+               , jsaddle
+               , jsaddle-dom
+               , network-uri
+               , obelisk-executable-config
                , obelisk-frontend
                , obelisk-route
                , reflex-dom
                , obelisk-generated-static
+               , scientific
                , text
+               , time
+               , unordered-containers
+               , vector
   exposed-modules:
     Frontend
   ghc-options: -Wall

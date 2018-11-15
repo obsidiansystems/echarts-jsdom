@@ -24,8 +24,8 @@ import qualified Data.Text.Encoding as T
 import Data.Time
 import qualified Data.Vector as V
 import GHC.Generics (Generic)
-import qualified JSDOM.Generated.Element as JSDOM
-import JSDOM.Types hiding (Text, Event)
+import GHCJS.DOM.Types (Element)
+import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
 import Language.Javascript.JSaddle.Evaluate
 import Language.Javascript.JSaddle.Object
 import Network.URI (parseURI, URI(..), URIAuth(..))
@@ -1056,7 +1056,7 @@ toEChartConfig c = EChartConfig
 
 data ECharts = ECharts { unECharts :: JSVal }
 
-init :: JSDOM.Element -> JSM ECharts
+init :: GHCJS.DOM.Types.Element -> JSM ECharts
 init e = do
   f <- eval $ T.pack "(function(e) { return echarts['init'](e) })"
   arg <- toJSVal e
