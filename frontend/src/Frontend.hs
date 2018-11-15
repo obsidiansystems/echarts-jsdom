@@ -8,7 +8,6 @@
 {-# LANGUAGE TypeFamilies #-}
 module Frontend where
 
-import Control.Arrow (first)
 import Control.Monad (join, void)
 import Control.Monad.Fix (MonadFix)
 import Control.Monad.IO.Class (liftIO)
@@ -393,8 +392,8 @@ data Axis = Axis
   , _axis_nameRotate :: Maybe Int
   , _axis_inverse :: Maybe Bool
   , _axis_boundaryGap :: Maybe (Either Bool (SizeValue, SizeValue))
-  -- , _axis_min :: Maybe TODO
-  -- , _axis_max :: Maybe TODO
+  , _axis_min :: Maybe (Either Double ())
+  , _axis_max :: Maybe (Either Double ())
   , _axis_scale :: Maybe Bool
   , _axis_minInterval :: Maybe Int
   , _axis_interval :: Maybe Int
@@ -426,6 +425,8 @@ instance Default Axis where
     , _axis_nameRotate = Nothing
     , _axis_inverse = Nothing
     , _axis_boundaryGap = Nothing
+    , _axis_min = Nothing
+    , _axis_max = Nothing
     , _axis_scale = Nothing
     , _axis_minInterval = Nothing
     , _axis_interval = Nothing
@@ -669,6 +670,8 @@ data EChartAxis = EChartAxis
   , _eChartAxis_nameRotate :: Maybe Int
   , _eChartAxis_inverse :: Maybe Bool
   , _eChartAxis_boundaryGap :: Maybe Aeson.Value
+  , _eChartAxis_min :: Maybe SN
+  , _eChartAxis_max :: Maybe SN
   , _eChartAxis_scale :: Maybe Bool
   , _eChartAxis_minInterval :: Maybe Int
   , _eChartAxis_interval :: Maybe Int
@@ -806,6 +809,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_name :: Maybe Text
   , _eChartSeries_data :: Maybe Aeson.Value
   , _eChartSeries_smooth :: Maybe Bool
+  , _eChartSeries_animation :: Maybe Bool
   }
   deriving (Generic)
 
@@ -965,6 +969,12 @@ toEChartConfig c = EChartConfig
           Nothing -> Nothing
           Just (Left gap) -> Just $ Aeson.Bool gap
           Just (Right (a, b)) -> Just $ Aeson.toJSON (sizeValueToSN a, sizeValueToSN b)
+      , _eChartAxis_min = ffor (_axis_min x) $ \case
+          Right () -> SN_String "dataMin"
+          Left n -> SN_Number n
+      , _eChartAxis_max = ffor (_axis_max x) $ \case
+          Right () -> SN_String "dataMax"
+          Left n -> SN_Number n
       , _eChartAxis_scale = _axis_scale x
       , _eChartAxis_minInterval = _axis_minInterval x
       , _eChartAxis_interval = _axis_interval x
@@ -1047,7 +1057,7 @@ toEChartConfig c = EChartConfig
         let d' = case d of
               Nothing -> Nothing
               Just xs -> Just $ Aeson.Array $ V.fromList $ fmap Aeson.toJSON xs
-        in  EChartSeries (Just "line") n d' smooth
+        in  EChartSeries (Just "line") n d' smooth Nothing
       Series_Timeline n timeX d smooth ->
         let d' = case d of
               Nothing -> Nothing
@@ -1056,8 +1066,11 @@ toEChartConfig c = EChartConfig
                 -- the seconds, echarts interprets that as a larger number of
                 -- milliseconds, not more precision.  E.g.: "0.123456" seconds
                 -- is interpreted as 123.456 seconds
-                ffor xs $ (if timeX then Aeson.toJSON else Aeson.toJSON . swap) . first formatISO8601Millis
-        in EChartSeries (Just "line") n d' smooth
+                ffor xs $ \(t, v) -> Aeson.Object $ HashMap.fromList
+                  [ ("name", Aeson.String $ T.pack $ show t)
+                  , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (formatISO8601Millis t, v))
+                  ]
+        in EChartSeries (Just "line") n d' smooth Nothing
     swap (x, y) = (y, x)
 
 data ECharts = ECharts { unECharts :: JSVal }
@@ -1091,12 +1104,6 @@ frontend = Frontend
     prerender blank (echarts wsUrl)
   }
 
-line :: Text -> [(Scientific, Scientific)] -> Series
-line t xs = Series_Line (Just t) (Just xs) Nothing
-
-smoothLine :: Text -> [(Scientific, Scientific)] -> Series
-smoothLine t xs = Series_Line (Just t) (Just xs) (Just True)
-
 echarts
   :: forall t m.
      ( DomBuilder t m
@@ -1116,7 +1123,7 @@ echarts wsUrl = el "main" $ do
   ws <- webSocket wsUrl $ def & webSocketConfig_send .~ (never :: Event t [Text])
   receivedMessages :: Dynamic t [(UTCTime, Scientific)] <- foldDyn (\m ms -> case Aeson.decode (LBS.fromStrict m) of
     Nothing -> ms
-    Just m' -> m' : ms) [] $ _webSocket_recv ws
+    Just m' -> take 50 $ m' : ms) [] $ _webSocket_recv ws
   dynamicTimeSeries "Test" $ Map.singleton "user" . reverse <$> receivedMessages
 
 
@@ -1138,7 +1145,10 @@ dynamicTimeSeries title ts = do
   let opts0 = def
         { _chartOptions_title = def { _title_text = Just title }
         , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time }
-        , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value }
+        , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value
+                                    , _axis_min = Just $ Left 0
+                                    , _axis_max = Just $ Left 1600
+                                    }
         , _chartOptions_series = []
         }
   performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts0
