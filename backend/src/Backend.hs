@@ -35,7 +35,7 @@ backend = Backend
                   (oldt, oldstat) <- mold
                   f <- stat
                   let (n, user) = f CpuStat_User
-                      (n', olduser) = oldstat CpuStat_User
+                      (_, olduser) = oldstat CpuStat_User
                       pct :: Double = (realToFrac $ user - olduser) / (realToFrac $ diffUTCTime t oldt) / realToFrac n
                   return (pct, f)
             case x of
