@@ -19,6 +19,7 @@ library
                , text
                , time
                , websockets
+               , random
                , websockets-snap
   exposed-modules:
     Backend

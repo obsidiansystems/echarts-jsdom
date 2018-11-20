@@ -34,6 +34,7 @@ import qualified Obelisk.ExecutableConfig
 import Obelisk.Frontend
 import Obelisk.Route
 import Reflex.Dom.Core
+import System.Random
 
 import Common.Types
 import Common.Route
@@ -1116,60 +1117,38 @@ frontend = Frontend
           "https:" -> "wss:"
           _ -> "ws:"
         wsUrl = T.pack $ wsScheme <> (uriRegName auth) <> (uriPort auth) <> "/listen"
-    prerender blank (echarts wsUrl)
+    prerender blank (makeChartFromStaticData)
   }
 
-echarts
-  :: forall t m.
-     ( DomBuilder t m
-     , PostBuild t m
-     , PerformEvent t m
-     , MonadJSM (Performable m)
-     , GhcjsDomSpace ~ DomBuilderSpace m
-     , MonadHold t m
-     , MonadFix m
-     , TriggerEvent t m
-     , HasJSContext m
-     , MonadJSM m
-     )
-  => Text
-  -> m ()
-echarts wsUrl = el "main" $ do
-  ws <- webSocket wsUrl $ def & webSocketConfig_send .~ (never :: Event t [Text])
-  receivedMessages :: Dynamic t [(UTCTime, CpuStat Scientific)] <- foldDyn (\m ms -> case Aeson.decode (LBS.fromStrict m) of
-    Nothing -> ms
-    Just m' -> take 50 $ m' : ms) [] $ _webSocket_recv ws
-  let cpuStatMap (t, c) = mconcat
-        [ "user" =: [(t, _cpuStat_user c)]
-        , "nice" =: [(t, _cpuStat_nice c)]
-        , "system" =: [(t, _cpuStat_system c)]
-        , "idle" =: [(t, _cpuStat_idle c)]
-        , "iowait" =: [(t, _cpuStat_iowait c)]
-        , "irq" =: [(t, _cpuStat_irq c)]
-        , "softirq" =: [(t, _cpuStat_softirq c)]
-        , "steal" =: [(t, _cpuStat_steal c)]
-        , "guest" =: [(t, _cpuStat_guest c)]
-        , "guestNice" =: [(t, _cpuStat_guestNice c)]
-        ]
-  dynamicTimeSeries "Test" $ Map.unionsWith (++) . fmap cpuStatMap . reverse <$> receivedMessages
-
-dynamicTimeSeries
+makeChartFromStaticData
   :: ( DomBuilder t m
      , PerformEvent t m
      , PostBuild t m
      , MonadHold t m
+     , TriggerEvent t m
+     , MonadFix m
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
      )
-  => Text
-  -> Dynamic t (Map Text [(UTCTime, Scientific)])
-  -> m ()
-dynamicTimeSeries title ts = do
+  => m ()
+makeChartFromStaticData = do
   e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px;") blank
   p <- getPostBuild
   chart <- performEvent $ ffor p $ \_ -> liftJSM $ Frontend.init $ _element_raw e
+  mchart <- holdDyn Nothing $ Just <$> chart
+  seeds <- performEvent $ ffor p $ \_ -> liftIO $ getSeeds
+  let staticData = (map makeData) <$> seeds
+  staticData <- holdDyn [] staticData
+
+  ticks <- tickLossyFromPostBuildTime 0.1
+
+  values <- performEvent $ ffor (tagDyn ((,) <$> staticData <*> mchart) ticks)
+    $ \(s, c) -> do
+      i <- liftIO $ randomRIO (0, 99)
+      return (c, s Prelude.!! i)
+
   let opts0 = def
-        { _chartOptions_title = def { _title_text = Just title }
+        { _chartOptions_title = def { _title_text = Just "title" }
         , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time }
         , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value
                                     , _axis_min = Just $ Left 0
@@ -1177,15 +1156,39 @@ dynamicTimeSeries title ts = do
                                     }
         , _chartOptions_series = []
         }
-  performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts0
-  mchart <- holdDyn Nothing $ Just <$> chart
-  let opts = leftmost
-        [ attach (current mchart) $ updated ts
-        , attachWith (\t c -> (c, t)) (current ts) (updated mchart)
-        ]
-  performEvent_ $ fforMaybe opts $ \case
-    (Nothing, _) -> Nothing
-    (Just c, ts') -> Just $ liftJSM $ setOption c $ opts0
-      { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) ->
-        Series_Timeline (Just k) True (Just vs) (Just True) (Just "Total") (Just ())
+
+  performEvent_ $ ffor values $ \(Just c, s) ->
+    liftJSM $ setOption c $ opts0
+      { _chartOptions_series = s
       }
+
+-- 100 list of 100 size, in range (1,50)
+getSeeds :: IO [[Integer]]
+getSeeds = do
+  g <- getStdGen
+  let rs = randomRs (1, 50) g
+      f _ 0 = []
+      f ls n = a : f b (n - 1)
+        where (a, b) = splitAt 100 ls
+  return $ f rs 100
+
+makeData :: [Integer] -> [Series]
+makeData seed = ffor d $ \(k, vs) ->
+  Series_Timeline (Just k) True (Just vs) (Just True) (Just "Total") (Just ())
+  where
+    f :: [(UTCTime, Scientific)]
+    f = map g $ zip [1..] seed
+    g (t,v) = (UTCTime (fromGregorian 2018 11 20) (secondsToDiffTime $ t)
+          , scientific v (-1))
+    d =
+        [ ("user" , f)
+        , ("nice" , f)
+        , ("system" , f)
+        , ("idle" , f)
+        , ("iowait" , f)
+        , ("irq" , f)
+        , ("softirq" , f)
+        , ("steal" , f)
+        , ("guest" , f)
+        , ("guestNice" , f)
+        ]

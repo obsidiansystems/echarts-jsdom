@@ -26,6 +26,7 @@ library
                , time
                , unordered-containers
                , vector
+               , random
   exposed-modules:
     Frontend
   ghc-options: -Wall
