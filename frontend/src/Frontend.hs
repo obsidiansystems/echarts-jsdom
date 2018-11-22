@@ -138,5 +138,5 @@ dynamicTimeSeries title ts = do
     (Nothing, _) -> Nothing
     (Just c, ts') -> Just $ liftJSM $ setOption c $ opts0
       { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) ->
-        Series_Timeline (Just k) True (Just vs) (Just True) (Just "Total") (Just ())
+        Series_Timeline (Just k) True (Just vs) (Just $ Left True) (Just "Total") (Just ())
       }

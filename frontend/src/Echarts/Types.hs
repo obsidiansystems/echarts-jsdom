@@ -142,6 +142,17 @@ data Shadow = Shadow
   , _shadow_offsetX :: Maybe Int
   , _shadow_offsetY :: Maybe Int
   }
+  deriving (Generic)
+
+instance ToJSON Shadow where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_shadow_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_shadow_"
+    , omitNothingFields = True
+    }
 
 data PosAlign = PosAlign_Auto
               | PosAlign_Pixel Int
@@ -469,6 +480,13 @@ data LineStyle = LineStyle
   , _lineStyle_opacity :: Maybe Double
   , _lineStyle_shadow :: Maybe Shadow
   }
+  deriving (Generic)
+
+instance ToJSON LineStyle where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_lineStyle_"
+    , omitNothingFields = True
+    }
 
 data AxisTick = AxisTick
   { _axisTick_show :: Maybe Bool
@@ -527,7 +545,7 @@ data Series =
       { _seriesTimeline_name :: Maybe Text
       , _seriesTimeline_timeAxisX :: Bool
       , _seriesTimeline_data :: Maybe [(UTCTime, Scientific)]
-      , _seriesTimeline_smooth :: Maybe Bool
+      , _seriesTimeline_smooth :: Maybe (Either Bool ZeroToOne)
       , _seriesTimeline_stack :: Maybe Text
       , _seriesTimeline_areaStyle :: Maybe () -- TODO
       }

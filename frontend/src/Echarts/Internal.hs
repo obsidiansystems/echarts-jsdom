@@ -8,6 +8,7 @@
 {-# LANGUAGE TypeFamilies #-}
 module Echarts.Internal where
 
+import Control.Monad (join, void)
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
@@ -21,6 +22,8 @@ import GHC.Generics (Generic)
 import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Vector as V
 import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
+
+import Reflex.Class (ffor)
 
 import Echarts.Types
 
@@ -322,7 +325,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_lineStyle :: Maybe LineStyle
   , _eChartSeries_areaStyle :: Maybe AreaStyle
   , _eChartSeries_emphasis :: Maybe Emphasis -- common
-  , _eChartSeries_smooth :: Maybe Bool
+  , _eChartSeries_smooth :: Maybe (Either Bool ZeroToOne)
   , _eChartSeries_smoothMonotone :: Maybe SmoothMonotone
   , _eChartSeries_sampling :: Maybe Sampling
   , _eChartSeries_dimensions :: Maybe Aeson.Value
@@ -469,6 +472,8 @@ data EChartSeries = EChartSeries
   -- other common options
   }
   deriving (Generic)
+
+instance Default EChartSeries where
 
 instance ToJSON EChartSeries where
   toJSON = genericToJSON $ defaultOptions
@@ -714,7 +719,13 @@ toEChartConfig c = EChartConfig
         let d' = case d of
               Nothing -> Nothing
               Just xs -> Just $ Aeson.Array $ V.fromList $ fmap Aeson.toJSON xs
-        in  EChartSeries (Just "line") n d' smooth Nothing stack Nothing Nothing
+        in def
+              { _eChartSeries_type = Just "line"
+              , _eChartSeries_name = n
+              , _eChartSeries_data = d'
+              , _eChartSeries_smooth = smooth
+              , _eChartSeries_stack = stack
+              }
       Series_Timeline n timeX d smooth stack areaStyle ->
         let d' = case d of
               Nothing -> Nothing
@@ -725,9 +736,9 @@ toEChartConfig c = EChartConfig
                 -- is interpreted as 123.456 seconds
                 ffor xs $ \(t, v) -> Aeson.Object $ HashMap.fromList
                   [ ("name", Aeson.String $ T.pack $ show t)
-                  , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (formatISO8601Millis t, v))
+                  , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (t, v))
                   ]
-        in  EChartSeries
+        in def
               { _eChartSeries_type = Just "line"
               , _eChartSeries_name = n
               , _eChartSeries_data = d'
