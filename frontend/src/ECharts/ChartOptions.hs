@@ -11,7 +11,7 @@ data ChartOptions = ChartOptions
   -- , _chartOptions_grid :: Grid
   , _chartOptions_xAxis :: Axis
   , _chartOptions_yAxis :: Axis
-  , _chartOptions_series :: [Some SeriesGADT]
+  , _chartOptions_series :: [Some SeriesT]
   }
 
 instance Default ChartOptions where

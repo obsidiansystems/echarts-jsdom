@@ -757,13 +757,14 @@ toEChartConfig c = EChartConfig
 
 data ECharts = ECharts { unECharts :: JSVal }
 
-toEChartSeries :: Some SeriesGADT -> EChartSeries
-toEChartSeries (Some.This sGadt) = def
+toEChartSeries :: Some SeriesT -> EChartSeries
+toEChartSeries (Some.This st) = def
   -- common options
-  { _eChartSeries_type = Just $ getSeriesType sGadt
+  { _eChartSeries_type = Just $ getSeriesType st
   , _eChartSeries_id = _series_id s
   , _eChartSeries_name = _series_name s
   -- SeriesOptions
+  , _eChartSeries_data                   = series_data_toJson st
   -- , _eChartSeries_coordinateSystem       = _series_coordinateSystem       s
   -- , _eChartSeries_xAxisIndex             = _series_xAxisIndex             s
   -- , _eChartSeries_yAxisIndex             = _series_yAxisIndex             s
@@ -794,7 +795,6 @@ toEChartSeries (Some.This sGadt) = def
   -- , _eChartSeries_encode                 = _series_encode                 s
   -- , _eChartSeries_seriesLayoutBy         = _series_seriesLayoutBy         s
   -- , _eChartSeries_datasetindex           = _series_datasetindex           s
-  , _eChartSeries_data                   = getSeriesDataToJson sGadt -- f $ _series_data                   s
   -- , _eChartSeries_markPoint              = _series_markPoint              s
   -- , _eChartSeries_markLine               = _series_markLine               s
   -- , _eChartSeries_markArea               = _series_markArea               s
@@ -907,4 +907,4 @@ toEChartSeries (Some.This sGadt) = def
   -- , _eChartSeries_details                = _series_details                s
   }
   where
-    s = getSeries sGadt
+    s = getSeries st

@@ -30,17 +30,17 @@ import Control.Lens
 import ECharts.Types
 import ECharts.Series.Internal
 
-data SeriesGADT s where
-  SeriesGADT_Line :: Series SeriesLine -> SeriesGADT SeriesLine
-  SeriesGADT_Pie :: Series SeriesPie -> SeriesGADT SeriesPie
+data SeriesT s where
+  SeriesT_Line :: Series SeriesLine -> SeriesT SeriesLine
+  SeriesT_Pie :: Series SeriesPie -> SeriesT SeriesPie
 
-getSeries :: SeriesGADT s -> Series s
-getSeries (SeriesGADT_Line s) = s
-getSeries (SeriesGADT_Pie s) = s
+getSeries :: SeriesT s -> Series s
+getSeries (SeriesT_Line s) = s
+getSeries (SeriesT_Pie s) = s
 
-getSeriesType :: forall s . SeriesGADT s -> Text
-getSeriesType (SeriesGADT_Line s) = getSeriesTypeInt (Proxy :: Proxy s)
-getSeriesType (SeriesGADT_Pie s) = getSeriesTypeInt (Proxy :: Proxy s)
+getSeriesType :: forall s . SeriesT s -> Text
+getSeriesType (SeriesT_Line _) = getSeriesTypeInt (Proxy :: Proxy s)
+getSeriesType (SeriesT_Pie _) = getSeriesTypeInt (Proxy :: Proxy s)
 
 data Series seriesType = Series
   -- Common options
@@ -197,8 +197,9 @@ instance Default (Series SeriesLine) where
 
 makeLenses ''Series
 
-getSeriesDataToJson :: forall s . SeriesGADT s -> Maybe Aeson.Value
-getSeriesDataToJson (SeriesGADT_Line s) =
-  s ^? series_data . _Just . to Aeson.toJSON
--- getSeriesDataToJson (SeriesGADT_Pie s) = getSeriesTypeInt (Proxy :: Proxy s)
+series_data_toJson :: SeriesT s -> Maybe Aeson.Value
+series_data_toJson = \case
+  (SeriesT_Line s) -> s ^? series_data . _Just . to Aeson.toJSON
+  (SeriesT_Pie s)  -> s ^? series_data . _Just . to Aeson.toJSON
+  _ -> Nothing
 

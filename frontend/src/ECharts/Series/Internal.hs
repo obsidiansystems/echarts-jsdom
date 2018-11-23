@@ -345,3 +345,4 @@ instance SeriesOptions SeriesLine where
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"
   type SeriesOptions_selectedMode SeriesPie = Maybe SelectedMode
+  type SeriesOptions_data SeriesPie = Maybe [Scientific]
