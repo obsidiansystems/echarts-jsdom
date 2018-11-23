@@ -340,6 +340,7 @@ class SeriesOptions seriesType where
 instance SeriesOptions SeriesLine where
   getSeriesTypeInt _ = "line"
   type SeriesOptions_stack SeriesLine = Maybe Text
+  type SeriesOptions_data SeriesLine = Maybe [(UTCTime, Scientific)]
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"

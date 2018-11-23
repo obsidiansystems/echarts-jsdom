@@ -5,7 +5,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 module ECharts.Series
   ( module ECharts.Series
@@ -24,7 +26,7 @@ import Data.Scientific
 import Data.Time
 import GHC.Generics (Generic)
 import Data.Proxy
-
+import Control.Lens
 import ECharts.Types
 import ECharts.Series.Internal
 
@@ -189,3 +191,14 @@ data Series seriesType = Series
   , _series_pointer                :: SeriesOptions_pointer seriesType
   , _series_details                :: SeriesOptions_details seriesType
   }
+  deriving (Generic)
+
+instance Default (Series SeriesLine) where
+
+makeLenses ''Series
+
+getSeriesDataToJson :: forall s . SeriesGADT s -> Maybe Aeson.Value
+getSeriesDataToJson (SeriesGADT_Line s) =
+  s ^? series_data . _Just . to Aeson.toJSON
+-- getSeriesDataToJson (SeriesGADT_Pie s) = getSeriesTypeInt (Proxy :: Proxy s)
+

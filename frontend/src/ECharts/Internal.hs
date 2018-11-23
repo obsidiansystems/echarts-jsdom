@@ -719,7 +719,7 @@ toEChartConfig c = EChartConfig
       , _eChartLineStyle_shadowOffsetX = join $ fmap _shadow_offsetX $ _lineStyle_shadow x
       , _eChartLineStyle_shadowOffsetY = join $ fmap _shadow_offsetY $ _lineStyle_shadow x
       }
-    toEChartSeries x = def
+    -- toEChartSeries x = def
       -- Series_Line n d smooth stack ->
       --   let d' = case d of
       --         Nothing -> Nothing
@@ -758,7 +758,7 @@ toEChartConfig c = EChartConfig
 data ECharts = ECharts { unECharts :: JSVal }
 
 toEChartSeries :: Some SeriesGADT -> EChartSeries
-toEChartSeries (Some.This sGadt) = EChartSeries
+toEChartSeries (Some.This sGadt) = def
   -- common options
   { _eChartSeries_type = Just $ getSeriesType sGadt
   , _eChartSeries_id = _series_id s
@@ -794,7 +794,7 @@ toEChartSeries (Some.This sGadt) = EChartSeries
   -- , _eChartSeries_encode                 = _series_encode                 s
   -- , _eChartSeries_seriesLayoutBy         = _series_seriesLayoutBy         s
   -- , _eChartSeries_datasetindex           = _series_datasetindex           s
-  -- , _eChartSeries_data                   = _series_data                   s
+  , _eChartSeries_data                   = getSeriesDataToJson sGadt -- f $ _series_data                   s
   -- , _eChartSeries_markPoint              = _series_markPoint              s
   -- , _eChartSeries_markLine               = _series_markLine               s
   -- , _eChartSeries_markArea               = _series_markArea               s

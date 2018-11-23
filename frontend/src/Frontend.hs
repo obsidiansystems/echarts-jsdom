@@ -34,6 +34,7 @@ import qualified Obelisk.ExecutableConfig
 import Obelisk.Frontend
 import Obelisk.Route
 import Reflex.Dom.Core
+import qualified Data.Some as Some
 
 import Common.Types
 import Common.Route
@@ -141,6 +142,7 @@ dynamicTimeSeries title ts = do
   performEvent_ $ fforMaybe opts $ \case
     (Nothing, _) -> Nothing
     (Just c, ts') -> Just $ liftJSM $ setOption c $ opts0
-      { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) ->
-        Series_Timeline (Just k) True (Just vs) (Just $ Left True) (Just "Total") (Just ())
+      { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) -> Some.This $ SeriesGADT_Line $ def
+        & series_name .~ (Just k)
+        & series_data .~ (Just vs)
       }
