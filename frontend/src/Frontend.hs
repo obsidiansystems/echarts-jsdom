@@ -38,8 +38,12 @@ import Reflex.Dom.Core
 import Common.Types
 import Common.Route
 import Obelisk.Generated.Static
-import Echarts.Internal
-import Echarts.Types
+
+import ECharts.Internal
+import ECharts.Types
+import ECharts.Series
+import ECharts.ChartOptions
+
 
 init :: GHCJS.DOM.Types.Element -> JSM ECharts
 init e = do

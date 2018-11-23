@@ -6,7 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-module Echarts.Internal where
+module ECharts.Internal where
 
 import Control.Monad (join, void)
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
@@ -22,10 +22,15 @@ import GHC.Generics (Generic)
 import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Vector as V
 import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
+import Data.Proxy
+import Data.Some (Some)
+import qualified Data.Some as Some
 
 import Reflex.Class (ffor)
 
-import Echarts.Types
+import ECharts.Types
+import ECharts.Series
+import ECharts.ChartOptions
 
 data EChartTitle = EChartTitle
   { _eChartTitle_show :: Maybe Bool
@@ -714,40 +719,192 @@ toEChartConfig c = EChartConfig
       , _eChartLineStyle_shadowOffsetX = join $ fmap _shadow_offsetX $ _lineStyle_shadow x
       , _eChartLineStyle_shadowOffsetY = join $ fmap _shadow_offsetY $ _lineStyle_shadow x
       }
-    toEChartSeries x = case x of
-      Series_Line n d smooth stack ->
-        let d' = case d of
-              Nothing -> Nothing
-              Just xs -> Just $ Aeson.Array $ V.fromList $ fmap Aeson.toJSON xs
-        in def
-              { _eChartSeries_type = Just "line"
-              , _eChartSeries_name = n
-              , _eChartSeries_data = d'
-              , _eChartSeries_smooth = smooth
-              , _eChartSeries_stack = stack
-              }
-      Series_Timeline n timeX d smooth stack areaStyle ->
-        let d' = case d of
-              Nothing -> Nothing
-              Just xs -> Just $ Aeson.Array $ V.fromList $
-                -- Note: If more than three digits of precision is provided for
-                -- the seconds, echarts interprets that as a larger number of
-                -- milliseconds, not more precision.  E.g.: "0.123456" seconds
-                -- is interpreted as 123.456 seconds
-                ffor xs $ \(t, v) -> Aeson.Object $ HashMap.fromList
-                  [ ("name", Aeson.String $ T.pack $ show t)
-                  , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (t, v))
-                  ]
-        in def
-              { _eChartSeries_type = Just "line"
-              , _eChartSeries_name = n
-              , _eChartSeries_data = d'
-              , _eChartSeries_smooth = smooth
-              , _eChartSeries_animation = Nothing
-              , _eChartSeries_stack = stack
-              , _eChartSeries_areaStyle = "auto" <$ areaStyle -- TODO
-              , _eChartSeries_symbol = Just "none"
-              }
+    toEChartSeries x = def
+      -- Series_Line n d smooth stack ->
+      --   let d' = case d of
+      --         Nothing -> Nothing
+      --         Just xs -> Just $ Aeson.Array $ V.fromList $ fmap Aeson.toJSON xs
+      --   in def
+      --         { _eChartSeries_type = Just "line"
+      --         , _eChartSeries_name = n
+      --         , _eChartSeries_data = d'
+      --         , _eChartSeries_smooth = smooth
+      --         , _eChartSeries_stack = stack
+      --         }
+      -- Series_Timeline n timeX d smooth stack areaStyle ->
+      --   let d' = case d of
+      --         Nothing -> Nothing
+      --         Just xs -> Just $ Aeson.Array $ V.fromList $
+      --           -- Note: If more than three digits of precision is provided for
+      --           -- the seconds, echarts interprets that as a larger number of
+      --           -- milliseconds, not more precision.  E.g.: "0.123456" seconds
+      --           -- is interpreted as 123.456 seconds
+      --           ffor xs $ \(t, v) -> Aeson.Object $ HashMap.fromList
+      --             [ ("name", Aeson.String $ T.pack $ show t)
+      --             , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (t, v))
+      --             ]
+      --   in def
+      --         { _eChartSeries_type = Just "line"
+      --         , _eChartSeries_name = n
+      --         , _eChartSeries_data = d'
+      --         , _eChartSeries_smooth = smooth
+      --         , _eChartSeries_animation = Nothing
+      --         , _eChartSeries_stack = stack
+      --         , _eChartSeries_areaStyle = "auto" <$ areaStyle -- TODO
+      --         , _eChartSeries_symbol = Just "none"
+      --         }
     swap (x, y) = (y, x)
 
 data ECharts = ECharts { unECharts :: JSVal }
+
+toEChartSeries :: Some SeriesGADT -> EChartSeries
+toEChartSeries (Some.This sGadt) = EChartSeries
+  -- common options
+  { _eChartSeries_type = Just $ getSeriesType sGadt
+  , _eChartSeries_id = _series_id s
+  , _eChartSeries_name = _series_name s
+  -- SeriesOptions
+  -- , _eChartSeries_coordinateSystem       = _series_coordinateSystem       s
+  -- , _eChartSeries_xAxisIndex             = _series_xAxisIndex             s
+  -- , _eChartSeries_yAxisIndex             = _series_yAxisIndex             s
+  -- , _eChartSeries_polarIndex             = _series_polarIndex             s
+  -- , _eChartSeries_symbol                 = _series_symbol                 s
+  -- , _eChartSeries_symbolSize             = _series_symbolSize             s
+  -- , _eChartSeries_symbolRotate           = _series_symbolRotate           s
+  -- , _eChartSeries_symbolKeepAspect       = _series_symbolKeepAspect       s
+  -- , _eChartSeries_symbolOffset           = _series_symbolOffset           s
+  -- , _eChartSeries_showSymbol             = _series_showSymbol             s
+  -- , _eChartSeries_showAllSymbol          = _series_showAllSymbol          s
+  -- , _eChartSeries_hoverAnimation         = _series_hoverAnimation         s
+  -- , _eChartSeries_legendHoverLink        = _series_legendHoverLink        s
+  -- , _eChartSeries_stack                  = _series_stack                  s
+  -- , _eChartSeries_cursor                 = _series_cursor                 s
+  -- , _eChartSeries_connectNulls           = _series_connectNulls           s
+  -- , _eChartSeries_clipOverflow           = _series_clipOverflow           s
+  -- , _eChartSeries_step                   = _series_step                   s
+  -- , _eChartSeries_label                  = _series_label                  s
+  -- , _eChartSeries_itemStyle              = _series_itemStyle              s
+  -- , _eChartSeries_lineStyle              = _series_lineStyle              s
+  -- , _eChartSeries_areaStyle              = _series_areaStyle              s
+  -- , _eChartSeries_emphasis               = _series_emphasis               s
+  -- , _eChartSeries_smooth                 = _series_smooth                 s
+  -- , _eChartSeries_smoothMonotone         = _series_smoothMonotone         s
+  -- , _eChartSeries_sampling               = _series_sampling               s
+  -- , _eChartSeries_dimensions             = _series_dimensions             s
+  -- , _eChartSeries_encode                 = _series_encode                 s
+  -- , _eChartSeries_seriesLayoutBy         = _series_seriesLayoutBy         s
+  -- , _eChartSeries_datasetindex           = _series_datasetindex           s
+  -- , _eChartSeries_data                   = _series_data                   s
+  -- , _eChartSeries_markPoint              = _series_markPoint              s
+  -- , _eChartSeries_markLine               = _series_markLine               s
+  -- , _eChartSeries_markArea               = _series_markArea               s
+  -- , _eChartSeries_zlevel                 = _series_zlevel                 s
+  -- , _eChartSeries_z                      = _series_z                      s
+  -- , _eChartSeries_animation              = _series_animation              s
+  -- , _eChartSeries_animationOptions       = _series_animationOptions       s
+  -- , _eChartSeries_tooltip                = _series_tooltip                s
+  -- , _eChartSeries_barMinHeight           = _series_barMinHeight           s
+  -- , _eChartSeries_barGap                 = _series_barGap                 s
+  -- , _eChartSeries_barCategoryGap         = _series_barCategoryGap         s
+  -- , _eChartSeries_large                  = _series_large                  s
+  -- , _eChartSeries_largeThreshold         = _series_largeThreshold         s
+  -- , _eChartSeries_progressive            = _series_progressive            s
+  -- , _eChartSeries_progressiveThreshold   = _series_progressiveThreshold   s
+  -- , _eChartSeries_progressiveChunkMode   = _series_progressiveChunkMode   s
+  -- , _eChartSeries_hoverOffset            = _series_hoverOffset            s
+  -- , _eChartSeries_selectedMode           = _series_selectedMode           s
+  -- , _eChartSeries_selectedOffset         = _series_selectedOffset         s
+  -- , _eChartSeries_clockwise              = _series_clockwise              s
+  -- , _eChartSeries_minAngle               = _series_minAngle               s
+  -- , _eChartSeries_roseType               = _series_roseType               s
+  -- , _eChartSeries_avoidLabelOverlap      = _series_avoidLabelOverlap      s
+  -- , _eChartSeries_stillShowZeroSum       = _series_stillShowZeroSum       s
+  -- , _eChartSeries_center                 = _series_center                 s
+  -- , _eChartSeries_radius                 = _series_radius                 s
+  -- , _eChartSeries_geoIndex               = _series_geoIndex               s
+  -- , _eChartSeries_calendarIndex          = _series_calendarIndex          s
+  -- , _eChartSeries_showEffectOn           = _series_showEffectOn           s
+  -- , _eChartSeries_rippleEffect           = _series_rippleEffect           s
+  -- , _eChartSeries_radarIndex             = _series_radarIndex             s
+  -- , _eChartSeries_left                   = _series_left                   s
+  -- , _eChartSeries_top                    = _series_top                    s
+  -- , _eChartSeries_right                  = _series_right                  s
+  -- , _eChartSeries_bottom                 = _series_bottom                 s
+  -- , _eChartSeries_width                  = _series_width                  s
+  -- , _eChartSeries_height                 = _series_height                 s
+  -- , _eChartSeries_layout                 = _series_layout                 s
+  -- , _eChartSeries_orient                 = _series_orient                 s
+  -- , _eChartSeries_roam                   = _series_roam                   s
+  -- , _eChartSeries_expandAndCollapse      = _series_expandAndCollapse      s
+  -- , _eChartSeries_initialTreeDepth       = _series_initialTreeDepth       s
+  -- , _eChartSeries_leaves                 = _series_leaves                 s
+  -- , _eChartSeries_squareRatio            = _series_squareRatio            s
+  -- , _eChartSeries_leafDepth              = _series_leafDepth              s
+  -- , _eChartSeries_drillDownIcon          = _series_drillDownIcon          s
+  -- , _eChartSeries_nodeClick              = _series_nodeClick              s
+  -- , _eChartSeries_zoomToNodeRatio        = _series_zoomToNodeRatio        s
+  -- , _eChartSeries_levels                 = _series_levels                 s
+  -- , _eChartSeries_silent                 = _series_silent                 s
+  -- , _eChartSeries_visualDimension        = _series_visualDimension        s
+  -- , _eChartSeries_visualMin              = _series_visualMin              s
+  -- , _eChartSeries_visualMax              = _series_visualMax              s
+  -- , _eChartSeries_colorAlpha             = _series_colorAlpha             s
+  -- , _eChartSeries_colorSaturation        = _series_colorSaturation        s
+  -- , _eChartSeries_colorMappingsBy        = _series_colorMappingsBy        s
+  -- , _eChartSeries_visibleMin             = _series_visibleMin             s
+  -- , _eChartSeries_childrenVisibleMin     = _series_childrenVisibleMin     s
+  -- , _eChartSeries_breadcrumb             = _series_breadcrumb             s
+  -- , _eChartSeries_sort                   = _series_sort                   s
+  -- , _eChartSeries_renderLabelForZeroData = _series_renderLabelForZeroData s
+  -- , _eChartSeries_downplay               = _series_downplay               s
+  -- , _eChartSeries_boxWidth               = _series_boxWidth               s
+  -- , _eChartSeries_barWidth               = _series_barWidth               s
+  -- , _eChartSeries_barMinWidth            = _series_barMinWidth            s
+  -- , _eChartSeries_barMaxWidth            = _series_barMaxWidth            s
+  -- , _eChartSeries_blurSize               = _series_blurSize               s
+  -- , _eChartSeries_minOpacity             = _series_minOpacity             s
+  -- , _eChartSeries_maxOpacity             = _series_maxOpacity             s
+  -- , _eChartSeries_aspectScale            = _series_aspectScale            s
+  -- , _eChartSeries_boundingCoords         = _series_boundingCoords         s
+  -- , _eChartSeries_zoom                   = _series_zoom                   s
+  -- , _eChartSeries_scaleLimit             = _series_scaleLimit             s
+  -- , _eChartSeries_nameMap                = _series_nameMap                s
+  -- , _eChartSeries_layoutCenter           = _series_layoutCenter           s
+  -- , _eChartSeries_mapValueCalculation    = _series_mapValueCalculation    s
+  -- , _eChartSeries_showLegendSymbol       = _series_showLegendSymbol       s
+  -- , _eChartSeries_parallelIndex          = _series_parallelIndex          s
+  -- , _eChartSeries_inactiveOpacity        = _series_inactiveOpacity        s
+  -- , _eChartSeries_activeOpacity          = _series_activeOpacity          s
+  -- , _eChartSeries_realtime               = _series_realtime               s
+  -- , _eChartSeries_polyline               = _series_polyline               s
+  -- , _eChartSeries_circularRotateLayout   = _series_circularRotateLayout   s
+  -- , _eChartSeries_force                  = _series_force                  s
+  -- , _eChartSeries_nodeScaleRatio         = _series_nodeScaleRatio         s
+  -- , _eChartSeries_draggable              = _series_draggable              s
+  -- , _eChartSeries_edgeSymbol             = _series_edgeSymbol             s
+  -- , _eChartSeries_edgeSymbolSize         = _series_edgeSymbolSize         s
+  -- , _eChartSeries_categories             = _series_categories             s
+  -- , _eChartSeries_links                  = _series_links                  s
+  -- , _eChartSeries_nodeWidth              = _series_nodeWidth              s
+  -- , _eChartSeries_nodeGap                = _series_nodeGap                s
+  -- , _eChartSeries_layoutIterations       = _series_layoutIterations       s
+  -- , _eChartSeries_focusNodeAdjacency     = _series_focusNodeAdjacency     s
+  -- , _eChartSeries_min                    = _series_min                    s
+  -- , _eChartSeries_max                    = _series_max                    s
+  -- , _eChartSeries_minSize                = _series_minSize                s
+  -- , _eChartSeries_maxSize                = _series_maxSize                s
+  -- , _eChartSeries_gap                    = _series_gap                    s
+  -- , _eChartSeries_funnelAlign            = _series_funnelAlign            s
+  -- , _eChartSeries_labelLine              = _series_labelLine              s
+  -- , _eChartSeries_startAngle             = _series_startAngle             s
+  -- , _eChartSeries_endAngle               = _series_endAngle               s
+  -- , _eChartSeries_splitNumber            = _series_splitNumber            s
+  -- , _eChartSeries_axisLine               = _series_axisLine               s
+  -- , _eChartSeries_splitLine              = _series_splitLine              s
+  -- , _eChartSeries_axisTick               = _series_axisTick               s
+  -- , _eChartSeries_axisLabel              = _series_axisLabel              s
+  -- , _eChartSeries_pointer                = _series_pointer                s
+  -- , _eChartSeries_details                = _series_details                s
+  }
+  where
+    s = getSeries sGadt

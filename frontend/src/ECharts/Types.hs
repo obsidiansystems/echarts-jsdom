@@ -6,7 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-module Echarts.Types where
+module ECharts.Types where
 
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import Data.Default (Default, def)
@@ -521,46 +521,6 @@ data AxisLabel = AxisLabel
   -- , _axisLabel_rich :: Maybe TODO
   }
 
-data Series =
-    Series_Line
-      { _seriesLine_name :: Maybe Text
-      , _seriesLine_data :: Maybe [(Scientific, Scientific)]
-      , _seriesLine_smooth :: Maybe (Either Bool ZeroToOne)
-      , _seriesLine_stack :: Maybe Text
-      -- coordinateSystem :: CoordinateSystem -- common
-      -- xAxisIndex
-      -- yAxisIndex
-      -- polarIndex
-      -- symbol :: Symbol -- common
-      -- symbolSize
-      -- symbolRotate
-      -- symbolKeepAspect
-      -- symbolOffset
-      -- showSymbol
-      -- showAllSymbol
-      -- hoverAnimation
-      -- legendHoverLink
-      }
-  | Series_Timeline
-      { _seriesTimeline_name :: Maybe Text
-      , _seriesTimeline_timeAxisX :: Bool
-      , _seriesTimeline_data :: Maybe [(UTCTime, Scientific)]
-      , _seriesTimeline_smooth :: Maybe (Either Bool ZeroToOne)
-      , _seriesTimeline_stack :: Maybe Text
-      , _seriesTimeline_areaStyle :: Maybe () -- TODO
-      }
-
-data ChartOptions = ChartOptions
-  { _chartOptions_title :: Title
-  , _chartOptions_legend :: Legend
-  -- , _chartOptions_grid :: Grid
-  , _chartOptions_xAxis :: Axis
-  , _chartOptions_yAxis :: Axis
-  , _chartOptions_series :: [Series]
-  }
-
-instance Default ChartOptions where
-  def = ChartOptions def def def def []
 
 data SN = SN_String Text
         | SN_Number Double
