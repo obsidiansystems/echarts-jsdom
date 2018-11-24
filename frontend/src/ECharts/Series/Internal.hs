@@ -59,7 +59,6 @@ class SeriesOptions seriesType where
   type SeriesOptions_encode seriesType
   type SeriesOptions_seriesLayoutBy seriesType
   type SeriesOptions_datasetindex seriesType
-  type SeriesOptions_data seriesType
   type SeriesOptions_markPoint seriesType
   type SeriesOptions_markLine seriesType
   type SeriesOptions_markArea seriesType
@@ -202,7 +201,6 @@ class SeriesOptions seriesType where
   type instance SeriesOptions_encode seriesType = ()
   type instance SeriesOptions_seriesLayoutBy seriesType = ()
   type instance SeriesOptions_datasetindex seriesType = ()
-  type instance SeriesOptions_data seriesType = ()
   type instance SeriesOptions_markPoint seriesType = ()
   type instance SeriesOptions_markLine seriesType = ()
   type instance SeriesOptions_markArea seriesType = ()
@@ -317,9 +315,7 @@ class SeriesOptions seriesType where
 instance SeriesOptions SeriesLine where
   getSeriesTypeInt _ = "line"
   type SeriesOptions_stack SeriesLine = Maybe Text
-  type SeriesOptions_data SeriesLine = Maybe [(UTCTime, Scientific)]
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"
   type SeriesOptions_selectedMode SeriesPie = Maybe SelectedMode
-  type SeriesOptions_data SeriesPie = Maybe [Scientific]
