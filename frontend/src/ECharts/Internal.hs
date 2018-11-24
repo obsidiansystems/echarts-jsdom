@@ -330,7 +330,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_lineStyle :: Maybe LineStyle
   , _eChartSeries_areaStyle :: Maybe AreaStyle
   , _eChartSeries_emphasis :: Maybe Emphasis -- common
-  , _eChartSeries_smooth :: Maybe (Either Bool ZeroToOne)
+  , _eChartSeries_smooth :: Maybe Aeson.Value
   , _eChartSeries_smoothMonotone :: Maybe SmoothMonotone
   , _eChartSeries_sampling :: Maybe Sampling
   , _eChartSeries_dimensions :: Maybe Aeson.Value
@@ -788,7 +788,7 @@ toEChartSeries (Some.This st) = def
   -- , _eChartSeries_lineStyle              = _series_lineStyle              s
   -- , _eChartSeries_areaStyle              = _series_areaStyle              s
   -- , _eChartSeries_emphasis               = _series_emphasis               s
-  -- , _eChartSeries_smooth                 = _series_smooth                 s
+  , _eChartSeries_smooth                 = series_smooth_toJson st
   -- , _eChartSeries_smoothMonotone         = _series_smoothMonotone         s
   -- , _eChartSeries_sampling               = _series_sampling               s
   -- , _eChartSeries_dimensions             = _series_dimensions             s

@@ -315,6 +315,7 @@ class SeriesOptions seriesType where
 instance SeriesOptions SeriesLine where
   getSeriesTypeInt _ = "line"
   type SeriesOptions_stack SeriesLine = Maybe Text
+  type SeriesOptions_smooth SeriesLine = Maybe (Either Bool ZeroToOne)
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"

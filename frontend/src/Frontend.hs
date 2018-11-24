@@ -147,6 +147,7 @@ dynamicTimeSeries title ts = do
       { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) -> Some.This $
         SeriesT_Line $ def
           & series_name ?~ k
+          & series_smooth ?~ Right (scientific 7 (-1))
           & series_data ?~ (ffor vs $ \(t, v) -> def
             & data_name ?~ (scientific (toInteger $ utcTimeToEpoch t) 0)
             & data_value ?~ (scientific (toInteger $ utcTimeToEpoch t) 0, v))
