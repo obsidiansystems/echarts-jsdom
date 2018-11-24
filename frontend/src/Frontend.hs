@@ -41,25 +41,12 @@ import Common.Route
 import Obelisk.Generated.Static
 import Debug.Trace
 
+import ECharts
 import ECharts.Internal
 import ECharts.Types
 import ECharts.Series
 import ECharts.Data
 import ECharts.ChartOptions
-
-
-init :: GHCJS.DOM.Types.Element -> JSM ECharts
-init e = do
-  f <- eval $ T.pack "(function(e) { return echarts['init'](e) })"
-  arg <- toJSVal e
-  ECharts <$> call f f [arg]
-
-setOption :: ECharts -> ChartOptions -> JSM ()
-setOption c opts = do
-  f <- eval $ T.pack "(function(e, opt) { e['setOption'](opt); })"
-  let chart = unECharts c
-  options <- toJSVal $ Aeson.toJSON $ toEChartConfig opts
-  void $ call f f [chart, options]
 
 frontend :: Frontend (R FrontendRoute)
 frontend = Frontend
@@ -125,7 +112,7 @@ dynamicTimeSeries
 dynamicTimeSeries title ts = do
   e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px;") blank
   p <- getPostBuild
-  chart <- performEvent $ ffor p $ \_ -> liftJSM $ Frontend.init $ _element_raw e
+  chart <- performEvent $ ffor p $ \_ -> liftJSM $ ECharts.init $ _element_raw e
   let opts0 = def
         { _chartOptions_title = def { _title_text = Just title }
         , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time }
