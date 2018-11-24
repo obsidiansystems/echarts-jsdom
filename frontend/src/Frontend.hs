@@ -39,10 +39,12 @@ import Control.Lens
 import Common.Types
 import Common.Route
 import Obelisk.Generated.Static
+import Debug.Trace
 
 import ECharts.Internal
 import ECharts.Types
 import ECharts.Series
+import ECharts.Data
 import ECharts.ChartOptions
 
 
@@ -145,5 +147,7 @@ dynamicTimeSeries title ts = do
       { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) -> Some.This $
         SeriesT_Line $ def
           & series_name ?~ k
-          & series_data ?~ vs
+          & series_data ?~ (ffor vs $ \(t, v) -> def
+            & data_name ?~ (scientific (toInteger $ utcTimeToEpoch t) 0)
+            & data_value ?~ (scientific (toInteger $ utcTimeToEpoch t) 0, v))
       }

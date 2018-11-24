@@ -27,29 +27,6 @@ import Data.Proxy
 import Reflex.Class (ffor)
 import ECharts.Types
 
-data SeriesLine
-data SeriesBar
-data SeriesPie
-data SeriesScatter
-data SeriesEffectScatter
-data SeriesRadar
-data SeriesTree
-data SeriesTreemap
-data SeriesSunburst
-data SeriesBoxplot
-data SeriesCandlestick
-data SeriesHeatmap
-data SeriesMap
-data SeriesParallel
-data SeriesLines
-data SeriesGraph
-data SeriesSankey
-data SeriesFunnel
-data SeriesGauge
-data SeriesPictorialBar
-data SeriesThemeRiver
-data SeriesCustom
-
 class SeriesOptions seriesType where
   getSeriesTypeInt :: Proxy seriesType -> Text
   type SeriesOptions_coordinateSystem seriesType

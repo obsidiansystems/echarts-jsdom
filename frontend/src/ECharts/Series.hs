@@ -10,9 +10,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 module ECharts.Series
-  ( module ECharts.Series
-  , getSeriesType
-  )
   where
 
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
@@ -29,6 +26,7 @@ import Data.Proxy
 import Control.Lens
 import ECharts.Types
 import ECharts.Series.Internal
+import ECharts.Data
 
 data SeriesT s where
   SeriesT_Line :: Series SeriesLine -> SeriesT SeriesLine
@@ -79,7 +77,7 @@ data Series seriesType = Series
   , _series_encode                 :: SeriesOptions_encode seriesType
   , _series_seriesLayoutBy         :: SeriesOptions_seriesLayoutBy seriesType
   , _series_datasetindex           :: SeriesOptions_datasetindex seriesType
-  , _series_data                   :: SeriesOptions_data seriesType
+  , _series_data                   :: Maybe [Data seriesType]
   , _series_markPoint              :: SeriesOptions_markPoint seriesType
   , _series_markLine               :: SeriesOptions_markLine seriesType
   , _series_markArea               :: SeriesOptions_markArea seriesType

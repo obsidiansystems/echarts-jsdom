@@ -17,6 +17,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Scientific
 import Data.Time
+import Data.Time.Clock.POSIX
 import GHC.Generics (Generic)
 
 type ZeroToOne = Scientific
@@ -40,6 +41,9 @@ type SelectedMode = Aeson.Value
 type AbsOrPercentage = Aeson.Value
 type RippleEffect = Aeson.Value
 type TextOrScientific = Aeson.Value
+
+utcTimeToEpoch :: UTCTime -> Int
+utcTimeToEpoch t = round $ (utcTimeToPOSIXSeconds t * 1000)
 
 data Target = Target_Blank
             | Target_Self
@@ -529,3 +533,26 @@ data SN = SN_String Text
 instance ToJSON SN where
   toJSON (SN_String a) = Aeson.String a
   toJSON (SN_Number a) = Aeson.Number $ realToFrac a
+
+data SeriesLine
+data SeriesBar
+data SeriesPie
+data SeriesScatter
+data SeriesEffectScatter
+data SeriesRadar
+data SeriesTree
+data SeriesTreemap
+data SeriesSunburst
+data SeriesBoxplot
+data SeriesCandlestick
+data SeriesHeatmap
+data SeriesMap
+data SeriesParallel
+data SeriesLines
+data SeriesGraph
+data SeriesSankey
+data SeriesFunnel
+data SeriesGauge
+data SeriesPictorialBar
+data SeriesThemeRiver
+data SeriesCustom
