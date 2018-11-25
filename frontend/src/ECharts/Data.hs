@@ -27,26 +27,31 @@ import Control.Lens
 import ECharts.Types
 import ECharts.Data.Internal
 
-data Data seriesType = Data
+data Data seriesType = DataObject
   -- Common options
   { _data_name                   :: DataOptions_name seriesType
   , _data_value                  :: DataOptions_value seriesType
   -- , _data_symbol                 :: DataOptions_symbol seriesType
   }
+  | DataNumber Scientific
+  | DataText Text
   deriving (Generic)
 
 makeLenses ''Data
 
 instance Default (Data SeriesLine) where
+  def = DataObject def def
 
 instance ToJSON (Data SeriesLine) where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_data_"
     , omitNothingFields = True
+    , sumEncoding = Aeson.UntaggedValue
     }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_data_"
     , omitNothingFields = True
+    , sumEncoding = Aeson.UntaggedValue
     }
 
 instance ToJSON (Data SeriesPie) where

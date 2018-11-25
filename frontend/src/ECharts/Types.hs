@@ -422,7 +422,7 @@ data Axis = Axis
   , _axis_axisLabel :: Maybe AxisLabel
   -- , _axis_splitLine :: Maybe SplitLine TODO
   -- , _axis_splitArea :: Maybe SplitArea TODO
-  , _axis_data :: Maybe (Map Text (Maybe TextStyle))
+  , _axis_data :: Maybe [(Text, (Maybe TextStyle))]
   -- , _axis_pointer :: Maybe AxisPointer TODO
   , _axis_zlevel :: Maybe Int
   , _axis_z :: Maybe Int

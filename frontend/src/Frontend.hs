@@ -47,6 +47,7 @@ import ECharts.Types
 import ECharts.Series
 import ECharts.Data
 import ECharts.ChartOptions
+import ECharts.Examples
 
 frontend :: Frontend (R FrontendRoute)
 frontend = Frontend
@@ -61,7 +62,7 @@ frontend = Frontend
           "https:" -> "wss:"
           _ -> "ws:"
         wsUrl = T.pack $ wsScheme <> (uriRegName auth) <> (uriPort auth) <> "/listen"
-    prerender blank (echarts wsUrl)
+    prerender blank (echarts wsUrl >> seriesExamples)
   }
 
 echarts

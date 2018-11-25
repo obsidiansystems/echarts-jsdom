@@ -658,7 +658,7 @@ toEChartConfig c = EChartConfig
             fmap (\(k, v) -> Aeson.Object $ HashMap.fromList
               [ ("value", Aeson.toJSON k)
               , ("textStyle", Aeson.toJSON $ fmap toEChartTextStyle v)
-              ]) $ Map.toList d
+              ]) d
       }
     toEChartAxisLabel x = EChartAxisLabel
       { _eChartAxisLabel_show = _axisLabel_show x
