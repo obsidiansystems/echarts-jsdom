@@ -38,6 +38,7 @@ seriesExamples
   => m ()
 seriesExamples = mapM_ renderChartOptions
   [ basicLineChart
+  , basicAreaChart
   ]
 
 renderChartOptions
@@ -56,6 +57,7 @@ renderChartOptions opts = do
   chart <- performEvent $ ffor p $ \_ -> liftJSM $ ECharts.init $ _element_raw e
   performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts
 
+basicLineChart :: ChartOptions
 basicLineChart = def
   { _chartOptions_xAxis = def { _axis_type = Just AxisType_Category
                               , _axis_data = Just $ zip xAxisData $ repeat Nothing}
@@ -63,6 +65,21 @@ basicLineChart = def
                               }
   , _chartOptions_series = [Some.This $ SeriesT_Line $ def
     & series_data ?~ (map DataNumber yAxisData)]
+  }
+  where
+    xAxisData = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    yAxisData = [820, 932, 901, 934, 1290, 1330, 1320]
+
+basicAreaChart :: ChartOptions
+basicAreaChart = def
+  { _chartOptions_xAxis = def { _axis_type = Just AxisType_Category
+                              , _axis_data = Just $ zip xAxisData $ repeat Nothing
+                              , _axis_boundaryGap = Just $ Left False}
+  , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value
+                              }
+  , _chartOptions_series = [Some.This $ SeriesT_Line $ def
+    & series_data ?~ (map DataNumber yAxisData)
+    & series_areaStyle ?~ def {_areaStyle_origin = Just "auto"}]
   }
   where
     xAxisData = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]

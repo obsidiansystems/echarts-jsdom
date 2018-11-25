@@ -27,7 +27,6 @@ type SymbolSize = Aeson.Value
 type Step = Aeson.Value
 type Label = Aeson.Value
 type ItemStyle = Aeson.Value
-type AreaStyle = Aeson.Value
 type Emphasis = Aeson.Value
 type SmoothMonotone = Aeson.Value
 type Sampling = Aeson.Value
@@ -41,6 +40,7 @@ type SelectedMode = Aeson.Value
 type AbsOrPercentage = Aeson.Value
 type RippleEffect = Aeson.Value
 type TextOrScientific = Aeson.Value
+type Color = Text
 
 utcTimeToEpoch :: UTCTime -> Int
 utcTimeToEpoch t = round $ (utcTimeToPOSIXSeconds t * 1000)
@@ -556,3 +556,23 @@ data SeriesGauge
 data SeriesPictorialBar
 data SeriesThemeRiver
 data SeriesCustom
+
+
+data AreaStyle = AreaStyle
+  { _areaStyle_color :: Maybe Color
+  , _areaStyle_origin :: Maybe Text
+  , _areaStyle_shadowBlur :: Maybe Scientific
+  , _areaStyle_shadowColor :: Maybe Color
+  , _areaStyle_shadowOffsetX :: Maybe Scientific
+  , _areaStyle_shadowOffsetY :: Maybe Scientific
+  , _areaStyle_opacity :: Maybe ZeroToOne
+  }
+  deriving (Generic)
+
+instance ToJSON AreaStyle where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_areaStyle_"
+    , omitNothingFields = True
+    }
+
+instance Default AreaStyle where

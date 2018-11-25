@@ -206,4 +206,8 @@ series_smooth_toJson = \case
   (SeriesT_Line s) -> s ^? series_smooth . _Just . to (either Aeson.toJSON Aeson.toJSON)
   _ -> Nothing
 
+series_areaStyle_toJson :: SeriesT s -> Maybe Aeson.Value
+series_areaStyle_toJson = \case
+  (SeriesT_Line s) -> s ^? series_areaStyle . _Just . to Aeson.toJSON
+  _ -> Nothing
 
