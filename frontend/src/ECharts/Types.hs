@@ -39,6 +39,7 @@ type AbsOrPercentage = Aeson.Value
 type RippleEffect = Aeson.Value
 type TextOrScientific = Aeson.Value
 type Color = Text
+type IconStyle = Aeson.Value
 
 utcTimeToEpoch :: UTCTime -> Int
 utcTimeToEpoch t = round $ (utcTimeToPOSIXSeconds t * 1000)
@@ -316,7 +317,7 @@ data Legend = Legend
   , _legend_selected :: Maybe (Map Text Bool)
   , _legend_textStyle :: Maybe TextStyle
   -- , _legend_tooltip :: TODO
-  , _legend_data :: Maybe (Map Text LegendData)
+  , _legend_data :: Maybe [(Text, LegendData)]
   , _legend_backgroundColor :: Maybe Text
   , _legend_border :: Maybe Border
   , _legend_shadow :: Maybe Shadow
@@ -644,3 +645,154 @@ data ToolTip = ToolTip
   deriving (Generic)
 
 instance Default ToolTip where
+
+data ToolBox = ToolBox
+  { _toolBox_show :: Maybe Bool
+  , _toolBox_id :: Maybe Text
+  , _toolBox_orient :: Maybe Orientation
+  , _toolBox_itemSize :: Maybe Int
+  , _toolBox_itemGap :: Maybe Int
+  , _toolBox_showTitle :: Maybe Bool
+  , _toolBox_features :: [Feature]
+  , _toolBox_iconStyle :: Maybe IconStyle
+  , _toolBox_position :: Maybe Position
+  , _toolBox_size :: Maybe Size
+  }
+  deriving (Generic)
+
+instance Default ToolBox where
+
+data Feature =
+  Feature_SaveAsImage
+  { _feature_show :: Maybe Bool
+  , _feature_type :: Maybe Text
+  , _feature_backgroundColor :: Maybe Color
+  , _feature_excludeComponents :: [Text]
+  , _feature_title :: Maybe Text
+  , _feature_icon :: Maybe Aeson.Value
+  , _feature_iconStyle :: Maybe IconStyle
+  , _feature_pixelRatio :: Maybe Scientific
+  }
+  | Feature_Restore
+  { _feature_show :: Maybe Bool
+  , _feature_title :: Maybe Text
+  , _feature_icon :: Maybe Aeson.Value
+  , _feature_iconStyle :: Maybe IconStyle
+  }
+  | Feature_DataView
+  { _feature_show :: Maybe Bool
+  , _feature_title :: Maybe Text
+  , _feature_icon :: Maybe Aeson.Value
+  , _feature_iconStyle :: Maybe IconStyle
+  , _feature_readOnly :: Maybe Bool
+  , _feature_optionToContent :: Maybe Aeson.Value
+  , _feature_contentToOption :: Maybe Aeson.Value
+  , _feature_lang :: Maybe [Text]
+  , _feature_backgroundColor :: Maybe Color
+  , _feature_textareaColor :: Maybe Color
+  , _feature_textareaBorderColor :: Maybe Color
+  , _feature_textColor :: Maybe Color
+  , _feature_buttonColor :: Maybe Color
+  , _feature_buttonTextColor :: Maybe Color
+  }
+  | Feature_DataZoom
+  { _feature_show :: Maybe Bool
+  -- TODO Title is actually an object
+  -- , _feature_title :: Maybe Text
+  , _feature_icon :: Maybe Aeson.Value
+  , _feature_iconStyle :: Maybe IconStyle
+  , _feature_xAxisIndex :: Maybe Aeson.Value
+  , _feature_yAxisIndex :: Maybe Aeson.Value
+  }
+  | Feature_MagicType
+  { _feature_show :: Maybe Bool
+  , _feature_type :: Maybe Text
+  -- TODO Title is actually an object
+  -- , _feature_title :: Maybe Text
+  , _feature_icon :: Maybe Aeson.Value
+  , _feature_iconStyle :: Maybe IconStyle
+  , _feature_option :: Maybe Aeson.Value
+  , _feature_seriesIndex :: Maybe Aeson.Value
+  }
+  | Feature_Brush
+  { _feature_type :: Maybe Text
+  , _feature_icon :: Maybe Aeson.Value
+  -- TODO Title is actually an object
+  -- , _feature_title :: Maybe Text
+  }
+  deriving (Generic)
+
+emptySaveAsImage :: Feature
+emptySaveAsImage = Feature_SaveAsImage
+  { _feature_show = Nothing
+  , _feature_type = Nothing
+  , _feature_backgroundColor = Nothing
+  , _feature_excludeComponents = []
+  , _feature_title = Nothing
+  , _feature_icon = Nothing
+  , _feature_iconStyle = Nothing
+  , _feature_pixelRatio = Nothing
+  }
+
+emptyRestore :: Feature
+emptyRestore = Feature_Restore
+  { _feature_show = Nothing
+  , _feature_title = Nothing
+  , _feature_icon = Nothing
+  , _feature_iconStyle = Nothing
+  }
+
+emptyDataView :: Feature
+emptyDataView = Feature_DataView
+  { _feature_show = Nothing
+  , _feature_title = Nothing
+  , _feature_icon = Nothing
+  , _feature_iconStyle = Nothing
+  , _feature_readOnly = Nothing
+  , _feature_optionToContent = Nothing
+  , _feature_contentToOption = Nothing
+  , _feature_lang = Nothing
+  , _feature_backgroundColor = Nothing
+  , _feature_textareaColor = Nothing
+  , _feature_textareaBorderColor = Nothing
+  , _feature_textColor = Nothing
+  , _feature_buttonColor = Nothing
+  , _feature_buttonTextColor = Nothing
+  }
+
+emptyDataZoom :: Feature
+emptyDataZoom = Feature_DataZoom
+  { _feature_show = Nothing
+  , _feature_icon = Nothing
+  , _feature_iconStyle = Nothing
+  , _feature_xAxisIndex = Nothing
+  , _feature_yAxisIndex = Nothing
+  }
+
+emptyMagicType :: Feature
+emptyMagicType = Feature_MagicType
+  { _feature_show = Nothing
+  , _feature_type = Nothing
+  , _feature_icon = Nothing
+  , _feature_iconStyle = Nothing
+  , _feature_option = Nothing
+  , _feature_seriesIndex = Nothing
+  }
+
+emptyBrush :: Feature
+emptyBrush = Feature_Brush
+  { _feature_type = Nothing
+  , _feature_icon = Nothing
+  }
+
+instance ToJSON Feature where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_feature_"
+    , omitNothingFields = True
+    , sumEncoding = Aeson.UntaggedValue
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_feature_"
+    , omitNothingFields = True
+    , sumEncoding = Aeson.UntaggedValue
+    }

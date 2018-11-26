@@ -9,6 +9,7 @@ data ChartOptions = ChartOptions
   { _chartOptions_title :: Title
   , _chartOptions_legend :: Legend
   , _chartOptions_tooltip :: ToolTip
+  , _chartOptions_toolbox :: ToolBox
   , _chartOptions_grid :: Grid
   , _chartOptions_xAxis :: Axis
   , _chartOptions_yAxis :: Axis
@@ -16,4 +17,4 @@ data ChartOptions = ChartOptions
   }
 
 instance Default ChartOptions where
-  def = ChartOptions def def def def def def []
+  def = ChartOptions def def def def def def def []

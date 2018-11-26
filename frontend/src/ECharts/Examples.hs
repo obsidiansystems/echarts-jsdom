@@ -113,6 +113,18 @@ stackedAreaChart = def
       , ("label", Aeson.Object $ HashMap.singleton "backgroundColor" "#6a7985")
       ]
     }
+  , _chartOptions_toolbox = def
+    { _toolBox_features =
+      [ emptySaveAsImage { _feature_title = Just "Save as PNG" }
+      ]
+    }
+  , _chartOptions_legend = def
+    { _legend_data = Just $ [ ("A", def)
+                            , ("B", def)
+                            , ("C", def)
+                            , ("D", def)
+                            , ("E", def)
+                            ]}
   , _chartOptions_grid = def
     { _grid_position = Just
       (def { _position_left = Just $ PosAlign_Percent 3

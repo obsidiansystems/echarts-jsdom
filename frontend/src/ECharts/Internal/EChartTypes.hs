@@ -14,6 +14,8 @@ import qualified Data.Aeson as Aeson
 
 import ECharts.Types
 
+type EChartIconStyle = Aeson.Value
+
 data EChartTextStyle = EChartTextStyle
   { _eChartTextStyle_color :: Maybe Text
   , _eChartTextStyle_fontStyle :: Maybe FontStyle

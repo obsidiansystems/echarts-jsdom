@@ -32,6 +32,7 @@ import ECharts.ChartOptions
 import ECharts.Internal.EChartSeries
 import ECharts.Internal.EChartTypes
 import ECharts.Internal.EChartToolTip
+import ECharts.Internal.EChartToolBox
 import ECharts.Internal.EChartGrid
 import ECharts.Internal.EChartLegend
 import ECharts.Internal.EChartTitle
@@ -40,6 +41,7 @@ data EChartConfig = EChartConfig
   { _eChartConfig_title :: EChartTitle
   , _eChartConfig_legend :: EChartLegend
   , _eChartConfig_tooltip :: EChartToolTip
+  , _eChartConfig_toolbox :: EChartToolBox
   , _eChartConfig_grid :: EChartGrid
   , _eChartConfig_xAxis :: EChartAxis
   , _eChartConfig_yAxis :: EChartAxis
@@ -62,6 +64,7 @@ toEChartConfig c = EChartConfig
   { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
   , _eChartConfig_legend = toEChartLegend $ _chartOptions_legend c
   , _eChartConfig_tooltip = toEChartToolTip $ _chartOptions_tooltip c
+  , _eChartConfig_toolbox = toEChartToolBox $ _chartOptions_toolbox c
   , _eChartConfig_grid = toEChartGrid $ _chartOptions_grid c
   , _eChartConfig_xAxis = toEChartAxis $ _chartOptions_xAxis c
   , _eChartConfig_yAxis = toEChartAxis $ _chartOptions_yAxis c
@@ -149,7 +152,7 @@ toEChartConfig c = EChartConfig
               , ("textStyle", Aeson.toJSON . toEChartTextStyle <$> _legendData_textStyle v)
               ]
         in  flip fmap (_legend_data x) $ \d ->
-              Aeson.Array $ fmap toLegendDataObject $ V.fromList $ Map.toList d
+              Aeson.Array $ fmap toLegendDataObject $ V.fromList d
       , _eChartLegend_backgroundColor = _legend_backgroundColor x
       , _eChartLegend_borderColor = join $ fmap _border_color $ _legend_border x
       , _eChartLegend_borderWidth = join $ fmap _border_width $ _legend_border x
