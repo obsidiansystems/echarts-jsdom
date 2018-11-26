@@ -281,7 +281,6 @@ instance ToJSON Icon where
     Icon_DataURI uri -> "image://" <> uri
     Icon_SVGPath svg -> "path://" <> svg
 
-
 data LegendData = LegendData
   { _legendData_name :: Maybe Text
   , _legendData_icon :: Maybe Icon
@@ -796,3 +795,48 @@ instance ToJSON Feature where
     , omitNothingFields = True
     , sumEncoding = Aeson.UntaggedValue
     }
+
+data DataZoom = DataZoom
+  { _dataZoom_show :: Maybe Bool
+  , _dataZoom_id :: Maybe Text
+  , _dataZoom_type :: Maybe Text
+  , _dataZoom_disabled :: Maybe Bool
+  , _dataZoom_xAxisIndex :: Maybe [Int]
+  , _dataZoom_yAxisIndex :: Maybe [Int]
+  , _dataZoom_radiusAxisIndex :: Maybe [Int]
+  , _dataZoom_angleAxisIndex :: Maybe [Int]
+  , _dataZoom_filterMode :: Maybe Text
+  , _dataZoom_start :: Maybe Aeson.Value
+  , _dataZoom_end :: Maybe Aeson.Value
+  , _dataZoom_minSpan :: Maybe Int
+  , _dataZoom_maxSpan :: Maybe Int
+  , _dataZoom_minValueSpan :: Maybe Aeson.Value
+  , _dataZoom_maxValueSpan :: Maybe Aeson.Value
+  , _dataZoom_orient :: Maybe Text
+  , _dataZoom_zoomLock :: Maybe Bool
+  , _dataZoom_throttle :: Maybe Int
+  , _dataZoom_rangeMode :: Maybe [Text]
+  , _dataZoom_zoomOnMouseWheel :: Maybe Bool
+  , _dataZoom_moveOnMouseMove :: Maybe Bool
+  , _dataZoom_moveOnMouseWheel :: Maybe Bool
+  , _dataZoom_preventDefaultMouseMove :: Maybe Bool
+  , _dataZoom_backgroundColor :: Maybe Text
+  , _dataZoom_dataBackground :: Maybe Aeson.Value
+  , _dataZoom_fillerColor :: Maybe Text
+  , _dataZoom_borderColor :: Maybe Text
+  , _dataZoom_handleIcon :: Maybe Text
+  , _dataZoom_handleSize :: Maybe SN
+  , _dataZoom_handleStyle :: Maybe Aeson.Value
+  , _dataZoom_labelPrecision :: Maybe Int
+  , _dataZoom_labelFormatter :: Maybe Aeson.Value
+  , _dataZoom_showDetail :: Maybe Bool
+  , _dataZoom_showDataShadow :: Maybe Text
+  , _dataZoom_realtime :: Maybe Bool
+  , _dataZoom_textStyle :: Maybe TextStyle
+  , _dataZoom_startValue :: Maybe Aeson.Value
+  , _dataZoom_endValue :: Maybe Aeson.Value
+  , _dataZoom_position :: Maybe Position
+  }
+  deriving (Generic)
+
+instance Default DataZoom where

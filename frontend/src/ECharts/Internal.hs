@@ -42,6 +42,7 @@ data EChartConfig = EChartConfig
   , _eChartConfig_legend :: EChartLegend
   , _eChartConfig_tooltip :: EChartToolTip
   , _eChartConfig_toolbox :: EChartToolBox
+  , _eChartConfig_dataZoom :: [EChartDataZoom]
   , _eChartConfig_grid :: EChartGrid
   , _eChartConfig_xAxis :: EChartAxis
   , _eChartConfig_yAxis :: EChartAxis
@@ -65,31 +66,13 @@ toEChartConfig c = EChartConfig
   , _eChartConfig_legend = toEChartLegend $ _chartOptions_legend c
   , _eChartConfig_tooltip = toEChartToolTip $ _chartOptions_tooltip c
   , _eChartConfig_toolbox = toEChartToolBox $ _chartOptions_toolbox c
+  , _eChartConfig_dataZoom = toEChartDataZoom <$> _chartOptions_dataZoom c
   , _eChartConfig_grid = toEChartGrid $ _chartOptions_grid c
   , _eChartConfig_xAxis = toEChartAxis $ _chartOptions_xAxis c
   , _eChartConfig_yAxis = toEChartAxis $ _chartOptions_yAxis c
   , _eChartConfig_series = fmap toEChartSeries $ _chartOptions_series c
   }
   where
-    toEChartTextStyle :: TextStyle -> EChartTextStyle
-    toEChartTextStyle t = EChartTextStyle
-      { _eChartTextStyle_color = _textStyle_color t
-      , _eChartTextStyle_fontStyle = join $ fmap _font_style $ _textStyle_font t
-      , _eChartTextStyle_fontWeight = join $ fmap _font_weight $ _textStyle_font t
-      , _eChartTextStyle_fontFamily = join $ fmap _font_family $ _textStyle_font t
-      , _eChartTextStyle_fontSize = join $ fmap _font_size $ _textStyle_font t
-      , _eChartTextStyle_align = _textStyle_align t
-      , _eChartTextStyle_verticalAlign = _textStyle_verticalAlign t
-      , _eChartTextStyle_lineHeight = _textStyle_lineHeight t
-      , _eChartTextStyle_width = fmap sizeValueToSN $ _textStyle_width t
-      , _eChartTextStyle_height = fmap sizeValueToSN $ _textStyle_height t
-      , _eChartTextStyle_textBorderColor = join $ fmap _border_color $ _textStyle_textBorder t
-      , _eChartTextStyle_textBorderWidth = join $ fmap _border_width $ _textStyle_textBorder t
-      , _eChartTextStyle_textShadowColor = join $ fmap _shadow_color $ _textStyle_textShadow t
-      , _eChartTextStyle_textShadowBlur = join $ fmap _shadow_blur $ _textStyle_textShadow t
-      , _eChartTextStyle_textShadowOffsetX = join $ fmap _shadow_offsetX $ _textStyle_textShadow t
-      , _eChartTextStyle_textShadowOffsetY = join $ fmap _shadow_offsetY $ _textStyle_textShadow t
-      }
     toEChartTitle :: Title -> EChartTitle
     toEChartTitle t = EChartTitle
       { _eChartTitle_show = _title_show t

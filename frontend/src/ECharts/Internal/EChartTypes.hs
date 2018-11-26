@@ -212,3 +212,129 @@ toEChartTextStyle v = EChartTextStyle
   , _eChartTextStyle_textShadowOffsetX = _shadow_offsetX =<< _textStyle_textShadow v
   , _eChartTextStyle_textShadowOffsetY = _shadow_offsetY =<< _textStyle_textShadow v
   }
+
+    -- toEChartTextStyle :: TextStyle -> EChartTextStyle
+    -- toEChartTextStyle t = EChartTextStyle
+    --   { _eChartTextStyle_color = _textStyle_color t
+    --   , _eChartTextStyle_fontStyle = join $ fmap _font_style $ _textStyle_font t
+    --   , _eChartTextStyle_fontWeight = join $ fmap _font_weight $ _textStyle_font t
+    --   , _eChartTextStyle_fontFamily = join $ fmap _font_family $ _textStyle_font t
+    --   , _eChartTextStyle_fontSize = join $ fmap _font_size $ _textStyle_font t
+    --   , _eChartTextStyle_align = _textStyle_align t
+    --   , _eChartTextStyle_verticalAlign = _textStyle_verticalAlign t
+    --   , _eChartTextStyle_lineHeight = _textStyle_lineHeight t
+    --   , _eChartTextStyle_width = fmap sizeValueToSN $ _textStyle_width t
+    --   , _eChartTextStyle_height = fmap sizeValueToSN $ _textStyle_height t
+    --   , _eChartTextStyle_textBorderColor = join $ fmap _border_color $ _textStyle_textBorder t
+    --   , _eChartTextStyle_textBorderWidth = join $ fmap _border_width $ _textStyle_textBorder t
+    --   , _eChartTextStyle_textShadowColor = join $ fmap _shadow_color $ _textStyle_textShadow t
+    --   , _eChartTextStyle_textShadowBlur = join $ fmap _shadow_blur $ _textStyle_textShadow t
+    --   , _eChartTextStyle_textShadowOffsetX = join $ fmap _shadow_offsetX $ _textStyle_textShadow t
+    --   , _eChartTextStyle_textShadowOffsetY = join $ fmap _shadow_offsetY $ _textStyle_textShadow t
+    --   }
+
+data EChartDataZoom = EChartDataZoom
+  { _eChartDataZoom_show :: Maybe Bool
+  , _eChartDataZoom_id :: Maybe Text
+  , _eChartDataZoom_type :: Maybe Text
+  , _eChartDataZoom_disabled :: Maybe Bool
+  , _eChartDataZoom_xAxisIndex :: Maybe [Int]
+  , _eChartDataZoom_yAxisIndex :: Maybe [Int]
+  , _eChartDataZoom_radiusAxisIndex :: Maybe [Int]
+  , _eChartDataZoom_angleAxisIndex :: Maybe [Int]
+  , _eChartDataZoom_filterMode :: Maybe Text
+  , _eChartDataZoom_start :: Maybe Aeson.Value
+  , _eChartDataZoom_end :: Maybe Aeson.Value
+  , _eChartDataZoom_minSpan :: Maybe Int
+  , _eChartDataZoom_maxSpan :: Maybe Int
+  , _eChartDataZoom_minValueSpan :: Maybe Aeson.Value
+  , _eChartDataZoom_maxValueSpan :: Maybe Aeson.Value
+  , _eChartDataZoom_orient :: Maybe Text
+  , _eChartDataZoom_zoomLock :: Maybe Bool
+  , _eChartDataZoom_throttle :: Maybe Int
+  , _eChartDataZoom_rangeMode :: Maybe [Text]
+  , _eChartDataZoom_zoomOnMouseWheel :: Maybe Bool
+  , _eChartDataZoom_moveOnMouseMove :: Maybe Bool
+  , _eChartDataZoom_moveOnMouseWheel :: Maybe Bool
+  , _eChartDataZoom_preventDefaultMouseMove :: Maybe Bool
+  , _eChartDataZoom_backgroundColor :: Maybe Text
+  , _eChartDataZoom_dataBackground :: Maybe Aeson.Value
+  , _eChartDataZoom_fillerColor :: Maybe Text
+  , _eChartDataZoom_borderColor :: Maybe Text
+  , _eChartDataZoom_handleIcon :: Maybe Text
+  , _eChartDataZoom_handleSize :: Maybe SN
+  , _eChartDataZoom_handleStyle :: Maybe Aeson.Value
+  , _eChartDataZoom_labelPrecision :: Maybe Int
+  , _eChartDataZoom_labelFormatter :: Maybe Aeson.Value
+  , _eChartDataZoom_showDetail :: Maybe Bool
+  , _eChartDataZoom_showDataShadow :: Maybe Text
+  , _eChartDataZoom_realtime :: Maybe Bool
+  , _eChartDataZoom_textStyle :: Maybe EChartTextStyle
+  , _eChartDataZoom_startValue :: Maybe Aeson.Value
+  , _eChartDataZoom_endValue :: Maybe Aeson.Value
+  , _eChartDataZoom_zlevel :: Maybe Int
+  , _eChartDataZoom_z :: Maybe Int
+  , _eChartDataZoom_left :: Maybe SN
+  , _eChartDataZoom_right :: Maybe SN
+  , _eChartDataZoom_top :: Maybe SN
+  , _eChartDataZoom_bottom :: Maybe SN
+  }
+  deriving (Generic)
+
+toEChartDataZoom :: DataZoom -> EChartDataZoom
+toEChartDataZoom v = EChartDataZoom
+  { _eChartDataZoom_show = _dataZoom_show v
+  , _eChartDataZoom_id = _dataZoom_id v
+  , _eChartDataZoom_type = _dataZoom_type v
+  , _eChartDataZoom_disabled = _dataZoom_disabled v
+  , _eChartDataZoom_xAxisIndex = _dataZoom_xAxisIndex v
+  , _eChartDataZoom_yAxisIndex = _dataZoom_yAxisIndex v
+  , _eChartDataZoom_radiusAxisIndex = _dataZoom_radiusAxisIndex v
+  , _eChartDataZoom_angleAxisIndex = _dataZoom_angleAxisIndex v
+  , _eChartDataZoom_filterMode = _dataZoom_filterMode v
+  , _eChartDataZoom_start = _dataZoom_start v
+  , _eChartDataZoom_end = _dataZoom_end v
+  , _eChartDataZoom_minSpan = _dataZoom_minSpan v
+  , _eChartDataZoom_maxSpan = _dataZoom_maxSpan v
+  , _eChartDataZoom_minValueSpan = _dataZoom_minValueSpan v
+  , _eChartDataZoom_maxValueSpan = _dataZoom_maxValueSpan v
+  , _eChartDataZoom_orient = _dataZoom_orient v
+  , _eChartDataZoom_zoomLock = _dataZoom_zoomLock v
+  , _eChartDataZoom_throttle = _dataZoom_throttle v
+  , _eChartDataZoom_rangeMode = _dataZoom_rangeMode v
+  , _eChartDataZoom_zoomOnMouseWheel = _dataZoom_zoomOnMouseWheel v
+  , _eChartDataZoom_moveOnMouseMove = _dataZoom_moveOnMouseMove v
+  , _eChartDataZoom_moveOnMouseWheel = _dataZoom_moveOnMouseWheel v
+  , _eChartDataZoom_preventDefaultMouseMove = _dataZoom_preventDefaultMouseMove v
+  , _eChartDataZoom_backgroundColor = _dataZoom_backgroundColor v
+  , _eChartDataZoom_dataBackground = _dataZoom_dataBackground v
+  , _eChartDataZoom_fillerColor = _dataZoom_fillerColor v
+  , _eChartDataZoom_borderColor = _dataZoom_borderColor v
+  , _eChartDataZoom_handleIcon = _dataZoom_handleIcon v
+  , _eChartDataZoom_handleSize = _dataZoom_handleSize v
+  , _eChartDataZoom_handleStyle = _dataZoom_handleStyle v
+  , _eChartDataZoom_labelPrecision = _dataZoom_labelPrecision v
+  , _eChartDataZoom_labelFormatter = _dataZoom_labelFormatter v
+  , _eChartDataZoom_showDetail = _dataZoom_showDetail v
+  , _eChartDataZoom_showDataShadow = _dataZoom_showDataShadow v
+  , _eChartDataZoom_realtime = _dataZoom_realtime v
+  , _eChartDataZoom_textStyle = toEChartTextStyle <$> _dataZoom_textStyle v
+  , _eChartDataZoom_startValue = _dataZoom_startValue v
+  , _eChartDataZoom_endValue = _dataZoom_endValue v
+  , _eChartDataZoom_zlevel = _position_zlevel =<< _dataZoom_position v
+  , _eChartDataZoom_z = _position_z =<< _dataZoom_position v
+  , _eChartDataZoom_left = posAlignToSN <$> (_position_left =<< _dataZoom_position v)
+  , _eChartDataZoom_right = posAlignToSN <$> (_position_right =<< _dataZoom_position v)
+  , _eChartDataZoom_top = posAlignToSN <$> (_position_top =<< _dataZoom_position v)
+  , _eChartDataZoom_bottom = posAlignToSN <$> (_position_bottom =<< _dataZoom_position v)
+  }
+
+instance ToJSON EChartDataZoom where
+  toJSON = genericToJSON (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartDataZoom_")
+    , omitNothingFields = True
+    })
+  toEncoding = genericToEncoding (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartDataZoom_")
+    , omitNothingFields = True
+    })
