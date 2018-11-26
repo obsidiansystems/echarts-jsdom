@@ -317,6 +317,7 @@ instance SeriesOptions SeriesLine where
   type SeriesOptions_stack SeriesLine = Maybe Text
   type SeriesOptions_smooth SeriesLine = Maybe (Either Bool ZeroToOne)
   type SeriesOptions_areaStyle SeriesLine = Maybe AreaStyle
+  type SeriesOptions_label SeriesLine = Maybe Label
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"

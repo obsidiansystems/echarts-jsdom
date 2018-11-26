@@ -25,7 +25,6 @@ type CoordinateSystem = Aeson.Value
 type Symbol = Aeson.Value
 type SymbolSize = Aeson.Value
 type Step = Aeson.Value
-type Label = Aeson.Value
 type ItemStyle = Aeson.Value
 type Emphasis = Aeson.Value
 type SmoothMonotone = Aeson.Value
@@ -121,6 +120,9 @@ sizeValueToSN = \case
   SizeValue_Percent n -> SN_String $ T.pack (show n) <> "%"
   SizeValue_Numeric n -> SN_Number $ fromIntegral n
 
+instance ToJSON SizeValue where
+  toJSON = Aeson.toJSON . sizeValueToSN
+
 data TextStyle = TextStyle
   { _textStyle_color :: Maybe Text
   , _textStyle_font :: Maybe Font
@@ -139,6 +141,9 @@ data Border = Border
   , _border_width :: Maybe Int
   , _border_radius :: Maybe (Int, Int, Int, Int)
   }
+
+instance ToJSON Border where
+  toJSON = error "ToJSON Border not implemented"
 
 data Shadow = Shadow
   { _shadow_color :: Maybe Text
@@ -185,6 +190,9 @@ data Position = Position
   , _position_right :: Maybe PosAlign
   , _position_bottom :: Maybe PosAlign
   }
+  deriving (Generic)
+
+instance Default Position where
 
 data Size = Size
   { _size_width :: Maybe SizeValue
@@ -355,6 +363,7 @@ instance Default Legend where
     , _legend_animation = Nothing
     , _legend_animationDurationUpdate = Nothing
     }
+
 data Grid = Grid
   { _grid_show :: Maybe Bool
   , _grid_position :: Maybe Position
@@ -365,6 +374,9 @@ data Grid = Grid
   , _grid_shadow :: Maybe Shadow
   -- , _grid_tooltip :: Maybe TODO
   }
+  deriving (Generic)
+
+instance Default Grid where
 
 data AxisPosition = AxisPosition_Top
                   | AxisPosition_Bottom
@@ -525,7 +537,6 @@ data AxisLabel = AxisLabel
   -- , _axisLabel_rich :: Maybe TODO
   }
 
-
 data SN = SN_String Text
         | SN_Number Double
         deriving (Generic)
@@ -557,7 +568,6 @@ data SeriesPictorialBar
 data SeriesThemeRiver
 data SeriesCustom
 
-
 data AreaStyle = AreaStyle
   { _areaStyle_color :: Maybe Color
   , _areaStyle_origin :: Maybe Text
@@ -576,3 +586,39 @@ instance ToJSON AreaStyle where
     }
 
 instance Default AreaStyle where
+
+data Label = Label
+  { _label_show :: Maybe Bool
+  , _label_position :: Maybe Text
+  , _label_distance :: Maybe Scientific
+  , _label_rotate :: Maybe Scientific
+  , _label_offset :: Maybe (Scientific, Scientific)
+  , _label_formatter :: Maybe Aeson.Value
+  , _label_color :: Maybe Color
+  , _label_fontStyle :: Maybe FontStyle
+  , _label_fontWeight :: Maybe FontWeight
+  , _label_fontFamily :: Maybe FontFamily
+  , _label_fontSize :: Maybe Int
+  , _label_align :: Maybe Align
+  , _label_verticalAlign :: Maybe Align
+  , _label_lineHeight :: Maybe Int
+  , _label_backgroundColor :: Maybe Color
+  , _label_border :: Maybe Border
+  , _label_padding :: Maybe [Scientific]
+  , _label_shadow :: Maybe Shadow
+  , _label_width :: Maybe SizeValue
+  , _label_height :: Maybe SizeValue
+  , _label_textBorder :: Maybe Border
+  , _label_textShadow :: Maybe Shadow
+  , _label_rich :: Maybe Aeson.Value
+  }
+  deriving (Generic)
+
+instance ToJSON Label where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_label_"
+    , omitNothingFields = True
+    }
+
+instance Default Label where
+

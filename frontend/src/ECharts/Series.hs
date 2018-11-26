@@ -211,3 +211,12 @@ series_areaStyle_toJson = \case
   (SeriesT_Line s) -> s ^? series_areaStyle . _Just . to Aeson.toJSON
   _ -> Nothing
 
+series_stack_toJson :: SeriesT s -> Maybe Aeson.Value
+series_stack_toJson = \case
+  (SeriesT_Line s) -> s ^? series_stack . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_label_toJson :: SeriesT s -> Maybe Aeson.Value
+series_label_toJson = \case
+  (SeriesT_Line s) -> s ^? series_label . _Just . to Aeson.toJSON
+  _ -> Nothing
