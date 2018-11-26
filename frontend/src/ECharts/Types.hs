@@ -34,7 +34,6 @@ type MarkPoint = Aeson.Value
 type MarkLine = Aeson.Value
 type MarkArea = Aeson.Value
 type Animation = Aeson.Value
-type ToolTip = Aeson.Value
 type SelectedMode = Aeson.Value
 type AbsOrPercentage = Aeson.Value
 type RippleEffect = Aeson.Value
@@ -622,3 +621,26 @@ instance ToJSON Label where
 
 instance Default Label where
 
+data ToolTip = ToolTip
+  { _toolTip_show :: Maybe Bool
+  , _toolTip_trigger :: Maybe Text
+  , _toolTip_axisPointer :: Maybe Aeson.Value
+  , _toolTip_showContent :: Maybe Bool
+  , _toolTip_alwaysShowContent :: Maybe Bool
+  , _toolTip_triggerOn :: Maybe Text
+  , _toolTip_showDelay :: Maybe Int
+  , _toolTip_hideDelay :: Maybe Int
+  , _toolTip_enterable :: Maybe Bool
+  , _toolTip_confine :: Maybe Bool
+  , _toolTip_transitionDuration :: Maybe Scientific
+  , _toolTip_position :: Maybe Aeson.Value
+  , _toolTip_formatter :: Maybe Aeson.Value
+  , _toolTip_backgroundColor :: Maybe Color
+  , _toolTip_border :: Maybe Border
+  , _toolTip_padding :: Maybe [Int]
+  , _toolTip_textStyle :: Maybe TextStyle
+  , _toolTip_extraCssText :: Maybe Text
+  }
+  deriving (Generic)
+
+instance Default ToolTip where

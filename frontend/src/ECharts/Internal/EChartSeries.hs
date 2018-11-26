@@ -63,7 +63,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_z :: Maybe Int
   , _eChartSeries_animation :: Maybe Bool
   , _eChartSeries_animationOptions :: Maybe Animation
-  , _eChartSeries_tooltip :: Maybe ToolTip -- common
+  , _eChartSeries_tooltip :: Maybe Aeson.Value -- common
   -- bar options
   -- candlestick has AbsOrPercentage
   -- , _eChartSeries_barWidth :: Maybe Int

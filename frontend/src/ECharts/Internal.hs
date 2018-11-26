@@ -31,6 +31,7 @@ import ECharts.ChartOptions
 
 import ECharts.Internal.EChartSeries
 import ECharts.Internal.EChartTypes
+import ECharts.Internal.EChartToolTip
 import ECharts.Internal.EChartGrid
 import ECharts.Internal.EChartLegend
 import ECharts.Internal.EChartTitle
@@ -38,6 +39,7 @@ import ECharts.Internal.EChartTitle
 data EChartConfig = EChartConfig
   { _eChartConfig_title :: EChartTitle
   , _eChartConfig_legend :: EChartLegend
+  , _eChartConfig_tooltip :: EChartToolTip
   , _eChartConfig_grid :: EChartGrid
   , _eChartConfig_xAxis :: EChartAxis
   , _eChartConfig_yAxis :: EChartAxis
@@ -59,6 +61,7 @@ toEChartConfig :: ChartOptions -> EChartConfig
 toEChartConfig c = EChartConfig
   { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
   , _eChartConfig_legend = toEChartLegend $ _chartOptions_legend c
+  , _eChartConfig_tooltip = toEChartToolTip $ _chartOptions_tooltip c
   , _eChartConfig_grid = toEChartGrid $ _chartOptions_grid c
   , _eChartConfig_xAxis = toEChartAxis $ _chartOptions_xAxis c
   , _eChartConfig_yAxis = toEChartAxis $ _chartOptions_yAxis c

@@ -23,6 +23,8 @@ import qualified Data.Text as T
 import Data.Time
 import Control.Lens
 import qualified Data.Some as Some
+import qualified Data.Aeson as Aeson
+import qualified Data.HashMap.Strict as HashMap
 
 import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
 import Reflex.Dom.Core
@@ -104,12 +106,20 @@ smoothedLineChart = def
 stackedAreaChart :: ChartOptions
 stackedAreaChart = def
   { _chartOptions_title = def { _title_text = Just title }
-  , _chartOptions_grid = def { _grid_position = Just
-                               (def { _position_left = Just $ PosAlign_Percent 3
-                                    , _position_right = Just $ PosAlign_Percent 4
-                                    , _position_bottom = Just $ PosAlign_Percent 3})
-                             , _grid_containLabel = Just True
-                             }
+  , _chartOptions_tooltip = def
+    { _toolTip_trigger = Just "axis"
+    , _toolTip_axisPointer = Just $ Aeson.Object $ HashMap.fromList
+      [ ("type", Aeson.String "cross")
+      , ("label", Aeson.Object $ HashMap.singleton "backgroundColor" "#6a7985")
+      ]
+    }
+  , _chartOptions_grid = def
+    { _grid_position = Just
+      (def { _position_left = Just $ PosAlign_Percent 3
+                   , _position_right = Just $ PosAlign_Percent 4
+                   , _position_bottom = Just $ PosAlign_Percent 3})
+            , _grid_containLabel = Just True
+    }
   , _chartOptions_xAxis = def { _axis_type = Just AxisType_Category
                               , _axis_data = Just $ zip xAxisData $ repeat Nothing
                               , _axis_boundaryGap = Just $ Left False}

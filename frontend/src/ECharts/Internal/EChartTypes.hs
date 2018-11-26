@@ -190,3 +190,23 @@ instance ToJSON EChartAxisLabel where
     { fieldLabelModifier = drop $ T.length "_eChartAxisLabel_"
     , omitNothingFields = True
     }
+
+toEChartTextStyle :: TextStyle -> EChartTextStyle
+toEChartTextStyle v = EChartTextStyle
+  { _eChartTextStyle_color = _textStyle_color v
+  , _eChartTextStyle_fontStyle = _font_style =<< _textStyle_font v
+  , _eChartTextStyle_fontWeight = _font_weight =<< _textStyle_font v
+  , _eChartTextStyle_fontFamily = _font_family =<< _textStyle_font v
+  , _eChartTextStyle_fontSize = _font_size =<< _textStyle_font v
+  , _eChartTextStyle_align = _textStyle_align v
+  , _eChartTextStyle_verticalAlign = _textStyle_verticalAlign v
+  , _eChartTextStyle_lineHeight = _textStyle_lineHeight v
+  , _eChartTextStyle_width = sizeValueToSN <$> (_textStyle_width v)
+  , _eChartTextStyle_height = sizeValueToSN <$> (_textStyle_height v)
+  , _eChartTextStyle_textBorderColor = _border_color =<< _textStyle_textBorder v
+  , _eChartTextStyle_textBorderWidth = _border_width =<< _textStyle_textBorder v
+  , _eChartTextStyle_textShadowColor = _shadow_color =<< _textStyle_textShadow v
+  , _eChartTextStyle_textShadowBlur = _shadow_blur =<< _textStyle_textShadow v
+  , _eChartTextStyle_textShadowOffsetX = _shadow_offsetX =<< _textStyle_textShadow v
+  , _eChartTextStyle_textShadowOffsetY = _shadow_offsetY =<< _textStyle_textShadow v
+  }
