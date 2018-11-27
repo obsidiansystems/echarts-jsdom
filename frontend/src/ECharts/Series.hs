@@ -240,3 +240,8 @@ series_yAxisIndex_toJson :: SeriesT s -> Maybe Aeson.Value
 series_yAxisIndex_toJson = \case
   (SeriesT_Line s) -> s ^? series_yAxisIndex . _Just . to Aeson.toJSON
   _ -> Nothing
+
+series_itemStyle_toJson :: SeriesT s -> Maybe Aeson.Value
+series_itemStyle_toJson = \case
+  (SeriesT_Line s) -> s ^? series_itemStyle . _Just . to Aeson.toJSON
+  _ -> Nothing

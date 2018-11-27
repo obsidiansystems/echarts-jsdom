@@ -7,7 +7,7 @@ import Data.Some (Some)
 
 data ChartOptions = ChartOptions
   { _chartOptions_title :: Title
-  , _chartOptions_legend :: Legend
+  , _chartOptions_legend :: Maybe Legend
   , _chartOptions_xAxis :: [Axis]
   , _chartOptions_yAxis :: [Axis]
   , _chartOptions_grid :: Grid

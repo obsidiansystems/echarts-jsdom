@@ -25,7 +25,6 @@ type CoordinateSystem = Aeson.Value
 type Symbol = Aeson.Value
 type SymbolSize = Aeson.Value
 type Step = Aeson.Value
-type ItemStyle = Aeson.Value
 type Emphasis = Aeson.Value
 type SmoothMonotone = Aeson.Value
 type Sampling = Aeson.Value
@@ -138,7 +137,10 @@ data TextStyle = TextStyle
 data Border = Border
   { _border_color :: Maybe Text
   , _border_width :: Maybe Int
+  -- TODO radius and type are mutually exclusive, and this should ideally be
+  -- separated in different types, as they are valid for different set of options
   , _border_radius :: Maybe (Int, Int, Int, Int)
+  , _border_type :: Maybe Text
   }
 
 instance ToJSON Border where
@@ -151,6 +153,8 @@ data Shadow = Shadow
   , _shadow_offsetY :: Maybe Int
   }
   deriving (Generic)
+
+instance Default Shadow where
 
 instance ToJSON Shadow where
   toJSON = genericToJSON $ defaultOptions
@@ -830,7 +834,7 @@ data DataZoom = DataZoom
   , _dataZoom_borderColor :: Maybe Text
   , _dataZoom_handleIcon :: Maybe Text
   , _dataZoom_handleSize :: Maybe SN
-  , _dataZoom_handleStyle :: Maybe Aeson.Value
+  , _dataZoom_handleStyle :: Maybe ItemStyle
   , _dataZoom_labelPrecision :: Maybe Int
   , _dataZoom_labelFormatter :: Maybe Aeson.Value
   , _dataZoom_showDetail :: Maybe Bool
@@ -865,3 +869,55 @@ instance ToJSON MarkArea where
     { fieldLabelModifier = drop $ T.length "_markArea_"
     , omitNothingFields = True
     }
+
+-- Apparently HandleStyle is same as ItemStyle
+-- so use same type for two
+data ItemStyle = ItemStyle
+  { _itemStyle_color :: Maybe Text
+  , _itemStyle_border :: Maybe Border
+  , _itemStyle_shadow :: Maybe Shadow
+  , _itemStyle_opacity :: Maybe ZeroToOne
+  }
+  deriving (Generic)
+
+instance Default ItemStyle where
+
+-- TODO resolve this dependency issue, this instance is required in MarkArea
+instance ToJSON ItemStyle where
+  toJSON = Aeson.toJSON . toEChartItemStyle
+
+data EChartItemStyle = EChartItemStyle
+  { _eChartItemStyle_color :: Maybe Text
+  , _eChartItemStyle_borderColor :: Maybe Text
+  , _eChartItemStyle_borderWidth :: Maybe Int
+  , _eChartItemStyle_borderType :: Maybe Text
+  , _eChartItemStyle_shadowColor :: Maybe Text
+  , _eChartItemStyle_shadowBlur :: Maybe Int
+  , _eChartItemStyle_shadowOffsetX :: Maybe Int
+  , _eChartItemStyle_shadowOffsetY :: Maybe Int
+  , _eChartItemStyle_opacity :: Maybe Scientific
+  }
+  deriving (Generic)
+
+instance ToJSON EChartItemStyle where
+  toJSON = genericToJSON (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
+    , omitNothingFields = True
+    })
+  toEncoding = genericToEncoding (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
+    , omitNothingFields = True
+    })
+
+toEChartItemStyle :: ItemStyle -> EChartItemStyle
+toEChartItemStyle v = EChartItemStyle
+  { _eChartItemStyle_color = _itemStyle_color v
+  , _eChartItemStyle_borderColor = _border_color =<< _itemStyle_border v
+  , _eChartItemStyle_borderWidth = _border_width =<< _itemStyle_border v
+  , _eChartItemStyle_borderType = _border_type =<< _itemStyle_border v
+  , _eChartItemStyle_shadowColor = _shadow_color =<< _itemStyle_shadow v
+  , _eChartItemStyle_shadowBlur = _shadow_blur =<< _itemStyle_shadow v
+  , _eChartItemStyle_shadowOffsetX = _shadow_offsetX =<< _itemStyle_shadow v
+  , _eChartItemStyle_shadowOffsetY = _shadow_offsetY =<< _itemStyle_shadow v
+  , _eChartItemStyle_opacity = _itemStyle_opacity v
+  }

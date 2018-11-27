@@ -39,7 +39,7 @@ import ECharts.Internal.EChartTitle
 
 data EChartConfig = EChartConfig
   { _eChartConfig_title :: EChartTitle
-  , _eChartConfig_legend :: EChartLegend
+  , _eChartConfig_legend :: Maybe EChartLegend
   , _eChartConfig_tooltip :: EChartToolTip
   , _eChartConfig_toolbox :: EChartToolBox
   , _eChartConfig_dataZoom :: [EChartDataZoom]
@@ -63,7 +63,7 @@ instance ToJSON EChartConfig where
 toEChartConfig :: ChartOptions -> EChartConfig
 toEChartConfig c = EChartConfig
   { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
-  , _eChartConfig_legend = toEChartLegend $ _chartOptions_legend c
+  , _eChartConfig_legend = toEChartLegend <$> _chartOptions_legend c
   , _eChartConfig_tooltip = toEChartToolTip $ _chartOptions_tooltip c
   , _eChartConfig_toolbox = toEChartToolBox $ _chartOptions_toolbox c
   , _eChartConfig_dataZoom = toEChartDataZoom <$> _chartOptions_dataZoom c

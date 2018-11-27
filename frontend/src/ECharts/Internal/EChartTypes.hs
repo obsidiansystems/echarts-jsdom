@@ -263,7 +263,7 @@ data EChartDataZoom = EChartDataZoom
   , _eChartDataZoom_borderColor :: Maybe Text
   , _eChartDataZoom_handleIcon :: Maybe Text
   , _eChartDataZoom_handleSize :: Maybe SN
-  , _eChartDataZoom_handleStyle :: Maybe Aeson.Value
+  , _eChartDataZoom_handleStyle :: Maybe EChartItemStyle
   , _eChartDataZoom_labelPrecision :: Maybe Int
   , _eChartDataZoom_labelFormatter :: Maybe Aeson.Value
   , _eChartDataZoom_showDetail :: Maybe Bool
@@ -312,7 +312,7 @@ toEChartDataZoom v = EChartDataZoom
   , _eChartDataZoom_borderColor = _dataZoom_borderColor v
   , _eChartDataZoom_handleIcon = _dataZoom_handleIcon v
   , _eChartDataZoom_handleSize = _dataZoom_handleSize v
-  , _eChartDataZoom_handleStyle = _dataZoom_handleStyle v
+  , _eChartDataZoom_handleStyle = fmap toEChartItemStyle $ _dataZoom_handleStyle v
   , _eChartDataZoom_labelPrecision = _dataZoom_labelPrecision v
   , _eChartDataZoom_labelFormatter = _dataZoom_labelFormatter v
   , _eChartDataZoom_showDetail = _dataZoom_showDetail v

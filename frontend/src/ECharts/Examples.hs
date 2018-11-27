@@ -27,6 +27,8 @@ import qualified Data.Some as Some
 import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Vector as V
+import Data.Time.Calendar
+import System.Random
 
 import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
 import Reflex.Dom.Core
@@ -38,15 +40,19 @@ seriesExamples
      , MonadHold t m
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
+     , RandomGen g
      )
-  => m ()
-seriesExamples = mapM_ renderChartOptions $ reverse
-  [ basicLineChart
-  , basicAreaChart
-  , smoothedLineChart
-  , stackedAreaChart
-  , rainfall
-  ]
+  => g
+  -> m ()
+seriesExamples rGen = elAttr "div" ("style" =: "display: flex; flex-wrap: wrap") $
+  mapM_ renderChartOptions $ reverse
+    [ basicLineChart
+    , basicAreaChart
+    , smoothedLineChart
+    , stackedAreaChart
+    , rainfall
+    , largeScaleAreaChart rGen
+    ]
 
 renderChartOptions
   :: ( DomBuilder t m
@@ -59,7 +65,7 @@ renderChartOptions
   => ChartOptions
   -> m ()
 renderChartOptions opts = do
-  e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px;") blank
+  e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px; padding: 50px;") blank
   p <- getPostBuild
   chart <- performEvent $ ffor p $ \_ -> liftJSM $ ECharts.init $ _element_raw e
   performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts
@@ -122,7 +128,7 @@ stackedAreaChart = def
       [ emptySaveAsImage { _feature_title = Just "Save as PNG" }
       ]
     }
-  , _chartOptions_legend = def
+  , _chartOptions_legend = Just $ def
     { _legend_data = Just $ [ ("A", def)
                             , ("B", def)
                             , ("C", def)
@@ -206,7 +212,7 @@ rainfall = def
       , ("label", Aeson.Object $ HashMap.singleton "backgroundColor" "#505765")
       ]
     }
-  , _chartOptions_legend = def
+  , _chartOptions_legend = Just $ def
     { _legend_data = Just $ [ (xSeriesName, def)
                             , (ySeriesName, def)
                             ]
@@ -248,14 +254,15 @@ rainfall = def
         & series_data ?~ (map (DataNumber . fromFloatDigits) waterFlowData)
         & series_name ?~ xSeriesName
         & series_animation ?~ False
-        & series_yAxisIndex ?~ 0
         & series_areaStyle ?~ def
         & series_lineStyle ?~ def { _lineStyle_width = Just 1 }
         & series_markArea ?~ def
         { _markArea_silent = Just True
         , _markArea_data = Just $ Aeson.Array $ V.singleton $ Aeson.Array $ V.fromList
-            [ Aeson.Object $ HashMap.singleton "xAxis" "2009/9/12\n7:00"
-            , Aeson.Object $ HashMap.singleton "xAxis" "2009/9/22\n7:00"
+            [ Aeson.Object $ HashMap.singleton "xAxis"
+              (Aeson.String $ dateF 9 12 7)
+            , Aeson.Object $ HashMap.singleton "xAxis"
+              (Aeson.String $ dateF 9 22 7)
             ]
         }
     , Some.This $ SeriesT_Line $ def
@@ -268,8 +275,10 @@ rainfall = def
         & series_markArea ?~ def
         { _markArea_silent = Just True
         , _markArea_data = Just $ Aeson.Array $ V.singleton $ Aeson.Array $ V.fromList
-            [ Aeson.Object $ HashMap.singleton "xAxis" "2009/9/10\n7:00"
-            , Aeson.Object $ HashMap.singleton "xAxis" "2009/9/20\n7:00"
+            [ Aeson.Object $ HashMap.singleton "xAxis"
+              (Aeson.String $ dateF 9 10 7)
+            , Aeson.Object $ HashMap.singleton "xAxis"
+              (Aeson.String $ dateF 9 20 7)
             ]
         }
     ]
@@ -277,13 +286,85 @@ rainfall = def
   where
     xSeriesName = "Water flow"
     ySeriesName = "Rainfall"
-    xAxisData = [f 6 12 t | t <- [2..23]]
-      <> [f 6 d t | d <- [13..30], t <- [0..23]]
-      <> [f 7 d t | d <- [1..31], t <- [0..23]]
-      <> [f 8 d t | d <- [1..31], t <- [0..23]]
-      <> [f 9 d t | d <- [1..30], t <- [0..23]]
-      <> [f 10 d t | d <- [1..17], t <- [0..23]]
-      <> [f 10 18 t | t <- [0..8]]
-    f m d t = "2009/" <> tshow m <> "/" <> tshow d <> "\n" <> tshow t <> ":00"
+    xAxisData = [dateF 6 12 t | t <- [2..23]]
+      <> [dateF 6 d t | d <- [13..30], t <- [0..23]]
+      <> [dateF 7 d t | d <- [1..31], t <- [0..23]]
+      <> [dateF 8 d t | d <- [1..31], t <- [0..23]]
+      <> [dateF 9 d t | d <- [1..30], t <- [0..23]]
+      <> [dateF 10 d t | d <- [1..17], t <- [0..23]]
+      <> [dateF 10 18 t | t <- [0..8]]
+    dateF m d t = "2009/" <> tshow m <> "/" <> tshow d <> "\n" <> tshow t <> ":00"
 
+tshow :: (Show a) => a -> Text
 tshow = T.pack . show
+
+largeScaleAreaChart :: RandomGen g => g -> ChartOptions
+largeScaleAreaChart rGen = def
+  { _chartOptions_title = def
+    {
+      _title_text = Just "Large Scale Area Chart"
+    , _title_position = Just $ def {
+        _position_left = Just $ PosAlign_Align Align_Center
+        }
+    }
+  , _chartOptions_tooltip = def
+    { _toolTip_trigger = Just "axis"
+    -- TODO
+    -- , _toolTip_position = 
+    }
+  , _chartOptions_toolbox = def
+    { _toolBox_features =
+      [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
+      , emptyRestore
+      , emptySaveAsImage
+      ]
+    }
+  , _chartOptions_dataZoom =
+    [ def
+      { _dataZoom_show = Just True
+      , _dataZoom_handleSize = Just (SN_String "80%")
+      , _dataZoom_handleIcon = Just "M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z"
+      , _dataZoom_handleStyle = Just $ def
+        { _itemStyle_color = Just "#fff"
+        , _itemStyle_shadow = Just $ def
+          { _shadow_blur = Just 3
+          , _shadow_color = Just "rgba(0, 0, 0, 0.6)"
+          , _shadow_offsetX = Just 2
+          , _shadow_offsetY = Just 2
+          }
+        }
+      , _dataZoom_start = Just $ Aeson.Number 0
+      , _dataZoom_end = Just $ Aeson.Number 10
+      }
+    , def
+      { _dataZoom_type = Just "inside"
+      , _dataZoom_start = Just $ Aeson.Number 0
+      , _dataZoom_end = Just $ Aeson.Number 10
+      }
+    ]
+  , _chartOptions_xAxis = def { _axis_type = Just AxisType_Category
+                              , _axis_data = Just $ zip xAxisData $ repeat Nothing
+                              , _axis_boundaryGap = Just $ Left False} :[]
+  , _chartOptions_yAxis =
+    [ def { _axis_type = Just AxisType_Value
+          , _axis_boundaryGap = Just $ Right (SizeValue_Numeric 0, SizeValue_Percent 100)
+          }
+    ]
+  , _chartOptions_series =
+    [ Some.This $ SeriesT_Line $ def
+        & series_data ?~ (map (DataNumber . fromFloatDigits) randomData)
+        & series_name ?~ xSeriesName
+        & series_smooth ?~ Left True
+        & series_itemStyle ?~ def { _itemStyle_color = Just "rgb(255, 70, 131)" }
+        -- TODO uses new
+        & series_areaStyle ?~ def
+    ]
+  }
+  where
+    xSeriesName = "Random Data"
+    xAxisData = take dataSize $ map (\d -> tshow $ addDays d startDate) [0..]
+    startDate = fromGregorian 1968 9 3
+    dataSize = 20000
+    rs :: [Double]
+    rs = randomRs (-0.5, 0.5) rGen
+    randomData = take dataSize $ scanl (\d r -> r * 20 + d) 50 rs

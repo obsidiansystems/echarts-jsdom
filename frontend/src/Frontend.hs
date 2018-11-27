@@ -39,6 +39,8 @@ import Control.Lens
 import Common.Types
 import Common.Route
 import Obelisk.Generated.Static
+import System.Random
+
 import Debug.Trace
 
 import ECharts
@@ -62,7 +64,8 @@ frontend = Frontend
           "https:" -> "wss:"
           _ -> "ws:"
         wsUrl = T.pack $ wsScheme <> (uriRegName auth) <> (uriPort auth) <> "/listen"
-    prerender blank (echarts wsUrl >> seriesExamples)
+    -- prerender blank (echarts wsUrl >> seriesExamples)
+    prerender blank (seriesExamples (mkStdGen 0))
   }
 
 echarts

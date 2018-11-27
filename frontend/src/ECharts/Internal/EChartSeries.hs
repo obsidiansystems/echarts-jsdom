@@ -44,7 +44,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_clipOverflow :: Maybe Bool
   , _eChartSeries_step :: Maybe Step
   , _eChartSeries_label :: Maybe Aeson.Value
-  , _eChartSeries_itemStyle :: Maybe ItemStyle -- common style
+  , _eChartSeries_itemStyle :: Maybe Aeson.Value
   , _eChartSeries_lineStyle :: Maybe Aeson.Value
   , _eChartSeries_areaStyle :: Maybe Aeson.Value
   , _eChartSeries_emphasis :: Maybe Emphasis -- common
@@ -235,7 +235,7 @@ toEChartSeries (Some.This st) = def
   -- , _eChartSeries_clipOverflow           = _series_clipOverflow           s
   -- , _eChartSeries_step                   = _series_step                   s
   , _eChartSeries_label                  = series_label_toJson st
-  -- , _eChartSeries_itemStyle              = _series_itemStyle              s
+  , _eChartSeries_itemStyle              = series_itemStyle_toJson st
   , _eChartSeries_lineStyle              = series_lineStyle_toJson st
   , _eChartSeries_areaStyle              = series_areaStyle_toJson st
   -- , _eChartSeries_emphasis               = _series_emphasis               s
