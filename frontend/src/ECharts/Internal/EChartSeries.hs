@@ -27,7 +27,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_name :: Maybe Text
   , _eChartSeries_coordinateSystem :: Maybe CoordinateSystem
   , _eChartSeries_xAxisIndex :: Maybe Int
-  , _eChartSeries_yAxisIndex :: Maybe Int
+  , _eChartSeries_yAxisIndex :: Maybe Aeson.Value
   , _eChartSeries_polarIndex :: Maybe Int
   , _eChartSeries_symbol :: Maybe Symbol
   , _eChartSeries_symbolSize :: Maybe SymbolSize
@@ -45,7 +45,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_step :: Maybe Step
   , _eChartSeries_label :: Maybe Aeson.Value
   , _eChartSeries_itemStyle :: Maybe ItemStyle -- common style
-  , _eChartSeries_lineStyle :: Maybe LineStyle
+  , _eChartSeries_lineStyle :: Maybe Aeson.Value
   , _eChartSeries_areaStyle :: Maybe Aeson.Value
   , _eChartSeries_emphasis :: Maybe Emphasis -- common
   , _eChartSeries_smooth :: Maybe Aeson.Value
@@ -58,10 +58,10 @@ data EChartSeries = EChartSeries
   , _eChartSeries_data :: Maybe Aeson.Value
   , _eChartSeries_markPoint :: Maybe MarkPoint -- common
   , _eChartSeries_markLine :: Maybe MarkLine -- common
-  , _eChartSeries_markArea :: Maybe MarkArea -- common
+  , _eChartSeries_markArea :: Maybe Aeson.Value
   , _eChartSeries_zlevel :: Maybe Int
   , _eChartSeries_z :: Maybe Int
-  , _eChartSeries_animation :: Maybe Bool
+  , _eChartSeries_animation :: Maybe Aeson.Value
   , _eChartSeries_animationOptions :: Maybe Animation
   , _eChartSeries_tooltip :: Maybe Aeson.Value -- common
   -- bar options
@@ -218,7 +218,7 @@ toEChartSeries (Some.This st) = def
   , _eChartSeries_data                   = series_data_toJson st
   -- , _eChartSeries_coordinateSystem       = _series_coordinateSystem       s
   -- , _eChartSeries_xAxisIndex             = _series_xAxisIndex             s
-  -- , _eChartSeries_yAxisIndex             = _series_yAxisIndex             s
+  , _eChartSeries_yAxisIndex             = series_yAxisIndex_toJson st
   -- , _eChartSeries_polarIndex             = _series_polarIndex             s
   -- , _eChartSeries_symbol                 = _series_symbol                 s
   -- , _eChartSeries_symbolSize             = _series_symbolSize             s
@@ -236,7 +236,7 @@ toEChartSeries (Some.This st) = def
   -- , _eChartSeries_step                   = _series_step                   s
   , _eChartSeries_label                  = series_label_toJson st
   -- , _eChartSeries_itemStyle              = _series_itemStyle              s
-  -- , _eChartSeries_lineStyle              = _series_lineStyle              s
+  , _eChartSeries_lineStyle              = series_lineStyle_toJson st
   , _eChartSeries_areaStyle              = series_areaStyle_toJson st
   -- , _eChartSeries_emphasis               = _series_emphasis               s
   , _eChartSeries_smooth                 = series_smooth_toJson st
@@ -248,10 +248,10 @@ toEChartSeries (Some.This st) = def
   -- , _eChartSeries_datasetindex           = _series_datasetindex           s
   -- , _eChartSeries_markPoint              = _series_markPoint              s
   -- , _eChartSeries_markLine               = _series_markLine               s
-  -- , _eChartSeries_markArea               = _series_markArea               s
+  , _eChartSeries_markArea               = series_markArea_toJson st
   -- , _eChartSeries_zlevel                 = _series_zlevel                 s
   -- , _eChartSeries_z                      = _series_z                      s
-  -- , _eChartSeries_animation              = _series_animation              s
+  , _eChartSeries_animation              = series_animation_toJson st
   -- , _eChartSeries_animationOptions       = _series_animationOptions       s
   -- , _eChartSeries_tooltip                = _series_tooltip                s
   -- , _eChartSeries_barMinHeight           = _series_barMinHeight           s

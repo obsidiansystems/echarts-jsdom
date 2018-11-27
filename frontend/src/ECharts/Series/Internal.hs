@@ -318,6 +318,10 @@ instance SeriesOptions SeriesLine where
   type SeriesOptions_smooth SeriesLine = Maybe (Either Bool ZeroToOne)
   type SeriesOptions_areaStyle SeriesLine = Maybe AreaStyle
   type SeriesOptions_label SeriesLine = Maybe Label
+  type SeriesOptions_lineStyle SeriesLine = Maybe LineStyle
+  type SeriesOptions_markArea SeriesLine = Maybe MarkArea
+  type SeriesOptions_yAxisIndex SeriesLine = Maybe Int
+  type SeriesOptions_animation SeriesLine = Maybe Bool
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"

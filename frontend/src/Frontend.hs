@@ -116,11 +116,11 @@ dynamicTimeSeries title ts = do
   chart <- performEvent $ ffor p $ \_ -> liftJSM $ ECharts.init $ _element_raw e
   let opts0 = def
         { _chartOptions_title = def { _title_text = Just title }
-        , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time }
+        , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time } :[]
         , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value
                                     , _axis_min = Just $ Left 0
                                     , _axis_max = Just $ Left 101
-                                    }
+                                    } :[]
         , _chartOptions_series = []
         }
   performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts0

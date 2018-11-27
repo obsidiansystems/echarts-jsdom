@@ -220,3 +220,23 @@ series_label_toJson :: SeriesT s -> Maybe Aeson.Value
 series_label_toJson = \case
   (SeriesT_Line s) -> s ^? series_label . _Just . to Aeson.toJSON
   _ -> Nothing
+
+series_animation_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animation_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animation . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_lineStyle_toJson :: SeriesT s -> Maybe Aeson.Value
+series_lineStyle_toJson = \case
+  (SeriesT_Line s) -> s ^? series_lineStyle . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_markArea_toJson :: SeriesT s -> Maybe Aeson.Value
+series_markArea_toJson = \case
+  (SeriesT_Line s) -> s ^? series_markArea . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_yAxisIndex_toJson :: SeriesT s -> Maybe Aeson.Value
+series_yAxisIndex_toJson = \case
+  (SeriesT_Line s) -> s ^? series_yAxisIndex . _Just . to Aeson.toJSON
+  _ -> Nothing

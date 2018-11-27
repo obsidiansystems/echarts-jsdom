@@ -71,7 +71,9 @@ toEChartToolBox v = EChartToolBox
   , _eChartToolBox_height = sizeValueToSN <$> (_size_height =<< _toolBox_size v)
   }
   where
-    features = Aeson.Object $ HashMap.fromList $ ffor (_toolBox_features v) $ \f -> case f of
-      (Feature_SaveAsImage _ _ _ _ _ _ _ _) -> ("saveAsImage", ob)
-        where
-          ob = Aeson.toJSON f
+    features = Aeson.Object $ HashMap.fromList $ ffor (_toolBox_features v) $ \f ->
+      let ob = Aeson.toJSON f
+      in case f of
+        (Feature_SaveAsImage _ _ _ _ _ _ _ _) -> ("saveAsImage", ob)
+        (Feature_Restore _ _ _ _) -> ("restore", ob)
+        (Feature_DataZoom _ _ _ _ _) -> ("dataZoom", ob)

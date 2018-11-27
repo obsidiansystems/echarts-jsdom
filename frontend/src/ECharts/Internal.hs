@@ -44,8 +44,8 @@ data EChartConfig = EChartConfig
   , _eChartConfig_toolbox :: EChartToolBox
   , _eChartConfig_dataZoom :: [EChartDataZoom]
   , _eChartConfig_grid :: EChartGrid
-  , _eChartConfig_xAxis :: EChartAxis
-  , _eChartConfig_yAxis :: EChartAxis
+  , _eChartConfig_xAxis :: [EChartAxis]
+  , _eChartConfig_yAxis :: [EChartAxis]
   , _eChartConfig_series :: [EChartSeries]
   }
   deriving (Generic)
@@ -68,8 +68,8 @@ toEChartConfig c = EChartConfig
   , _eChartConfig_toolbox = toEChartToolBox $ _chartOptions_toolbox c
   , _eChartConfig_dataZoom = toEChartDataZoom <$> _chartOptions_dataZoom c
   , _eChartConfig_grid = toEChartGrid $ _chartOptions_grid c
-  , _eChartConfig_xAxis = toEChartAxis $ _chartOptions_xAxis c
-  , _eChartConfig_yAxis = toEChartAxis $ _chartOptions_yAxis c
+  , _eChartConfig_xAxis = fmap toEChartAxis $ _chartOptions_xAxis c
+  , _eChartConfig_yAxis = fmap toEChartAxis $ _chartOptions_yAxis c
   , _eChartConfig_series = fmap toEChartSeries $ _chartOptions_series c
   }
   where

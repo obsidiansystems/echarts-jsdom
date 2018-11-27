@@ -32,7 +32,6 @@ type Sampling = Aeson.Value
 type Encode = Aeson.Value
 type MarkPoint = Aeson.Value
 type MarkLine = Aeson.Value
-type MarkArea = Aeson.Value
 type Animation = Aeson.Value
 type SelectedMode = Aeson.Value
 type AbsOrPercentage = Aeson.Value
@@ -478,6 +477,9 @@ data AxisLine = AxisLine
   , _axisLine_symbolOffset :: Maybe (Int, Int)
   , _axisLine_lineStyle :: Maybe LineStyle
   }
+  deriving (Generic)
+
+instance Default AxisLine where
 
 data LineStyleType = LineStyleType_Solid
                    | LineStyleType_Dashed
@@ -496,6 +498,8 @@ data LineStyle = LineStyle
   , _lineStyle_shadow :: Maybe Shadow
   }
   deriving (Generic)
+
+instance Default LineStyle where
 
 instance ToJSON LineStyle where
   toJSON = genericToJSON $ defaultOptions
@@ -840,3 +844,24 @@ data DataZoom = DataZoom
   deriving (Generic)
 
 instance Default DataZoom where
+
+data MarkArea = MarkArea
+  { _markArea_silent :: Maybe Bool
+  , _markArea_label :: Maybe Label
+  , _markArea_itemStyle :: Maybe ItemStyle
+  , _markArea_data :: Maybe Aeson.Value
+  -- , _markArea_animation :: Maybe Animation
+  }
+  deriving (Generic)
+
+instance Default MarkArea where
+
+instance ToJSON MarkArea where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_markArea_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_markArea_"
+    , omitNothingFields = True
+    }
