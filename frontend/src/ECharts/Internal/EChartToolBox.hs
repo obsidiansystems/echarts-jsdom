@@ -61,12 +61,12 @@ toEChartToolBox v = EChartToolBox
   , _eChartToolBox_showTitle = _toolBox_showTitle v
   , _eChartToolBox_feature = if (null $ _toolBox_features v) then Nothing else Just features
   , _eChartToolBox_iconStyle = _toolBox_iconStyle v
-  , _eChartToolBox_zlevel = _position_zlevel =<< _toolBox_position v
-  , _eChartToolBox_z = _position_z =<< _toolBox_position v
-  , _eChartToolBox_left = posAlignToSN <$> (_position_left =<< _toolBox_position v)
-  , _eChartToolBox_right = posAlignToSN <$> (_position_right =<< _toolBox_position v)
-  , _eChartToolBox_top = posAlignToSN <$> (_position_top =<< _toolBox_position v)
-  , _eChartToolBox_bottom = posAlignToSN <$> (_position_bottom =<< _toolBox_position v)
+  , _eChartToolBox_zlevel = _pos_zlevel =<< _toolBox_pos v
+  , _eChartToolBox_z = _pos_z =<< _toolBox_pos v
+  , _eChartToolBox_left = posAlignToSN <$> (_pos_left =<< _toolBox_pos v)
+  , _eChartToolBox_right = posAlignToSN <$> (_pos_right =<< _toolBox_pos v)
+  , _eChartToolBox_top = posAlignToSN <$> (_pos_top =<< _toolBox_pos v)
+  , _eChartToolBox_bottom = posAlignToSN <$> (_pos_bottom =<< _toolBox_pos v)
   , _eChartToolBox_width = sizeValueToSN <$> (_size_width =<< _toolBox_size v)
   , _eChartToolBox_height = sizeValueToSN <$> (_size_height =<< _toolBox_size v)
   }

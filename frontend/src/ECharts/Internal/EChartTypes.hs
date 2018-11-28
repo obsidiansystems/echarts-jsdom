@@ -13,6 +13,7 @@ import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
 
 import ECharts.Types
+import ECharts.Internal.EChartLabel
 
 type EChartIconStyle = Aeson.Value
 
@@ -213,6 +214,9 @@ toEChartTextStyle v = EChartTextStyle
   , _eChartTextStyle_textShadowOffsetY = _shadow_offsetY =<< _textStyle_textShadow v
   }
 
+instance ToJSON TextStyle where
+  toJSON = Aeson.toJSON . toEChartTextStyle
+
     -- toEChartTextStyle :: TextStyle -> EChartTextStyle
     -- toEChartTextStyle t = EChartTextStyle
     --   { _eChartTextStyle_color = _textStyle_color t
@@ -321,12 +325,12 @@ toEChartDataZoom v = EChartDataZoom
   , _eChartDataZoom_textStyle = toEChartTextStyle <$> _dataZoom_textStyle v
   , _eChartDataZoom_startValue = _dataZoom_startValue v
   , _eChartDataZoom_endValue = _dataZoom_endValue v
-  , _eChartDataZoom_zlevel = _position_zlevel =<< _dataZoom_position v
-  , _eChartDataZoom_z = _position_z =<< _dataZoom_position v
-  , _eChartDataZoom_left = posAlignToSN <$> (_position_left =<< _dataZoom_position v)
-  , _eChartDataZoom_right = posAlignToSN <$> (_position_right =<< _dataZoom_position v)
-  , _eChartDataZoom_top = posAlignToSN <$> (_position_top =<< _dataZoom_position v)
-  , _eChartDataZoom_bottom = posAlignToSN <$> (_position_bottom =<< _dataZoom_position v)
+  , _eChartDataZoom_zlevel = _pos_zlevel =<< _dataZoom_pos v
+  , _eChartDataZoom_z = _pos_z =<< _dataZoom_pos v
+  , _eChartDataZoom_left = posAlignToSN <$> (_pos_left =<< _dataZoom_pos v)
+  , _eChartDataZoom_right = posAlignToSN <$> (_pos_right =<< _dataZoom_pos v)
+  , _eChartDataZoom_top = posAlignToSN <$> (_pos_top =<< _dataZoom_pos v)
+  , _eChartDataZoom_bottom = posAlignToSN <$> (_pos_bottom =<< _dataZoom_pos v)
   }
 
 instance ToJSON EChartDataZoom where
@@ -338,3 +342,76 @@ instance ToJSON EChartDataZoom where
     { fieldLabelModifier = drop (T.length "_eChartDataZoom_")
     , omitNothingFields = True
     })
+
+data EChartItemStyle = EChartItemStyle
+  { _eChartItemStyle_color :: Maybe Text
+  , _eChartItemStyle_borderColor :: Maybe Text
+  , _eChartItemStyle_borderWidth :: Maybe Int
+  , _eChartItemStyle_borderType :: Maybe Text
+  , _eChartItemStyle_shadowColor :: Maybe Text
+  , _eChartItemStyle_shadowBlur :: Maybe Int
+  , _eChartItemStyle_shadowOffsetX :: Maybe Int
+  , _eChartItemStyle_shadowOffsetY :: Maybe Int
+  , _eChartItemStyle_opacity :: Maybe Scientific
+  }
+  deriving (Generic)
+
+instance ToJSON EChartItemStyle where
+  toJSON = genericToJSON (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
+    , omitNothingFields = True
+    })
+  toEncoding = genericToEncoding (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
+    , omitNothingFields = True
+    })
+
+toEChartItemStyle :: ItemStyle -> EChartItemStyle
+toEChartItemStyle v = EChartItemStyle
+  { _eChartItemStyle_color = _itemStyle_color v
+  , _eChartItemStyle_borderColor = _border_color =<< _itemStyle_border v
+  , _eChartItemStyle_borderWidth = _border_width =<< _itemStyle_border v
+  , _eChartItemStyle_borderType = _border_type =<< _itemStyle_border v
+  , _eChartItemStyle_shadowColor = _shadow_color =<< _itemStyle_shadow v
+  , _eChartItemStyle_shadowBlur = _shadow_blur =<< _itemStyle_shadow v
+  , _eChartItemStyle_shadowOffsetX = _shadow_offsetX =<< _itemStyle_shadow v
+  , _eChartItemStyle_shadowOffsetY = _shadow_offsetY =<< _itemStyle_shadow v
+  , _eChartItemStyle_opacity = _itemStyle_opacity v
+  }
+
+-- Instances for Types
+instance ToJSON MarkArea where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_markArea_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_markArea_"
+    , omitNothingFields = True
+    }
+
+instance ToJSON ItemStyle where
+  toJSON = Aeson.toJSON . toEChartItemStyle
+
+instance ToJSON EChartLabel where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartLabel_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartLabel_"
+    , omitNothingFields = True
+    }
+
+instance ToJSON Label where
+  toJSON = Aeson.toJSON . toEChartLabel
+
+instance ToJSON AxisPointer where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_axisPointer_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_axisPointer_"
+    , omitNothingFields = True
+    }

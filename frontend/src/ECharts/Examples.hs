@@ -118,10 +118,12 @@ stackedAreaChart = def
   { _chartOptions_title = def { _title_text = Just title }
   , _chartOptions_tooltip = def
     { _toolTip_trigger = Just "axis"
-    , _toolTip_axisPointer = Just $ Aeson.Object $ HashMap.fromList
-      [ ("type", Aeson.String "cross")
-      , ("label", Aeson.Object $ HashMap.singleton "backgroundColor" "#6a7985")
-      ]
+    , _toolTip_axisPointer = Just $ def
+      { _axisPointer_type = Just $ "cross"
+      , _axisPointer_label = Just $ def
+        { _label_backgroundColor = Just "#6a7985"
+        }
+      }
     }
   , _chartOptions_toolbox = def
     { _toolBox_features =
@@ -136,10 +138,10 @@ stackedAreaChart = def
                             , ("E", def)
                             ]}
   , _chartOptions_grid = def
-    { _grid_position = Just
-      (def { _position_left = Just $ PosAlign_Percent 3
-                   , _position_right = Just $ PosAlign_Percent 4
-                   , _position_bottom = Just $ PosAlign_Percent 3})
+    { _grid_pos = Just
+      (def { _pos_left = Just $ PosAlign_Percent 3
+                   , _pos_right = Just $ PosAlign_Percent 4
+                   , _pos_bottom = Just $ PosAlign_Percent 3})
             , _grid_containLabel = Just True
     }
   , _chartOptions_xAxis = def { _axis_type = Just AxisType_Category
@@ -181,7 +183,7 @@ stackedAreaChart = def
       & series_stack ?~ stackLabel
       & series_name ?~ "E"
       & series_areaStyle ?~ def
-      & series_label ?~ def { _label_show = Just True, _label_position = Just "top"}
+      & series_label ?~ def { _label_show = Just True, _label_position = Just $ Position_String "top"}
       & series_data ?~
       (map DataNumber [820, 932, 901, 934, 1290, 1330, 1320])
 
@@ -191,12 +193,12 @@ rainfall = def
     {
       _title_text = Just "Rainfall/Water volume"
     , _title_subtext = Just "Flow of water and rainfall"
-    , _title_position = Just $ def {
-        _position_left = Just $ PosAlign_Align Align_Center
+    , _title_pos = Just $ def {
+        _pos_left = Just $ PosAlign_Align Align_Center
         }
     }
   , _chartOptions_grid = def
-    { _grid_position = Just $ def { _position_bottom = Just $ PosAlign_Pixel 80 }
+    { _grid_pos = Just $ def { _pos_bottom = Just $ PosAlign_Pixel 80 }
     }
   , _chartOptions_toolbox = def
     { _toolBox_features =
@@ -207,16 +209,17 @@ rainfall = def
     }
   , _chartOptions_tooltip = def
     { _toolTip_trigger = Just "axis"
-    , _toolTip_axisPointer = Just $ Aeson.Object $ HashMap.fromList
-      [ ("type", Aeson.String "cross")
-      , ("label", Aeson.Object $ HashMap.singleton "backgroundColor" "#505765")
-      ]
+    , _toolTip_axisPointer = Just $ def
+      { _axisPointer_type = Just $ "cross"
+      , _axisPointer_label = Just $ def
+        { _label_backgroundColor = Just "#505765" }
+      }
     }
   , _chartOptions_legend = Just $ def
     { _legend_data = Just $ [ (xSeriesName, def)
                             , (ySeriesName, def)
                             ]
-    , _legend_position = Just $ def {_position_left = Just $ PosAlign_Align Align_Left }
+    , _legend_pos = Just $ def {_pos_left = Just $ PosAlign_Align Align_Left }
     }
   , _chartOptions_dataZoom =
     [ def
@@ -303,14 +306,14 @@ largeScaleAreaChart rGen = def
   { _chartOptions_title = def
     {
       _title_text = Just "Large Scale Area Chart"
-    , _title_position = Just $ def {
-        _position_left = Just $ PosAlign_Align Align_Center
+    , _title_pos = Just $ def {
+        _pos_left = Just $ PosAlign_Align Align_Center
         }
     }
   , _chartOptions_tooltip = def
     { _toolTip_trigger = Just "axis"
     -- TODO
-    -- , _toolTip_position = 
+    -- , _toolTip_pos = 
     }
   , _chartOptions_toolbox = def
     { _toolBox_features =

@@ -41,6 +41,7 @@ data EChartConfig = EChartConfig
   { _eChartConfig_title :: EChartTitle
   , _eChartConfig_legend :: Maybe EChartLegend
   , _eChartConfig_tooltip :: EChartToolTip
+  , _eChartConfig_axisPointer :: Maybe AxisPointer
   , _eChartConfig_toolbox :: EChartToolBox
   , _eChartConfig_dataZoom :: [EChartDataZoom]
   , _eChartConfig_grid :: EChartGrid
@@ -65,6 +66,7 @@ toEChartConfig c = EChartConfig
   { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
   , _eChartConfig_legend = toEChartLegend <$> _chartOptions_legend c
   , _eChartConfig_tooltip = toEChartToolTip $ _chartOptions_tooltip c
+  , _eChartConfig_axisPointer = _chartOptions_axisPointer c
   , _eChartConfig_toolbox = toEChartToolBox $ _chartOptions_toolbox c
   , _eChartConfig_dataZoom = toEChartDataZoom <$> _chartOptions_dataZoom c
   , _eChartConfig_grid = toEChartGrid $ _chartOptions_grid c
@@ -87,12 +89,12 @@ toEChartConfig c = EChartConfig
       , _eChartTitle_triggerEvent = _title_triggerEvent t
       , _eChartTitle_padding = _title_padding t
       , _eChartTitle_itemGap = _title_itemGap t
-      , _eChartTitle_zlevel = join $ fmap _position_zlevel $ _title_position t
-      , _eChartTitle_z = join $ fmap _position_z $ _title_position t
-      , _eChartTitle_left = fmap posAlignToSN $ join $ fmap _position_left $ _title_position t
-      , _eChartTitle_right = fmap posAlignToSN $ join $ fmap _position_right $ _title_position t
-      , _eChartTitle_top = fmap posAlignToSN $ join $ fmap _position_top $ _title_position t
-      , _eChartTitle_bottom = fmap posAlignToSN $ join $ fmap _position_bottom $ _title_position t
+      , _eChartTitle_zlevel = join $ fmap _pos_zlevel $ _title_pos t
+      , _eChartTitle_z = join $ fmap _pos_z $ _title_pos t
+      , _eChartTitle_left = fmap posAlignToSN $ join $ fmap _pos_left $ _title_pos t
+      , _eChartTitle_right = fmap posAlignToSN $ join $ fmap _pos_right $ _title_pos t
+      , _eChartTitle_top = fmap posAlignToSN $ join $ fmap _pos_top $ _title_pos t
+      , _eChartTitle_bottom = fmap posAlignToSN $ join $ fmap _pos_bottom $ _title_pos t
       , _eChartTitle_backgroundColor = _title_backgroundColor t
       , _eChartTitle_borderColor = join $ fmap _border_color $ _title_border t
       , _eChartTitle_borderWidth = join $ fmap _border_width $ _title_border t
@@ -106,12 +108,12 @@ toEChartConfig c = EChartConfig
     toEChartLegend x = EChartLegend
       { _eChartLegend_type = _legend_type x
       , _eChartLegend_show = _legend_show x
-      , _eChartLegend_zlevel = join $ fmap _position_zlevel $ _legend_position x
-      , _eChartLegend_z = join $ fmap _position_z $ _legend_position x
-      , _eChartLegend_left = fromPos _position_left $ _legend_position x
-      , _eChartLegend_top = fromPos _position_top $ _legend_position x
-      , _eChartLegend_right = fromPos _position_right $ _legend_position x
-      , _eChartLegend_bottom = fromPos _position_bottom $ _legend_position x
+      , _eChartLegend_zlevel = join $ fmap _pos_zlevel $ _legend_pos x
+      , _eChartLegend_z = join $ fmap _pos_z $ _legend_pos x
+      , _eChartLegend_left = fromPos _pos_left $ _legend_pos x
+      , _eChartLegend_top = fromPos _pos_top $ _legend_pos x
+      , _eChartLegend_right = fromPos _pos_right $ _legend_pos x
+      , _eChartLegend_bottom = fromPos _pos_bottom $ _legend_pos x
       , _eChartLegend_width = fmap sizeValueToSN $ join $ fmap _size_width $ _legend_size x
       , _eChartLegend_height = fmap sizeValueToSN $ join $ fmap _size_height $ _legend_size x
       , _eChartLegend_orient = _legend_orient x

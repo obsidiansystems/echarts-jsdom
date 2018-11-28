@@ -21,7 +21,7 @@ import ECharts.ChartOptions
 data EChartToolTip = EChartToolTip
   { _eChartToolTip_show :: Maybe Bool
   , _eChartToolTip_trigger :: Maybe Text
-  , _eChartToolTip_axisPointer :: Maybe Aeson.Value
+  , _eChartToolTip_axisPointer :: Maybe AxisPointer
   , _eChartToolTip_showContent :: Maybe Bool
   , _eChartToolTip_alwaysShowContent :: Maybe Bool
   , _eChartToolTip_triggerOn :: Maybe Text

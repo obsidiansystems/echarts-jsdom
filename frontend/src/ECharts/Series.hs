@@ -25,6 +25,7 @@ import GHC.Generics (Generic)
 import Data.Proxy
 import Control.Lens
 import ECharts.Types
+import ECharts.Internal.EChartLabel
 import ECharts.Series.Internal
 import ECharts.Data
 
@@ -194,54 +195,3 @@ data Series seriesType = Series
 instance Default (Series SeriesLine) where
 
 makeLenses ''Series
-
-series_data_toJson :: SeriesT s -> Maybe Aeson.Value
-series_data_toJson = \case
-  (SeriesT_Line s) -> s ^? series_data . _Just . to Aeson.toJSON
-  (SeriesT_Pie s)  -> s ^? series_data . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_smooth_toJson :: SeriesT s -> Maybe Aeson.Value
-series_smooth_toJson = \case
-  (SeriesT_Line s) -> s ^? series_smooth . _Just . to (either Aeson.toJSON Aeson.toJSON)
-  _ -> Nothing
-
-series_areaStyle_toJson :: SeriesT s -> Maybe Aeson.Value
-series_areaStyle_toJson = \case
-  (SeriesT_Line s) -> s ^? series_areaStyle . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_stack_toJson :: SeriesT s -> Maybe Aeson.Value
-series_stack_toJson = \case
-  (SeriesT_Line s) -> s ^? series_stack . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_label_toJson :: SeriesT s -> Maybe Aeson.Value
-series_label_toJson = \case
-  (SeriesT_Line s) -> s ^? series_label . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_animation_toJson :: SeriesT s -> Maybe Aeson.Value
-series_animation_toJson = \case
-  (SeriesT_Line s) -> s ^? series_animation . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_lineStyle_toJson :: SeriesT s -> Maybe Aeson.Value
-series_lineStyle_toJson = \case
-  (SeriesT_Line s) -> s ^? series_lineStyle . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_markArea_toJson :: SeriesT s -> Maybe Aeson.Value
-series_markArea_toJson = \case
-  (SeriesT_Line s) -> s ^? series_markArea . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_yAxisIndex_toJson :: SeriesT s -> Maybe Aeson.Value
-series_yAxisIndex_toJson = \case
-  (SeriesT_Line s) -> s ^? series_yAxisIndex . _Just . to Aeson.toJSON
-  _ -> Nothing
-
-series_itemStyle_toJson :: SeriesT s -> Maybe Aeson.Value
-series_itemStyle_toJson = \case
-  (SeriesT_Line s) -> s ^? series_itemStyle . _Just . to Aeson.toJSON
-  _ -> Nothing

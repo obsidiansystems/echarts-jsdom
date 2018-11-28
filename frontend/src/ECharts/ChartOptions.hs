@@ -1,9 +1,11 @@
+{-# LANGUAGE DeriveGeneric #-}
 module ECharts.ChartOptions where
 
 import ECharts.Types
 import ECharts.Series
 import Data.Default (Default, def)
 import Data.Some (Some)
+import GHC.Generics (Generic)
 
 data ChartOptions = ChartOptions
   { _chartOptions_title :: Title
@@ -14,8 +16,9 @@ data ChartOptions = ChartOptions
   , _chartOptions_dataZoom :: [DataZoom]
   , _chartOptions_tooltip :: ToolTip
   , _chartOptions_toolbox :: ToolBox
+  , _chartOptions_axisPointer :: Maybe AxisPointer
   , _chartOptions_series :: [Some SeriesT]
   }
+  deriving (Generic)
 
 instance Default ChartOptions where
-  def = ChartOptions def def def def def def def def []

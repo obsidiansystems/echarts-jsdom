@@ -55,12 +55,12 @@ toEChartGrid :: Grid -> EChartGrid
 toEChartGrid g = EChartGrid
   { _eChartGrid_show = _grid_show g
   , _eChartGrid_id = Nothing
-  , _eChartGrid_zlevel = _position_zlevel =<< _grid_position g
-  , _eChartGrid_z = _position_z =<< _grid_position g
-  , _eChartGrid_left = posAlignToSN <$> (_position_left =<< _grid_position g)
-  , _eChartGrid_right = posAlignToSN <$> (_position_right =<< _grid_position g)
-  , _eChartGrid_top = posAlignToSN <$> (_position_top =<< _grid_position g)
-  , _eChartGrid_bottom = posAlignToSN <$> (_position_bottom =<< _grid_position g)
+  , _eChartGrid_zlevel = _pos_zlevel =<< _grid_pos g
+  , _eChartGrid_z = _pos_z =<< _grid_pos g
+  , _eChartGrid_left = posAlignToSN <$> (_pos_left =<< _grid_pos g)
+  , _eChartGrid_right = posAlignToSN <$> (_pos_right =<< _grid_pos g)
+  , _eChartGrid_top = posAlignToSN <$> (_pos_top =<< _grid_pos g)
+  , _eChartGrid_bottom = posAlignToSN <$> (_pos_bottom =<< _grid_pos g)
   , _eChartGrid_width = sizeValueToSN <$> (_size_width =<< _grid_size g)
   , _eChartGrid_height = sizeValueToSN <$> (_size_height =<< _grid_size g)
   , _eChartGrid_containLabel = _grid_containLabel g

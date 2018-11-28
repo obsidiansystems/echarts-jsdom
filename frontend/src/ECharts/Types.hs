@@ -133,6 +133,7 @@ data TextStyle = TextStyle
   , _textStyle_textShadow :: Maybe Shadow
   , _textStyle_rich :: Maybe Text
   }
+  deriving (Generic)
 
 data Border = Border
   { _border_color :: Maybe Text
@@ -185,17 +186,28 @@ alignToText = \case
   Align_Left -> "left"
   Align_Right -> "right"
 
-data Position = Position
-  { _position_zlevel :: Maybe Int
-  , _position_z :: Maybe Int
-  , _position_left :: Maybe PosAlign
-  , _position_top :: Maybe PosAlign
-  , _position_right :: Maybe PosAlign
-  , _position_bottom :: Maybe PosAlign
+data Pos = Pos
+  { _pos_zlevel :: Maybe Int
+  , _pos_z :: Maybe Int
+  , _pos_left :: Maybe PosAlign
+  , _pos_top :: Maybe PosAlign
+  , _pos_right :: Maybe PosAlign
+  , _pos_bottom :: Maybe PosAlign
   }
   deriving (Generic)
 
-instance Default Position where
+instance Default Pos where
+
+data Position =
+  Position_Array (SN, SN)
+  | Position_String Text
+  | Position_Function Text
+  deriving (Generic)
+
+instance ToJSON Position where
+  toJSON = genericToJSON $ defaultOptions
+    { sumEncoding = Aeson.UntaggedValue
+    }
 
 data Size = Size
   { _size_width :: Maybe SizeValue
@@ -228,7 +240,7 @@ data Title = Title
   , _title_backgroundColor :: Maybe Text
   , _title_border :: Maybe Border
   , _title_shadow :: Maybe Shadow
-  , _title_position :: Maybe Position
+  , _title_pos :: Maybe Pos
   }
 
 instance Default Title where
@@ -248,7 +260,7 @@ instance Default Title where
     , _title_backgroundColor = Nothing
     , _title_border = Nothing
     , _title_shadow = Nothing
-    , _title_position = Nothing
+    , _title_pos = Nothing
     }
 
 data LegendType = LegendType_Plain
@@ -304,7 +316,7 @@ instance ToJSON PageButtonPosition where
 data Legend = Legend
   { _legend_type :: Maybe LegendType
   , _legend_show :: Maybe Bool
-  , _legend_position :: Maybe Position
+  , _legend_pos :: Maybe Pos
   , _legend_size :: Maybe Size
   , _legend_orient :: Maybe Orientation
   , _legend_align :: Maybe Align
@@ -338,7 +350,7 @@ instance Default Legend where
   def = Legend
     { _legend_type = Nothing
     , _legend_show = Nothing
-    , _legend_position = Nothing
+    , _legend_pos = Nothing
     , _legend_size = Nothing
     , _legend_orient = Nothing
     , _legend_align = Nothing
@@ -368,7 +380,7 @@ instance Default Legend where
 
 data Grid = Grid
   { _grid_show :: Maybe Bool
-  , _grid_position :: Maybe Position
+  , _grid_pos :: Maybe Pos
   , _grid_size :: Maybe Size
   , _grid_containLabel :: Maybe Bool
   , _grid_backgroundColor :: Maybe Text
@@ -437,7 +449,7 @@ data Axis = Axis
   -- , _axis_splitLine :: Maybe SplitLine TODO
   -- , _axis_splitArea :: Maybe SplitArea TODO
   , _axis_data :: Maybe [(Text, (Maybe TextStyle))]
-  -- , _axis_pointer :: Maybe AxisPointer TODO
+  , _axis_pointer :: Maybe AxisPointer
   , _axis_zlevel :: Maybe Int
   , _axis_z :: Maybe Int
   }
@@ -596,43 +608,35 @@ instance Default AreaStyle where
 
 data Label = Label
   { _label_show :: Maybe Bool
-  , _label_position :: Maybe Text
+  , _label_position :: Maybe Position
   , _label_distance :: Maybe Scientific
   , _label_rotate :: Maybe Scientific
   , _label_offset :: Maybe (Scientific, Scientific)
   , _label_formatter :: Maybe Aeson.Value
   , _label_color :: Maybe Color
-  , _label_fontStyle :: Maybe FontStyle
-  , _label_fontWeight :: Maybe FontWeight
-  , _label_fontFamily :: Maybe FontFamily
-  , _label_fontSize :: Maybe Int
+  , _label_font :: Maybe Font
   , _label_align :: Maybe Align
-  , _label_verticalAlign :: Maybe Align
+  , _label_verticalAlign :: Maybe VerticalAlign
   , _label_lineHeight :: Maybe Int
   , _label_backgroundColor :: Maybe Color
   , _label_border :: Maybe Border
   , _label_padding :: Maybe [Scientific]
   , _label_shadow :: Maybe Shadow
-  , _label_width :: Maybe SizeValue
-  , _label_height :: Maybe SizeValue
+  , _label_size :: Maybe Size
   , _label_textBorder :: Maybe Border
   , _label_textShadow :: Maybe Shadow
   , _label_rich :: Maybe Aeson.Value
+  -- This is not mentioned in docs, but is used examples (tooltip.axisPointer.label)
+  , _label_textStyle :: Maybe TextStyle
   }
   deriving (Generic)
-
-instance ToJSON Label where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_label_"
-    , omitNothingFields = True
-    }
 
 instance Default Label where
 
 data ToolTip = ToolTip
   { _toolTip_show :: Maybe Bool
   , _toolTip_trigger :: Maybe Text
-  , _toolTip_axisPointer :: Maybe Aeson.Value
+  , _toolTip_axisPointer :: Maybe AxisPointer
   , _toolTip_showContent :: Maybe Bool
   , _toolTip_alwaysShowContent :: Maybe Bool
   , _toolTip_triggerOn :: Maybe Text
@@ -662,7 +666,7 @@ data ToolBox = ToolBox
   , _toolBox_showTitle :: Maybe Bool
   , _toolBox_features :: [Feature]
   , _toolBox_iconStyle :: Maybe IconStyle
-  , _toolBox_position :: Maybe Position
+  , _toolBox_pos :: Maybe Pos
   , _toolBox_size :: Maybe Size
   }
   deriving (Generic)
@@ -843,7 +847,7 @@ data DataZoom = DataZoom
   , _dataZoom_textStyle :: Maybe TextStyle
   , _dataZoom_startValue :: Maybe Aeson.Value
   , _dataZoom_endValue :: Maybe Aeson.Value
-  , _dataZoom_position :: Maybe Position
+  , _dataZoom_pos :: Maybe Pos
   }
   deriving (Generic)
 
@@ -860,16 +864,6 @@ data MarkArea = MarkArea
 
 instance Default MarkArea where
 
-instance ToJSON MarkArea where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_markArea_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_markArea_"
-    , omitNothingFields = True
-    }
-
 -- Apparently HandleStyle is same as ItemStyle
 -- so use same type for two
 data ItemStyle = ItemStyle
@@ -882,42 +876,21 @@ data ItemStyle = ItemStyle
 
 instance Default ItemStyle where
 
--- TODO resolve this dependency issue, this instance is required in MarkArea
-instance ToJSON ItemStyle where
-  toJSON = Aeson.toJSON . toEChartItemStyle
-
-data EChartItemStyle = EChartItemStyle
-  { _eChartItemStyle_color :: Maybe Text
-  , _eChartItemStyle_borderColor :: Maybe Text
-  , _eChartItemStyle_borderWidth :: Maybe Int
-  , _eChartItemStyle_borderType :: Maybe Text
-  , _eChartItemStyle_shadowColor :: Maybe Text
-  , _eChartItemStyle_shadowBlur :: Maybe Int
-  , _eChartItemStyle_shadowOffsetX :: Maybe Int
-  , _eChartItemStyle_shadowOffsetY :: Maybe Int
-  , _eChartItemStyle_opacity :: Maybe Scientific
+data AxisPointer = AxisPointer
+  { _axisPointer_show :: Maybe Bool
+  , _axisPointer_id :: Maybe Text
+  , _axisPointer_type :: Maybe Text
+  , _axisPointer_snap :: Maybe Bool
+  , _axisPointer_z :: Maybe Int
+  , _axisPointer_label :: Maybe Label
+  , _axisPointer_lineStyle :: Maybe LineStyle
+  -- This doesn't have border parameter
+  , _axisPointer_shadowStyle :: Maybe ItemStyle
+  , _axisPointer_triggerTooltip :: Maybe Bool
+  , _axisPointer_value :: Maybe Int
+  , _axisPointer_status :: Maybe Bool
+  , _axisPointer_triggerOn :: Maybe Text
   }
   deriving (Generic)
 
-instance ToJSON EChartItemStyle where
-  toJSON = genericToJSON (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
-    , omitNothingFields = True
-    })
-  toEncoding = genericToEncoding (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
-    , omitNothingFields = True
-    })
-
-toEChartItemStyle :: ItemStyle -> EChartItemStyle
-toEChartItemStyle v = EChartItemStyle
-  { _eChartItemStyle_color = _itemStyle_color v
-  , _eChartItemStyle_borderColor = _border_color =<< _itemStyle_border v
-  , _eChartItemStyle_borderWidth = _border_width =<< _itemStyle_border v
-  , _eChartItemStyle_borderType = _border_type =<< _itemStyle_border v
-  , _eChartItemStyle_shadowColor = _shadow_color =<< _itemStyle_shadow v
-  , _eChartItemStyle_shadowBlur = _shadow_blur =<< _itemStyle_shadow v
-  , _eChartItemStyle_shadowOffsetX = _shadow_offsetX =<< _itemStyle_shadow v
-  , _eChartItemStyle_shadowOffsetY = _shadow_offsetY =<< _itemStyle_shadow v
-  , _eChartItemStyle_opacity = _itemStyle_opacity v
-  }
+instance Default AxisPointer where
