@@ -21,6 +21,10 @@ library
                , obelisk-generated-static
                , obelisk-route
                , reflex-dom
+               , reflex
+               , lens
+               , dependent-sum
+               , random
                , scientific
                , text
                , time
@@ -28,6 +32,24 @@ library
                , vector
   exposed-modules:
     Frontend
+    ECharts.Examples
+    ECharts.ExamplesData
+    ECharts
+    ECharts.Data
+    ECharts.Data.Internal
+    ECharts.Series
+    ECharts.Series.Internal
+    ECharts.ChartOptions
+    ECharts.Types
+    ECharts.Internal
+    ECharts.Internal.EChartSeries
+    ECharts.Internal.EChartTypes
+    ECharts.Internal.EChartToolTip
+    ECharts.Internal.EChartToolBox
+    ECharts.Internal.EChartGrid
+    ECharts.Internal.EChartLegend
+    ECharts.Internal.EChartTitle
+    ECharts.Internal.EChartLabel
   ghc-options: -Wall
 
 executable frontend
