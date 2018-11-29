@@ -31,14 +31,14 @@ data EChartSeries = EChartSeries
   , _eChartSeries_xAxisIndex :: Maybe Int
   , _eChartSeries_yAxisIndex :: Maybe Aeson.Value
   , _eChartSeries_polarIndex :: Maybe Int
-  , _eChartSeries_symbol :: Maybe Symbol
-  , _eChartSeries_symbolSize :: Maybe SymbolSize
+  , _eChartSeries_symbol :: Maybe Aeson.Value
+  , _eChartSeries_symbolSize :: Maybe Aeson.Value
   , _eChartSeries_symbolRotate :: Maybe Int
   , _eChartSeries_symbolKeepAspect :: Maybe Bool
   , _eChartSeries_symbolOffset :: Maybe (Int, Int) -- or Text?
-  , _eChartSeries_showSymbol :: Maybe Bool
+  , _eChartSeries_showSymbol :: Maybe Aeson.Value
   , _eChartSeries_showAllSymbol :: Maybe Bool
-  , _eChartSeries_hoverAnimation :: Maybe Bool
+  , _eChartSeries_hoverAnimation :: Maybe Aeson.Value
   , _eChartSeries_legendHoverLink :: Maybe Bool
   , _eChartSeries_stack :: Maybe Aeson.Value
   , _eChartSeries_cursor :: Maybe Text
@@ -222,14 +222,14 @@ toEChartSeries (Some.This st) = def
   -- , _eChartSeries_xAxisIndex             = _series_xAxisIndex             s
   , _eChartSeries_yAxisIndex             = series_yAxisIndex_toJson st
   -- , _eChartSeries_polarIndex             = _series_polarIndex             s
-  -- , _eChartSeries_symbol                 = _series_symbol                 s
-  -- , _eChartSeries_symbolSize             = _series_symbolSize             s
+  , _eChartSeries_symbol                 = series_symbol_toJson st
+  , _eChartSeries_symbolSize             = series_symbolSize_toJson st
   -- , _eChartSeries_symbolRotate           = _series_symbolRotate           s
   -- , _eChartSeries_symbolKeepAspect       = _series_symbolKeepAspect       s
   -- , _eChartSeries_symbolOffset           = _series_symbolOffset           s
-  -- , _eChartSeries_showSymbol             = _series_showSymbol             s
+  , _eChartSeries_showSymbol             = series_showSymbol_toJson st
   -- , _eChartSeries_showAllSymbol          = _series_showAllSymbol          s
-  -- , _eChartSeries_hoverAnimation         = _series_hoverAnimation         s
+  , _eChartSeries_hoverAnimation         = series_hoverAnimation_toJson st
   -- , _eChartSeries_legendHoverLink        = _series_legendHoverLink        s
   , _eChartSeries_stack                  = series_stack_toJson st
   -- , _eChartSeries_cursor                 = _series_cursor                 s
@@ -411,4 +411,24 @@ series_yAxisIndex_toJson = \case
 series_itemStyle_toJson :: SeriesT s -> Maybe Aeson.Value
 series_itemStyle_toJson = \case
   (SeriesT_Line s) -> s ^? series_itemStyle . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_symbol_toJson :: SeriesT s -> Maybe Aeson.Value
+series_symbol_toJson = \case
+  (SeriesT_Line s) -> s ^? series_symbol . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_showSymbol_toJson :: SeriesT s -> Maybe Aeson.Value
+series_showSymbol_toJson = \case
+  (SeriesT_Line s) -> s ^? series_showSymbol . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_symbolSize_toJson :: SeriesT s -> Maybe Aeson.Value
+series_symbolSize_toJson = \case
+  (SeriesT_Line s) -> s ^? series_symbolSize . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_hoverAnimation_toJson :: SeriesT s -> Maybe Aeson.Value
+series_hoverAnimation_toJson = \case
+  (SeriesT_Line s) -> s ^? series_hoverAnimation . _Just . to Aeson.toJSON
   _ -> Nothing

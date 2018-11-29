@@ -65,7 +65,12 @@ frontend = Frontend
           _ -> "ws:"
         wsUrl = T.pack $ wsScheme <> (uriRegName auth) <> (uriPort auth) <> "/listen"
     -- prerender blank (echarts wsUrl >> seriesExamples)
-    prerender blank (seriesExamples (mkStdGen 0))
+    prerender blank $ do
+      pb <- getPostBuild
+      dEv <- getAndDecode $ (static @"data/confidence-band.json") <$ pb
+      widgetHold blank $ ffor dEv $ \(Just d) ->
+        (seriesExamples (mkStdGen 0) d)
+      blank
   }
 
 echarts

@@ -22,7 +22,7 @@ import GHC.Generics (Generic)
 
 type ZeroToOne = Scientific
 type CoordinateSystem = Aeson.Value
-type Symbol = Aeson.Value
+type Symbol = Text -- TODO
 type SymbolSize = Aeson.Value
 type Step = Aeson.Value
 type Emphasis = Aeson.Value
@@ -135,6 +135,8 @@ data TextStyle = TextStyle
   }
   deriving (Generic)
 
+instance Default TextStyle where
+
 data Border = Border
   { _border_color :: Maybe Text
   , _border_width :: Maybe Int
@@ -143,6 +145,9 @@ data Border = Border
   , _border_radius :: Maybe (Int, Int, Int, Int)
   , _border_type :: Maybe Text
   }
+  deriving (Generic)
+
+instance Default Border where
 
 instance ToJSON Border where
   toJSON = error "ToJSON Border not implemented"
@@ -446,43 +451,17 @@ data Axis = Axis
   , _axis_axisLine :: Maybe AxisLine
   , _axis_axisTick :: Maybe AxisTick
   , _axis_axisLabel :: Maybe AxisLabel
-  -- , _axis_splitLine :: Maybe SplitLine TODO
-  -- , _axis_splitArea :: Maybe SplitArea TODO
+  , _axis_splitLine :: Maybe SplitLine
+  , _axis_splitArea :: Maybe SplitArea
+  , _axis_splitNumber :: Maybe Int
   , _axis_data :: Maybe [(Text, (Maybe TextStyle))]
   , _axis_pointer :: Maybe AxisPointer
   , _axis_zlevel :: Maybe Int
   , _axis_z :: Maybe Int
   }
+  deriving (Generic)
 
 instance Default Axis where
-  def = Axis
-    { _axis_show = Nothing
-    , _axis_gridIndex = Nothing
-    , _axis_position = Nothing
-    , _axis_offset = Nothing
-    , _axis_type = Nothing
-    , _axis_name = Nothing
-    , _axis_nameLocation = Nothing
-    , _axis_nameTextStyle = Nothing
-    , _axis_nameGap = Nothing
-    , _axis_nameRotate = Nothing
-    , _axis_inverse = Nothing
-    , _axis_boundaryGap = Nothing
-    , _axis_min = Nothing
-    , _axis_max = Nothing
-    , _axis_scale = Nothing
-    , _axis_minInterval = Nothing
-    , _axis_interval = Nothing
-    , _axis_logBase = Nothing
-    , _axis_silent = Nothing
-    , _axis_triggerEvent = Nothing
-    , _axis_axisLine = Nothing
-    , _axis_axisTick = Nothing
-    , _axis_axisLabel = Nothing
-    , _axis_data = Nothing
-    , _axis_zlevel = Nothing
-    , _axis_z = Nothing
-    }
 
 data AxisLine = AxisLine
   { _axisLine_show :: Maybe Bool
@@ -894,3 +873,21 @@ data AxisPointer = AxisPointer
   deriving (Generic)
 
 instance Default AxisPointer where
+
+data SplitLine = SplitLine
+  { _splitLine_show :: Maybe Bool
+  , _splitLine_interval :: Maybe Aeson.Value
+  , _splitLine_lineStyle :: Maybe ItemStyle -- TODO
+  }
+  deriving (Generic)
+
+instance Default SplitLine where
+
+data SplitArea = SplitArea
+  { _splitArea_show :: Maybe Bool
+  , _splitArea_interval :: Maybe Aeson.Value
+  , _splitArea_areaStyle :: Maybe ItemStyle -- TODO
+  }
+  deriving (Generic)
+
+instance Default SplitArea where

@@ -68,6 +68,9 @@ data EChartAxis = EChartAxis
   , _eChartAxis_logBase :: Maybe Int
   , _eChartAxis_silent :: Maybe Bool
   , _eChartAxis_triggerEvent :: Maybe Bool
+  , _eChartAxis_splitLine :: Maybe SplitLine
+  , _eChartAxis_splitArea :: Maybe SplitArea
+  , _eChartAxis_splitNumber :: Maybe Int
   , _eChartAxis_axisLine :: Maybe EChartAxisLine
   , _eChartAxis_axisTick :: Maybe EChartAxisTick
   , _eChartAxis_axisLabel :: Maybe EChartAxisLabel
@@ -413,5 +416,25 @@ instance ToJSON AxisPointer where
     }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_axisPointer_"
+    , omitNothingFields = True
+    }
+
+instance ToJSON SplitLine where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_splitLine_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_splitLine_"
+    , omitNothingFields = True
+    }
+
+instance ToJSON SplitArea where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_splitArea_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_splitArea_"
     , omitNothingFields = True
     }

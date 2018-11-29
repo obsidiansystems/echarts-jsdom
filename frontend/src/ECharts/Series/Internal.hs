@@ -323,6 +323,10 @@ instance SeriesOptions SeriesLine where
   type SeriesOptions_yAxisIndex SeriesLine = Maybe Int
   type SeriesOptions_animation SeriesLine = Maybe Bool
   type SeriesOptions_itemStyle SeriesLine = Maybe ItemStyle
+  type SeriesOptions_symbol SeriesLine = Maybe Symbol
+  type SeriesOptions_symbolSize SeriesLine = Maybe SymbolSize
+  type SeriesOptions_showSymbol SeriesLine = Maybe Bool
+  type SeriesOptions_hoverAnimation SeriesLine = Maybe Bool
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"

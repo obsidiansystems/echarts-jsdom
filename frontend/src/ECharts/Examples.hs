@@ -29,6 +29,8 @@ import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Vector as V
 import Data.Time.Calendar
 import System.Random
+import GHC.Generics (Generic)
+import Data.Aeson (FromJSON, parseJSON, genericParseJSON, defaultOptions, fieldLabelModifier)
 
 import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
 import Reflex.Dom.Core
@@ -43,8 +45,9 @@ seriesExamples
      , RandomGen g
      )
   => g
+  -> [ConfidenceData]
   -> m ()
-seriesExamples rGen = elAttr "div" ("style" =: "display: flex; flex-wrap: wrap") $
+seriesExamples rGen confData = elAttr "div" ("style" =: "display: flex; flex-wrap: wrap") $
   mapM_ renderChartOptions $ reverse
     [ basicLineChart
     , basicAreaChart
@@ -52,7 +55,25 @@ seriesExamples rGen = elAttr "div" ("style" =: "display: flex; flex-wrap: wrap")
     , stackedAreaChart
     , rainfall
     , largeScaleAreaChart rGen
+    , confidenceBand confData
     ]
+
+confidenceBandJsonData :: Text
+confidenceBandJsonData = do
+  "https://raw.githubusercontent.com/ecomfe/echarts-examples/gh-pages/public/data/asset/data/confidence-band.json"
+
+data ConfidenceData = ConfidenceData
+  { _confidenceData_value :: Scientific
+  , _confidenceData_date :: Text
+  , _confidenceData_l :: Scientific
+  , _confidenceData_u :: Scientific
+  }
+  deriving (Generic)
+
+instance FromJSON ConfidenceData where
+  parseJSON = genericParseJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_confidenceData_"
+    }
 
 renderChartOptions
   :: ( DomBuilder t m
@@ -369,5 +390,90 @@ largeScaleAreaChart rGen = def
     startDate = fromGregorian 1968 9 3
     dataSize = 20000
     rs :: [Double]
-    rs = randomRs (-0.5, 0.5) rGen
-    randomData = take dataSize $ scanl (\d r -> r * 20 + d) 50 rs
+    rs = randomRs (-10, 10) rGen
+    randomData = take dataSize $ scanl (\d r -> r + d) 50 rs
+
+confidenceBand :: [ConfidenceData] -> ChartOptions
+confidenceBand confData = def
+  { _chartOptions_title = def
+    {
+      _title_text = Just "Confidence Band"
+    , _title_pos = Just $ def {
+        _pos_left = Just $ PosAlign_Align Align_Center
+        }
+    }
+  , _chartOptions_tooltip = def
+    { _toolTip_trigger = Just "axis"
+    , _toolTip_axisPointer = Just $ def
+      { _axisPointer_type = Just $ "cross"
+      -- , _axisPointer_animation = Just False
+      , _axisPointer_label = Just $ def
+        { _label_backgroundColor = Just "#ccc"
+        , _label_border = Just $ def
+          { _border_color = Just "#aaa"
+          , _border_width = Just 1
+          }
+        , _label_shadow = Just $ def
+          { _shadow_blur = Just 0
+          , _shadow_offsetX = Just 0
+          , _shadow_offsetY = Just 0
+          }
+        , _label_textStyle = Just $ def
+          { _textStyle_color = Just "#222"
+          }
+        }
+      }
+    -- TODO function
+    -- , _toolTip_formatter =
+    }
+  , _chartOptions_grid = def
+    { _grid_pos = Just $ def
+      { _pos_left = Just $ PosAlign_Percent 3
+      , _pos_right = Just $ PosAlign_Percent 4
+      , _pos_bottom = Just $ PosAlign_Percent 3
+      }
+    , _grid_containLabel = Just True
+    }
+  , _chartOptions_xAxis = def
+    { _axis_type = Just AxisType_Category
+    , _axis_data = Just $ zip xAxisData $ repeat Nothing
+    -- TODO function
+    -- , _axis_label = Just $ def
+    --   { _axisLabel_formatter =
+    --   }
+    , _axis_splitLine = Just $ def { _splitLine_show = Just False }
+    , _axis_boundaryGap = Just $ Left False
+    } :[]
+  , _chartOptions_yAxis =
+    [ def { _axis_type = Just AxisType_Value
+          , _axis_splitLine = Just $ def { _splitLine_show = Just False }
+          , _axis_splitNumber = Just $ 3
+          }
+    ]
+  , _chartOptions_series =
+    [ Some.This $ SeriesT_Line $ def
+        & series_data ?~ (map (DataNumber . ((+) base) . _confidenceData_l) confData)
+        & series_name ?~ "L"
+        & series_stack ?~ "confidence-band"
+        & series_symbol ?~ "none"
+        & series_lineStyle ?~ def { _lineStyle_opacity = Just 0 }
+    , Some.This $ SeriesT_Line $ def
+        & series_data ?~ (map (DataNumber . (\v -> _confidenceData_u v - _confidenceData_l v)) confData)
+        & series_name ?~ "U"
+        & series_stack ?~ "confidence-band"
+        & series_symbol ?~ "none"
+        & series_lineStyle ?~ def { _lineStyle_opacity = Just 0 }
+        & series_areaStyle ?~ def { _areaStyle_color = Just "#ccc" }
+    , Some.This $ SeriesT_Line $ def
+        & series_data ?~ (map (DataNumber . ((+) base) . _confidenceData_value) confData)
+        & series_symbolSize ?~ Aeson.Number 6
+        & series_showSymbol ?~ False
+        & series_hoverAnimation ?~ False
+        & series_itemStyle ?~ def { _itemStyle_color = Just "#c23531" }
+    ]
+  }
+  where
+    base = negate $ minimum $ map _confidenceData_l confData
+    xSeriesName = "Confidence Band"
+    xAxisData = map _confidenceData_date confData
+
