@@ -22,7 +22,7 @@ import Data.Scientific
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Data.Time.ISO8601
+import Data.Time.Clock.POSIX
 import qualified Data.Vector as V
 import GHC.Generics (Generic)
 import GHCJS.DOM.Types (Element)
@@ -1072,10 +1072,16 @@ toEChartConfig c = EChartConfig
                 -- the seconds, echarts interprets that as a larger number of
                 -- milliseconds, not more precision.  E.g.: "0.123456" seconds
                 -- is interpreted as 123.456 seconds
-                ffor xs $ \(t, v) -> Aeson.Object $ HashMap.fromList
-                  [ ("name", Aeson.String $ T.pack $ show t)
-                  , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (formatISO8601Millis t, v))
+                -- Note: It seems the "name" field need a unique value,
+                -- without this graph seems to have odd flickers when updating the data
+                ffor xs $ \(t, v) -> Aeson.Object $ HashMap.fromList $
+                  [ ("name", toEpoch t)
+                  , ("value", (if timeX then Aeson.toJSON else Aeson.toJSON . swap) (toEpoch t, v))
                   ]
+            -- ECharts support a format: Unix time (in sec) + 3 digits for milliseconds
+            -- Thats why we are multiplying by 1000 and taking the Integral part
+            toEpoch t = Aeson.Number $ scientific
+                        (toInteger $ round $ (utcTimeToPOSIXSeconds t * 1000)) 0
         in  EChartSeries
               { _eChartSeries_type = Just "line"
               , _eChartSeries_name = n
