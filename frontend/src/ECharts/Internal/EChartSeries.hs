@@ -59,7 +59,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_datasetindex :: Maybe Text
   , _eChartSeries_data :: Maybe Aeson.Value
   , _eChartSeries_markPoint :: Maybe MarkPoint -- common
-  , _eChartSeries_markLine :: Maybe MarkLine -- common
+  , _eChartSeries_markLine :: Maybe Aeson.Value
   , _eChartSeries_markArea :: Maybe Aeson.Value
   , _eChartSeries_zlevel :: Maybe Int
   , _eChartSeries_z :: Maybe Int
@@ -249,7 +249,7 @@ toEChartSeries (Some.This st) = def
   -- , _eChartSeries_seriesLayoutBy         = _series_seriesLayoutBy         s
   -- , _eChartSeries_datasetindex           = _series_datasetindex           s
   -- , _eChartSeries_markPoint              = _series_markPoint              s
-  -- , _eChartSeries_markLine               = _series_markLine               s
+  , _eChartSeries_markLine               = series_markLine_toJson st
   , _eChartSeries_markArea               = series_markArea_toJson st
   -- , _eChartSeries_zlevel                 = _series_zlevel                 s
   -- , _eChartSeries_z                      = _series_z                      s
@@ -401,6 +401,11 @@ series_lineStyle_toJson = \case
 series_markArea_toJson :: SeriesT s -> Maybe Aeson.Value
 series_markArea_toJson = \case
   (SeriesT_Line s) -> s ^? series_markArea . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_markLine_toJson :: SeriesT s -> Maybe Aeson.Value
+series_markLine_toJson = \case
+  (SeriesT_Line s) -> s ^? series_markLine . _Just . to Aeson.toJSON
   _ -> Nothing
 
 series_xAxisIndex_toJson :: SeriesT s -> Maybe Aeson.Value

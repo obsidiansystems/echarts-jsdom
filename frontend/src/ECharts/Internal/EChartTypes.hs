@@ -382,6 +382,106 @@ toEChartItemStyle v = EChartItemStyle
   , _eChartItemStyle_opacity = _itemStyle_opacity v
   }
 
+data EChartVisualMap = EChartVisualMap
+  { _eChartVisualMap_show :: Maybe Bool
+  , _eChartVisualMap_id :: Maybe Text
+  , _eChartVisualMap_type :: Maybe Text
+  , _eChartVisualMap_splitNumber :: Maybe Int
+  , _eChartVisualMap_pieces :: Maybe Aeson.Value
+  , _eChartVisualMap_categories :: Maybe [Text]
+  , _eChartVisualMap_min :: Maybe Int
+  , _eChartVisualMap_max :: Maybe Int
+  , _eChartVisualMap_minOpen :: Maybe Bool
+  , _eChartVisualMap_maxOpen :: Maybe Bool
+  , _eChartVisualMap_selectedMode :: Maybe Text
+  , _eChartVisualMap_inverse :: Maybe Bool
+  , _eChartVisualMap_precision :: Maybe Int
+  , _eChartVisualMap_itemWidth :: Maybe Int
+  , _eChartVisualMap_itemHeight :: Maybe Int
+  , _eChartVisualMap_align :: Maybe Text
+  , _eChartVisualMap_text :: Maybe [Text]
+  , _eChartVisualMap_textGap :: Maybe [Int]
+  , _eChartVisualMap_showLabel :: Maybe Bool
+  , _eChartVisualMap_itemGap :: Maybe Int
+  , _eChartVisualMap_itemSymbol :: Maybe Text
+  , _eChartVisualMap_dimension :: Maybe Text
+  , _eChartVisualMap_seriesIndex :: Maybe SN
+  , _eChartVisualMap_hoverLink :: Maybe Bool
+  , _eChartVisualMap_inRange :: Maybe Aeson.Value
+  , _eChartVisualMap_outOfRange :: Maybe Aeson.Value
+  , _eChartVisualMap_controller :: Maybe Aeson.Value
+  , _eChartVisualMap_zlevel :: Maybe Int
+  , _eChartVisualMap_z :: Maybe Int
+  , _eChartVisualMap_left :: Maybe SN
+  , _eChartVisualMap_right :: Maybe SN
+  , _eChartVisualMap_top :: Maybe SN
+  , _eChartVisualMap_bottom :: Maybe SN
+  , _eChartVisualMap_padding :: Maybe Int
+  , _eChartVisualMap_orient :: Maybe Text
+  , _eChartVisualMap_backgroundColor :: Maybe Text
+  , _eChartVisualMap_borderColor :: Maybe Text
+  , _eChartVisualMap_borderWidth :: Maybe Int
+  , _eChartVisualMap_textStyle :: Maybe EChartTextStyle
+  , _eChartVisualMap_formatter :: Maybe Aeson.Value
+  }
+  deriving (Generic)
+
+toEChartVisualMap :: VisualMap -> EChartVisualMap
+toEChartVisualMap v = EChartVisualMap
+  { _eChartVisualMap_show = _visualMap_show v
+  , _eChartVisualMap_id = _visualMap_id v
+  , _eChartVisualMap_type = _visualMap_type v
+  , _eChartVisualMap_splitNumber = _visualMap_splitNumber v
+  , _eChartVisualMap_pieces = _visualMap_pieces v
+  , _eChartVisualMap_categories = _visualMap_categories v
+  , _eChartVisualMap_min = _visualMap_min v
+  , _eChartVisualMap_max = _visualMap_max v
+  , _eChartVisualMap_minOpen = _visualMap_minOpen v
+  , _eChartVisualMap_maxOpen = _visualMap_maxOpen v
+  , _eChartVisualMap_selectedMode = _visualMap_selectedMode v
+  , _eChartVisualMap_inverse = _visualMap_inverse v
+  , _eChartVisualMap_precision = _visualMap_precision v
+  , _eChartVisualMap_itemWidth = _visualMap_itemWidth v
+  , _eChartVisualMap_itemHeight = _visualMap_itemHeight v
+  , _eChartVisualMap_align = _visualMap_align v
+  , _eChartVisualMap_text = _visualMap_text v
+  , _eChartVisualMap_textGap = _visualMap_textGap v
+  , _eChartVisualMap_showLabel = _visualMap_showLabel v
+  , _eChartVisualMap_itemGap = _visualMap_itemGap v
+  , _eChartVisualMap_itemSymbol = _visualMap_itemSymbol v
+  , _eChartVisualMap_dimension = _visualMap_dimension v
+  , _eChartVisualMap_seriesIndex = _visualMap_seriesIndex v
+  , _eChartVisualMap_hoverLink = _visualMap_hoverLink v
+  , _eChartVisualMap_inRange = Aeson.toJSON <$> _visualMap_inRange v
+  , _eChartVisualMap_outOfRange = Aeson.toJSON <$> _visualMap_outOfRange v
+
+  , _eChartVisualMap_controller = Nothing
+  , _eChartVisualMap_zlevel = _pos_zlevel =<< _visualMap_pos v
+  , _eChartVisualMap_z = _pos_z =<< _visualMap_pos v
+  , _eChartVisualMap_left = posAlignToSN <$> (_pos_left =<< _visualMap_pos v)
+  , _eChartVisualMap_right = posAlignToSN <$> (_pos_right =<< _visualMap_pos v)
+  , _eChartVisualMap_top = posAlignToSN <$> (_pos_top =<< _visualMap_pos v)
+  , _eChartVisualMap_bottom = posAlignToSN <$> (_pos_bottom =<< _visualMap_pos v)
+  , _eChartVisualMap_padding = _visualMap_padding v
+  , _eChartVisualMap_orient = _visualMap_orient v
+  , _eChartVisualMap_backgroundColor = _visualMap_backgroundColor v
+  , _eChartVisualMap_borderWidth = _border_width =<< _visualMap_border v
+  , _eChartVisualMap_borderColor = _border_color =<< _visualMap_border v
+  , _eChartVisualMap_textStyle = toEChartTextStyle <$> _visualMap_textStyle v
+  , _eChartVisualMap_formatter = _visualMap_formatter v
+  }
+
+instance ToJSON EChartVisualMap where
+  toJSON = genericToJSON (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartVisualMap_")
+    , omitNothingFields = True
+    })
+  toEncoding = genericToEncoding (defaultOptions
+    { fieldLabelModifier = drop (T.length "_eChartVisualMap_")
+    , omitNothingFields = True
+    })
+
+
 -- Instances for Types
 instance ToJSON MarkArea where
   toJSON = genericToJSON $ defaultOptions
@@ -390,6 +490,16 @@ instance ToJSON MarkArea where
     }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_markArea_"
+    , omitNothingFields = True
+    }
+
+instance ToJSON MarkLine where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_markLine_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_markLine_"
     , omitNothingFields = True
     }
 
@@ -436,5 +546,15 @@ instance ToJSON SplitArea where
     }
   toEncoding = genericToEncoding $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_splitArea_"
+    , omitNothingFields = True
+    }
+
+instance ToJSON InOutOfRange where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_inOutOfRange_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_inOutOfRange_"
     , omitNothingFields = True
     }

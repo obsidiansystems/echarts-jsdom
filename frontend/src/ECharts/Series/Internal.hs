@@ -328,6 +328,7 @@ instance SeriesOptions SeriesLine where
   type SeriesOptions_symbolSize SeriesLine = Maybe SymbolSize
   type SeriesOptions_showSymbol SeriesLine = Maybe Bool
   type SeriesOptions_hoverAnimation SeriesLine = Maybe Bool
+  type SeriesOptions_markLine SeriesLine = Maybe MarkLine
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"

@@ -31,7 +31,6 @@ type SmoothMonotone = Aeson.Value
 type Sampling = Aeson.Value
 type Encode = Aeson.Value
 type MarkPoint = Aeson.Value
-type MarkLine = Aeson.Value
 type Animation = Aeson.Value
 type SelectedMode = Aeson.Value
 type AbsOrPercentage = Aeson.Value
@@ -847,6 +846,19 @@ data MarkArea = MarkArea
 
 instance Default MarkArea where
 
+data MarkLine = MarkLine
+  { _markLine_silent :: Maybe Bool
+  , _markLine_symbol :: Maybe Symbol
+  , _markLine_symbolSize :: Maybe SymbolSize
+  , _markLine_label :: Maybe Label
+  , _markLine_lineStyle :: Maybe LineStyle
+  , _markLine_data :: Maybe Aeson.Value
+  -- , _markLine_animation :: Maybe Animation
+  }
+  deriving (Generic)
+
+instance Default MarkLine where
+
 -- Apparently HandleStyle is same as ItemStyle
 -- so use same type for two
 data ItemStyle = ItemStyle
@@ -896,3 +908,56 @@ data SplitArea = SplitArea
   deriving (Generic)
 
 instance Default SplitArea where
+
+data VisualMap = VisualMap
+  { _visualMap_show :: Maybe Bool
+  , _visualMap_id :: Maybe Text
+  , _visualMap_type :: Maybe Text
+  , _visualMap_splitNumber :: Maybe Int
+  , _visualMap_pieces :: Maybe Aeson.Value
+  , _visualMap_categories :: Maybe [Text]
+  , _visualMap_min :: Maybe Int
+  , _visualMap_max :: Maybe Int
+  , _visualMap_minOpen :: Maybe Bool
+  , _visualMap_maxOpen :: Maybe Bool
+  , _visualMap_selectedMode :: Maybe Text
+  , _visualMap_inverse :: Maybe Bool
+  , _visualMap_precision :: Maybe Int
+  , _visualMap_itemWidth :: Maybe Int
+  , _visualMap_itemHeight :: Maybe Int
+  , _visualMap_align :: Maybe Text
+  , _visualMap_text :: Maybe [Text]
+  , _visualMap_textGap :: Maybe [Int]
+  , _visualMap_showLabel :: Maybe Bool
+  , _visualMap_itemGap :: Maybe Int
+  , _visualMap_itemSymbol :: Maybe Text
+  , _visualMap_dimension :: Maybe Text
+  , _visualMap_seriesIndex :: Maybe SN
+  , _visualMap_hoverLink :: Maybe Bool
+  , _visualMap_inRange :: Maybe InOutOfRange
+  , _visualMap_outOfRange :: Maybe InOutOfRange
+  , _visualMap_pos :: Maybe Pos
+  , _visualMap_padding :: Maybe Int
+  , _visualMap_orient :: Maybe Text
+  , _visualMap_backgroundColor :: Maybe Text
+  , _visualMap_border :: Maybe Border
+  , _visualMap_textStyle :: Maybe TextStyle
+  , _visualMap_formatter :: Maybe Aeson.Value
+  }
+  deriving (Generic)
+
+instance Default VisualMap where
+
+data InOutOfRange = InOutOfRange
+  { _inOutOfRange_symbol :: Maybe Symbol
+  , _inOutOfRange_symbolSize :: Maybe SymbolSize
+  , _inOutOfRange_color :: Maybe Aeson.Value
+  , _inOutOfRange_colorAlpha :: Maybe Aeson.Value
+  , _inOutOfRange_opacity :: Maybe Aeson.Value
+  , _inOutOfRange_colorLightness :: Maybe Aeson.Value
+  , _inOutOfRange_colorSaturation :: Maybe Aeson.Value
+  , _inOutOfRange_colorHue :: Maybe Aeson.Value
+  }
+  deriving (Generic)
+
+instance Default InOutOfRange where

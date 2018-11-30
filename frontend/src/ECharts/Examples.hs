@@ -45,9 +45,9 @@ seriesExamples
      , RandomGen g
      )
   => g
-  -> [ConfidenceData]
+  -> ([ConfidenceData], AqiData)
   -> m ()
-seriesExamples rGen confData = elAttr "div" ("style" =: "display: flex; flex-wrap: wrap") $
+seriesExamples rGen (confData, aqiData) = elAttr "div" ("style" =: "display: flex; flex-wrap: wrap") $
   mapM_ renderChartOptions $ reverse
     [ basicLineChart
     , basicAreaChart
@@ -57,24 +57,8 @@ seriesExamples rGen confData = elAttr "div" ("style" =: "display: flex; flex-wra
     , largeScaleAreaChart rGen
     , confidenceBand confData
     , rainfallAndWaterFlow
+    , aqiChart aqiData
     ]
-
-confidenceBandJsonData :: Text
-confidenceBandJsonData = do
-  "https://raw.githubusercontent.com/ecomfe/echarts-examples/gh-pages/public/data/asset/data/confidence-band.json"
-
-data ConfidenceData = ConfidenceData
-  { _confidenceData_value :: Scientific
-  , _confidenceData_date :: Text
-  , _confidenceData_l :: Scientific
-  , _confidenceData_u :: Scientific
-  }
-  deriving (Generic)
-
-instance FromJSON ConfidenceData where
-  parseJSON = genericParseJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_confidenceData_"
-    }
 
 renderChartOptions
   :: ( DomBuilder t m
@@ -394,6 +378,23 @@ largeScaleAreaChart rGen = def
     rs = randomRs (-10, 10) rGen
     randomData = take dataSize $ scanl (\d r -> r + d) 50 rs
 
+confidenceBandJsonData :: Text
+confidenceBandJsonData = do
+  "https://raw.githubusercontent.com/ecomfe/echarts-examples/gh-pages/public/data/asset/data/confidence-band.json"
+
+data ConfidenceData = ConfidenceData
+  { _confidenceData_value :: Scientific
+  , _confidenceData_date :: Text
+  , _confidenceData_l :: Scientific
+  , _confidenceData_u :: Scientific
+  }
+  deriving (Generic)
+
+instance FromJSON ConfidenceData where
+  parseJSON = genericParseJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_confidenceData_"
+    }
+
 confidenceBand :: [ConfidenceData] -> ChartOptions
 confidenceBand confData = def
   { _chartOptions_title = def
@@ -590,3 +591,78 @@ rainfallAndWaterFlow = def
       <> [dateF 10 d t | d <- [1..17], t <- [0..23]]
       <> [dateF 10 18 t | t <- [0..8]]
     dateF m d t = "2009/" <> tshow m <> "/" <> tshow d <> "\n" <> tshow t <> ":00"
+
+type AqiData = [(Text, Scientific)]
+
+aqiChart :: AqiData -> ChartOptions
+aqiChart aqiData = def
+  { _chartOptions_title = def { _title_text = Just title }
+  , _chartOptions_tooltip = def
+    { _toolTip_trigger = Just "axis"
+    }
+  , _chartOptions_toolbox = def
+    { _toolBox_features =
+      [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
+      , emptyRestore
+      , emptySaveAsImage
+      ]
+    , _toolBox_pos = Just $ def {_pos_left = Just $ PosAlign_Align Align_Center }
+    }
+  , _chartOptions_xAxis = def
+    { _axis_data = Just $ zip (map fst aqiData) $ repeat Nothing
+    } :[]
+  , _chartOptions_yAxis =  def
+    { _axis_splitLine = Just $ def { _splitLine_show = Just False }
+    } : []
+  , _chartOptions_dataZoom =
+    [ def
+      { _dataZoom_startValue = Just $ Aeson.String "2014-06-01"
+      }
+    , def
+      { _dataZoom_type = Just "inside"
+      }
+    ]
+  , _chartOptions_visualMap = def
+    { _visualMap_pos = Just $ def
+      { _pos_top = Just $ PosAlign_Pixel 10
+      , _pos_right = Just $ PosAlign_Pixel 10
+      }
+    , _visualMap_pieces = Just $ Aeson.Array $ V.fromList
+      (ffor (zip sections (tail sections)) $ \((l, c), (h, _)) ->
+        Aeson.Object $ HashMap.fromList
+          [ ("gt", Aeson.Number l)
+          , ("lte", Aeson.Number h)
+          , ("color", Aeson.String c)
+          ])
+        <> ((\(l,c) -> V.fromList [ Aeson.Object $ HashMap.fromList
+             [ ("gt", Aeson.Number l)
+             , ("color", Aeson.String c)
+             ]
+           ]) (last sections))
+
+    , _visualMap_outOfRange = Just $ def
+      { _inOutOfRange_color = Just $ Aeson.String "#999"
+      }
+    } : []
+  , _chartOptions_series =
+    [ Some.This $ SeriesT_Line $ def
+        & series_data ?~ (map (DataNumber . snd) aqiData)
+        & series_name ?~ title
+        & series_markLine ?~ def
+        { _markLine_silent = Just True
+        , _markLine_data = Just $ Aeson.Array $ V.fromList $
+          ffor (tail sections) $ \(l, _) ->
+            Aeson.Object $ HashMap.singleton "yAxis" (Aeson.Number l)
+        }
+    ]
+  }
+  where
+    title = "AQI Data"
+    sections =
+        [ (0, "#096")
+        , (50, "#ffde33")
+        , (100, "#ff9933")
+        , (150, "#cc0033")
+        , (200, "#660099")
+        , (300, "#7e0023")
+        ]

@@ -66,10 +66,18 @@ frontend = Frontend
         wsUrl = T.pack $ wsScheme <> (uriRegName auth) <> (uriPort auth) <> "/listen"
     -- prerender blank (echarts wsUrl >> seriesExamples)
     prerender blank $ do
-      pb <- getPostBuild
-      dEv <- getAndDecode $ (static @"data/confidence-band.json") <$ pb
-      widgetHold blank $ ffor dEv $ \(Just d) ->
-        (seriesExamples (mkStdGen 0) d)
+      dEv <- do
+        pb <- getPostBuild
+        d1 <- holdDyn Nothing
+          =<< getAndDecode ((static @"data/confidence-band.json") <$ pb)
+        d2 <- holdDyn Nothing
+          =<< getAndDecode ((static @"data/aqi-beijing.json") <$ pb)
+        let d = (,) <$> d1 <*> d2
+        return $ fforMaybe (updated d) $ \case
+          (Just v1, Just v2) -> Just (v1, v2)
+          _ -> Nothing
+
+      widgetHold blank $ seriesExamples (mkStdGen 0) <$> dEv
       blank
   }
 

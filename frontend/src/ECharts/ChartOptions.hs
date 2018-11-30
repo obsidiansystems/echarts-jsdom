@@ -14,6 +14,7 @@ data ChartOptions = ChartOptions
   , _chartOptions_yAxis :: [Axis]
   , _chartOptions_grid :: [Grid]
   , _chartOptions_dataZoom :: [DataZoom]
+  , _chartOptions_visualMap :: [VisualMap]
   , _chartOptions_tooltip :: ToolTip
   , _chartOptions_toolbox :: ToolBox
   , _chartOptions_axisPointer :: Maybe AxisPointer

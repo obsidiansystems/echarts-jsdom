@@ -44,6 +44,7 @@ data EChartConfig = EChartConfig
   , _eChartConfig_axisPointer :: Maybe AxisPointer
   , _eChartConfig_toolbox :: EChartToolBox
   , _eChartConfig_dataZoom :: [EChartDataZoom]
+  , _eChartConfig_visualMap :: Maybe [EChartVisualMap]
   , _eChartConfig_grid :: Maybe [EChartGrid]
   , _eChartConfig_xAxis :: [EChartAxis]
   , _eChartConfig_yAxis :: [EChartAxis]
@@ -61,6 +62,10 @@ instance ToJSON EChartConfig where
     , omitNothingFields = True
     })
 
+onlyNonEmpty = \case
+  [] -> Nothing
+  vs -> Just vs
+
 toEChartConfig :: ChartOptions -> EChartConfig
 toEChartConfig c = EChartConfig
   { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
@@ -69,9 +74,8 @@ toEChartConfig c = EChartConfig
   , _eChartConfig_axisPointer = _chartOptions_axisPointer c
   , _eChartConfig_toolbox = toEChartToolBox $ _chartOptions_toolbox c
   , _eChartConfig_dataZoom = toEChartDataZoom <$> _chartOptions_dataZoom c
-  , _eChartConfig_grid =  case (map toEChartGrid $ _chartOptions_grid c) of
-      [] -> Nothing
-      xs -> Just xs
+  , _eChartConfig_visualMap = onlyNonEmpty (toEChartVisualMap <$> _chartOptions_visualMap c)
+  , _eChartConfig_grid = onlyNonEmpty (toEChartGrid <$> _chartOptions_grid c)
   , _eChartConfig_xAxis = fmap toEChartAxis $ _chartOptions_xAxis c
   , _eChartConfig_yAxis = fmap toEChartAxis $ _chartOptions_yAxis c
   , _eChartConfig_series = fmap toEChartSeries $ _chartOptions_series c
