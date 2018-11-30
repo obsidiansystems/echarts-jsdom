@@ -320,6 +320,7 @@ instance SeriesOptions SeriesLine where
   type SeriesOptions_label SeriesLine = Maybe Label
   type SeriesOptions_lineStyle SeriesLine = Maybe LineStyle
   type SeriesOptions_markArea SeriesLine = Maybe MarkArea
+  type SeriesOptions_xAxisIndex SeriesLine = Maybe Int
   type SeriesOptions_yAxisIndex SeriesLine = Maybe Int
   type SeriesOptions_animation SeriesLine = Maybe Bool
   type SeriesOptions_itemStyle SeriesLine = Maybe ItemStyle

@@ -28,7 +28,7 @@ data EChartSeries = EChartSeries
   , _eChartSeries_id :: Maybe Text
   , _eChartSeries_name :: Maybe Text
   , _eChartSeries_coordinateSystem :: Maybe CoordinateSystem
-  , _eChartSeries_xAxisIndex :: Maybe Int
+  , _eChartSeries_xAxisIndex :: Maybe Aeson.Value
   , _eChartSeries_yAxisIndex :: Maybe Aeson.Value
   , _eChartSeries_polarIndex :: Maybe Int
   , _eChartSeries_symbol :: Maybe Aeson.Value
@@ -219,7 +219,7 @@ toEChartSeries (Some.This st) = def
   -- SeriesOptions
   , _eChartSeries_data                   = series_data_toJson st
   -- , _eChartSeries_coordinateSystem       = _series_coordinateSystem       s
-  -- , _eChartSeries_xAxisIndex             = _series_xAxisIndex             s
+  , _eChartSeries_xAxisIndex             = series_xAxisIndex_toJson st
   , _eChartSeries_yAxisIndex             = series_yAxisIndex_toJson st
   -- , _eChartSeries_polarIndex             = _series_polarIndex             s
   , _eChartSeries_symbol                 = series_symbol_toJson st
@@ -401,6 +401,11 @@ series_lineStyle_toJson = \case
 series_markArea_toJson :: SeriesT s -> Maybe Aeson.Value
 series_markArea_toJson = \case
   (SeriesT_Line s) -> s ^? series_markArea . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_xAxisIndex_toJson :: SeriesT s -> Maybe Aeson.Value
+series_xAxisIndex_toJson = \case
+  (SeriesT_Line s) -> s ^? series_xAxisIndex . _Just . to Aeson.toJSON
   _ -> Nothing
 
 series_yAxisIndex_toJson :: SeriesT s -> Maybe Aeson.Value

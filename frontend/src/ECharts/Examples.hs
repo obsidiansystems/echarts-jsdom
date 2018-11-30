@@ -56,6 +56,7 @@ seriesExamples rGen confData = elAttr "div" ("style" =: "display: flex; flex-wra
     , rainfall
     , largeScaleAreaChart rGen
     , confidenceBand confData
+    , rainfallAndWaterFlow
     ]
 
 confidenceBandJsonData :: Text
@@ -164,7 +165,7 @@ stackedAreaChart = def
                    , _pos_right = Just $ PosAlign_Percent 4
                    , _pos_bottom = Just $ PosAlign_Percent 3})
             , _grid_containLabel = Just True
-    }
+    } : []
   , _chartOptions_xAxis = def { _axis_type = Just AxisType_Category
                               , _axis_data = Just $ zip xAxisData $ repeat Nothing
                               , _axis_boundaryGap = Just $ Left False} : []
@@ -220,7 +221,7 @@ rainfall = def
     }
   , _chartOptions_grid = def
     { _grid_pos = Just $ def { _pos_bottom = Just $ PosAlign_Pixel 80 }
-    }
+    } : []
   , _chartOptions_toolbox = def
     { _toolBox_features =
       [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
@@ -433,7 +434,7 @@ confidenceBand confData = def
       , _pos_bottom = Just $ PosAlign_Percent 3
       }
     , _grid_containLabel = Just True
-    }
+    } : []
   , _chartOptions_xAxis = def
     { _axis_type = Just AxisType_Category
     , _axis_data = Just $ zip xAxisData $ repeat Nothing
@@ -477,3 +478,115 @@ confidenceBand confData = def
     xSeriesName = "Confidence Band"
     xAxisData = map _confidenceData_date confData
 
+rainfallAndWaterFlow :: ChartOptions
+rainfallAndWaterFlow = def
+  { _chartOptions_title = def
+    {
+      _title_text = Just "Rainfall and Water volume"
+    , _title_subtext = Just "Flow of water and rainfall"
+    , _title_pos = Just $ def {
+        _pos_left = Just $ PosAlign_Align Align_Center
+        }
+    }
+  , _chartOptions_tooltip = def
+    { _toolTip_trigger = Just "axis"
+    }
+  , _chartOptions_legend = Just $ def
+    { _legend_data = Just $ [ (xSeriesName, def)
+                            , (ySeriesName, def)
+                            ]
+    , _legend_pos = Just $ def {_pos_left = Just $ PosAlign_Align Align_Left }
+    }
+  , _chartOptions_toolbox = def
+    { _toolBox_features =
+      [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
+      , emptyRestore
+      , emptySaveAsImage
+      ]
+    }
+  , _chartOptions_axisPointer = Just $ def
+    { _axisPointer_link = Just $ Aeson.Object $
+      HashMap.singleton "xAxisIndex" (Aeson.String "all")
+    }
+  , _chartOptions_dataZoom =
+    [ def
+      { _dataZoom_show = Just True
+      , _dataZoom_realtime = Just True
+      , _dataZoom_start = Just $ Aeson.Number 30
+      , _dataZoom_end = Just $ Aeson.Number 70
+      }
+    , def
+      { _dataZoom_type = Just "inside"
+      , _dataZoom_realtime = Just True
+      , _dataZoom_start = Just $ Aeson.Number 30
+      , _dataZoom_end = Just $ Aeson.Number 70
+      , _dataZoom_xAxisIndex = Just $ [0, 1]
+      }
+    ]
+  , _chartOptions_grid = def
+    { _grid_pos = Just $ def
+      { _pos_left = Just $ PosAlign_Pixel 50
+      , _pos_right = Just $ PosAlign_Pixel 50
+      }
+    , _grid_size = Just $ def
+      { _size_height = Just $ SizeValue_Percent 35
+      }
+    } : def
+    { _grid_pos = Just $ def
+      { _pos_left = Just $ PosAlign_Pixel 50
+      , _pos_right = Just $ PosAlign_Pixel 50
+      , _pos_top = Just $ PosAlign_Percent 55
+      }
+    , _grid_size = Just $ def
+      { _size_height = Just $ SizeValue_Percent 35
+      }
+    } : []
+  , _chartOptions_xAxis = def
+    { _axis_type = Just AxisType_Category
+    , _axis_data = Just $ zip xAxisData $ repeat Nothing
+    , _axis_axisLine = Just $ def { _axisLine_onZero = Just True }
+    , _axis_boundaryGap = Just $ Left False
+    } : def
+    { _axis_type = Just AxisType_Category
+    , _axis_data = Just $ zip xAxisData $ repeat Nothing
+    , _axis_axisLine = Just $ def { _axisLine_onZero = Just True }
+    , _axis_boundaryGap = Just $ Left False
+    , _axis_gridIndex = Just 1
+    , _axis_position = Just AxisPosition_Top
+    } :[]
+  , _chartOptions_yAxis =
+    [ def { _axis_type = Just AxisType_Value
+          , _axis_name = Just "Water Flow (m^3/s)"
+          , _axis_max = Just $ Left 500
+          }
+    , def { _axis_type = Just AxisType_Value
+          , _axis_name = Just "Rainfall (mm)"
+          , _axis_gridIndex = Just $ 1
+          , _axis_inverse = Just $ True
+          }
+    ]
+  , _chartOptions_series =
+    [ Some.This $ SeriesT_Line $ def
+        & series_data ?~ (map (DataNumber . fromFloatDigits) waterFlowData)
+        & series_name ?~ xSeriesName
+        & series_hoverAnimation ?~ False
+        & series_symbolSize ?~ Aeson.Number 8
+    , Some.This $ SeriesT_Line $ def
+        & series_data ?~ (map (DataNumber . fromFloatDigits) rainfallData)
+        & series_name ?~ ySeriesName
+        & series_xAxisIndex ?~ 1
+        & series_yAxisIndex ?~ 1
+        & series_symbolSize ?~ Aeson.Number 8
+    ]
+  }
+  where
+    xSeriesName = "Water flow"
+    ySeriesName = "Rainfall"
+    xAxisData = [dateF 6 12 t | t <- [2..23]]
+      <> [dateF 6 d t | d <- [13..30], t <- [0..23]]
+      <> [dateF 7 d t | d <- [1..31], t <- [0..23]]
+      <> [dateF 8 d t | d <- [1..31], t <- [0..23]]
+      <> [dateF 9 d t | d <- [1..30], t <- [0..23]]
+      <> [dateF 10 d t | d <- [1..17], t <- [0..23]]
+      <> [dateF 10 18 t | t <- [0..8]]
+    dateF m d t = "2009/" <> tshow m <> "/" <> tshow d <> "\n" <> tshow t <> ":00"

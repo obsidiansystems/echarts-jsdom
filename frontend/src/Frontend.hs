@@ -140,11 +140,18 @@ dynamicTimeSeries title ts = do
   performEvent_ $ fforMaybe opts $ \case
     (Nothing, _) -> Nothing
     (Just c, ts') -> Just $ liftJSM $ setOption c $ opts0
-      { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) -> Some.This $
+      {
+      --   _chartOptions_xAxis = def { _axis_type = Just AxisType_Time
+      --                             -- , _axis_data = ffor (Map.lookup "idle" ts') $
+      --                             --   map (\(t, _) -> (T.pack $ show $ utcTimeToEpoch t, Nothing))
+      --                             } :[]
+      -- ,
+        _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) -> Some.This $
         SeriesT_Line $ def
           & series_name ?~ k
           & series_smooth ?~ Right (scientific 7 (-1))
           & series_data ?~ (ffor vs $ \(t, v) -> def
             & data_name ?~ (scientific (toInteger $ utcTimeToEpoch t) 0)
-            & data_value ?~ (scientific (toInteger $ utcTimeToEpoch t) 0, v))
+            & data_value ?~ (scientific (toInteger $ utcTimeToEpoch t) 0, v)
+                           )
       }

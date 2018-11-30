@@ -6,6 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE EmptyDataDecls #-}
 module ECharts.Types where
 
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
@@ -218,6 +219,9 @@ data Size = Size
   { _size_width :: Maybe SizeValue
   , _size_height :: Maybe SizeValue
   }
+  deriving (Generic)
+
+instance Default Size where
 
 data Orientation = Orientation_Horizontal
                  | Orientation_Vertical
@@ -869,6 +873,7 @@ data AxisPointer = AxisPointer
   , _axisPointer_value :: Maybe Int
   , _axisPointer_status :: Maybe Bool
   , _axisPointer_triggerOn :: Maybe Text
+  , _axisPointer_link :: Maybe Aeson.Value
   }
   deriving (Generic)
 
