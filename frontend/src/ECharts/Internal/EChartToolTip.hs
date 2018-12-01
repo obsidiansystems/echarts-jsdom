@@ -51,6 +51,9 @@ instance ToJSON EChartToolTip where
     , omitNothingFields = True
     }
 
+instance ToJSON ToolTip where
+  toJSON = Aeson.toJSON . toEChartToolTip
+
 toEChartToolTip :: ToolTip -> EChartToolTip
 toEChartToolTip v = EChartToolTip
   { _eChartToolTip_show = _toolTip_show v

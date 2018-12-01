@@ -20,6 +20,7 @@ import Control.Lens
 import ECharts.Types
 import ECharts.Internal.EChartTypes
 import ECharts.Series
+import ECharts.Internal.EChartToolTip
 import ECharts.ChartOptions
 
 data EChartSeries = EChartSeries
@@ -27,163 +28,163 @@ data EChartSeries = EChartSeries
   { _eChartSeries_type :: Maybe Text
   , _eChartSeries_id :: Maybe Text
   , _eChartSeries_name :: Maybe Text
-  , _eChartSeries_coordinateSystem :: Maybe CoordinateSystem
+  , _eChartSeries_coordinateSystem :: Maybe Aeson.Value
   , _eChartSeries_xAxisIndex :: Maybe Aeson.Value
   , _eChartSeries_yAxisIndex :: Maybe Aeson.Value
-  , _eChartSeries_polarIndex :: Maybe Int
+  , _eChartSeries_polarIndex :: Maybe Aeson.Value
   , _eChartSeries_symbol :: Maybe Aeson.Value
   , _eChartSeries_symbolSize :: Maybe Aeson.Value
-  , _eChartSeries_symbolRotate :: Maybe Int
-  , _eChartSeries_symbolKeepAspect :: Maybe Bool
-  , _eChartSeries_symbolOffset :: Maybe (Int, Int) -- or Text?
+  , _eChartSeries_symbolRotate :: Maybe Aeson.Value
+  , _eChartSeries_symbolKeepAspect :: Maybe Aeson.Value
+  , _eChartSeries_symbolOffset :: Maybe Aeson.Value
   , _eChartSeries_showSymbol :: Maybe Aeson.Value
-  , _eChartSeries_showAllSymbol :: Maybe Bool
+  , _eChartSeries_showAllSymbol :: Maybe Aeson.Value
   , _eChartSeries_hoverAnimation :: Maybe Aeson.Value
-  , _eChartSeries_legendHoverLink :: Maybe Bool
+  , _eChartSeries_legendHoverLink :: Maybe Aeson.Value
   , _eChartSeries_stack :: Maybe Aeson.Value
-  , _eChartSeries_cursor :: Maybe Text
-  , _eChartSeries_connectNulls :: Maybe Bool
-  , _eChartSeries_clipOverflow :: Maybe Bool
-  , _eChartSeries_step :: Maybe Step
+  , _eChartSeries_cursor :: Maybe Aeson.Value
+  , _eChartSeries_connectNulls :: Maybe Aeson.Value
+  , _eChartSeries_clipOverflow :: Maybe Aeson.Value
+  , _eChartSeries_step :: Maybe Aeson.Value
   , _eChartSeries_label :: Maybe Aeson.Value
   , _eChartSeries_itemStyle :: Maybe Aeson.Value
   , _eChartSeries_lineStyle :: Maybe Aeson.Value
   , _eChartSeries_areaStyle :: Maybe Aeson.Value
-  , _eChartSeries_emphasis :: Maybe Emphasis -- common
+  , _eChartSeries_emphasis :: Maybe Aeson.Value
   , _eChartSeries_smooth :: Maybe Aeson.Value
-  , _eChartSeries_smoothMonotone :: Maybe SmoothMonotone
-  , _eChartSeries_sampling :: Maybe Sampling
+  , _eChartSeries_smoothMonotone :: Maybe Aeson.Value
+  , _eChartSeries_sampling :: Maybe Aeson.Value
   , _eChartSeries_dimensions :: Maybe Aeson.Value
-  , _eChartSeries_encode :: Maybe Encode -- common
-  , _eChartSeries_seriesLayoutBy :: Maybe Text
-  , _eChartSeries_datasetindex :: Maybe Text
+  , _eChartSeries_encode :: Maybe Aeson.Value
+  , _eChartSeries_seriesLayoutBy :: Maybe Aeson.Value
+  , _eChartSeries_datasetIndex :: Maybe Aeson.Value
   , _eChartSeries_data :: Maybe Aeson.Value
-  , _eChartSeries_markPoint :: Maybe MarkPoint -- common
+  , _eChartSeries_markPoint :: Maybe Aeson.Value
   , _eChartSeries_markLine :: Maybe Aeson.Value
   , _eChartSeries_markArea :: Maybe Aeson.Value
-  , _eChartSeries_zlevel :: Maybe Int
-  , _eChartSeries_z :: Maybe Int
+  , _eChartSeries_zlevel :: Maybe Aeson.Value
+  , _eChartSeries_z :: Maybe Aeson.Value
   , _eChartSeries_animation :: Maybe Aeson.Value
-  , _eChartSeries_animationOptions :: Maybe Animation
-  , _eChartSeries_tooltip :: Maybe Aeson.Value -- common
+  , _eChartSeries_animationOptions :: Maybe Aeson.Value
+  , _eChartSeries_tooltip :: Maybe Aeson.Value
   -- bar options
-  -- candlestick has AbsOrPercentage
-  -- , _eChartSeries_barWidth :: Maybe Int
-  -- , _eChartSeries_barMaxWidth :: Maybe Int
-  , _eChartSeries_barMinHeight :: Maybe Int
-  , _eChartSeries_barGap :: Maybe Text
-  , _eChartSeries_barCategoryGap :: Maybe Text
-  , _eChartSeries_large :: Maybe Bool
-  , _eChartSeries_largeThreshold :: Maybe Int
-  , _eChartSeries_progressive :: Maybe Int
-  , _eChartSeries_progressiveThreshold :: Maybe Int
-  , _eChartSeries_progressiveChunkMode :: Maybe Text
+  -- candlestick has AbsOrPercent
+  -- , _eChartSeries_barWidth :: Maybe Aeson.Value
+  -- , _eChartSeries_barMaxWidth :: Maybe Aeson.Value
+  , _eChartSeries_barMinHeight :: Maybe Aeson.Value
+  , _eChartSeries_barGap :: Maybe Aeson.Value
+  , _eChartSeries_barCategoryGap :: Maybe Aeson.Value
+  , _eChartSeries_large :: Maybe Aeson.Value
+  , _eChartSeries_largeThreshold :: Maybe Aeson.Value
+  , _eChartSeries_progressive :: Maybe Aeson.Value
+  , _eChartSeries_progressiveThreshold :: Maybe Aeson.Value
+  , _eChartSeries_progressiveChunkMode :: Maybe Aeson.Value
   -- pie options
-  , _eChartSeries_hoverOffset :: Maybe Int
-  , _eChartSeries_selectedMode :: Maybe SelectedMode
-  , _eChartSeries_selectedOffset :: Maybe Int
-  , _eChartSeries_clockwise :: Maybe Bool
-  , _eChartSeries_minAngle :: Maybe Int
-  , _eChartSeries_roseType :: Maybe Text
-  , _eChartSeries_avoidLabelOverlap :: Maybe Bool
-  , _eChartSeries_stillShowZeroSum :: Maybe Bool
-  , _eChartSeries_center :: Maybe (AbsOrPercentage, AbsOrPercentage)
-  , _eChartSeries_radius :: Maybe (AbsOrPercentage, AbsOrPercentage)
+  , _eChartSeries_hoverOffset :: Maybe Aeson.Value
+  , _eChartSeries_selectedMode :: Maybe Aeson.Value
+  , _eChartSeries_selectedOffset :: Maybe Aeson.Value
+  , _eChartSeries_clockwise :: Maybe Aeson.Value
+  , _eChartSeries_minAngle :: Maybe Aeson.Value
+  , _eChartSeries_roseType :: Maybe Aeson.Value
+  , _eChartSeries_avoidLabelOverlap :: Maybe Aeson.Value
+  , _eChartSeries_stillShowZeroSum :: Maybe Aeson.Value
+  , _eChartSeries_center :: Maybe Aeson.Value
+  , _eChartSeries_radius :: Maybe Aeson.Value
   -- scatter options
-  , _eChartSeries_geoIndex :: Maybe Int
-  , _eChartSeries_calendarIndex :: Maybe Int
+  , _eChartSeries_geoIndex :: Maybe Aeson.Value
+  , _eChartSeries_calendarIndex :: Maybe Aeson.Value
   -- effectScatter options
-  , _eChartSeries_showEffectOn :: Maybe Text
-  , _eChartSeries_rippleEffect :: Maybe RippleEffect
+  , _eChartSeries_showEffectOn :: Maybe Aeson.Value
+  , _eChartSeries_rippleEffect :: Maybe Aeson.Value
   -- radar options
-  , _eChartSeries_radarIndex :: Maybe Int
+  , _eChartSeries_radarIndex :: Maybe Aeson.Value
   -- tree options
-  , _eChartSeries_left :: Maybe TextOrScientific
-  , _eChartSeries_top :: Maybe TextOrScientific
-  , _eChartSeries_right :: Maybe TextOrScientific
-  , _eChartSeries_bottom :: Maybe TextOrScientific
-  , _eChartSeries_width :: Maybe TextOrScientific
-  , _eChartSeries_height :: Maybe TextOrScientific
-  , _eChartSeries_layout :: Maybe Text
-  , _eChartSeries_orient :: Maybe Text
-  , _eChartSeries_roam :: Maybe Text
-  , _eChartSeries_expandAndCollapse :: Maybe Bool
-  , _eChartSeries_initialTreeDepth :: Maybe Int
-  , _eChartSeries_leaves :: (Maybe Label, Maybe ItemStyle, Maybe Emphasis)
+  , _eChartSeries_left :: Maybe Aeson.Value
+  , _eChartSeries_top :: Maybe Aeson.Value
+  , _eChartSeries_right :: Maybe Aeson.Value
+  , _eChartSeries_bottom :: Maybe Aeson.Value
+  , _eChartSeries_width :: Maybe Aeson.Value
+  , _eChartSeries_height :: Maybe Aeson.Value
+  , _eChartSeries_layout :: Maybe Aeson.Value
+  , _eChartSeries_orient :: Maybe Aeson.Value
+  , _eChartSeries_roam :: Maybe Aeson.Value
+  , _eChartSeries_expandAndCollapse :: Maybe Aeson.Value
+  , _eChartSeries_initialTreeDepth :: Maybe Aeson.Value
+  , _eChartSeries_leaves :: Maybe Aeson.Value
   -- treemap options
-  , _eChartSeries_squareRatio :: Maybe Scientific
-  , _eChartSeries_leafDepth :: Maybe Int
-  , _eChartSeries_drillDownIcon :: Maybe Text
-  , _eChartSeries_nodeClick :: Maybe Text
-  , _eChartSeries_zoomToNodeRatio :: Maybe Scientific
+  , _eChartSeries_squareRatio :: Maybe Aeson.Value
+  , _eChartSeries_leafDepth :: Maybe Aeson.Value
+  , _eChartSeries_drillDownIcon :: Maybe Aeson.Value
+  , _eChartSeries_nodeClick :: Maybe Aeson.Value
+  , _eChartSeries_zoomToNodeRatio :: Maybe Aeson.Value
   , _eChartSeries_levels :: Maybe Aeson.Value
   , _eChartSeries_silent :: Maybe Aeson.Value
-  , _eChartSeries_visualDimension :: Maybe Int
-  , _eChartSeries_visualMin :: Maybe Int
-  , _eChartSeries_visualMax :: Maybe Int
+  , _eChartSeries_visualDimension :: Maybe Aeson.Value
+  , _eChartSeries_visualMin :: Maybe Aeson.Value
+  , _eChartSeries_visualMax :: Maybe Aeson.Value
   , _eChartSeries_colorAlpha :: Maybe Aeson.Value
   , _eChartSeries_colorSaturation :: Maybe Aeson.Value
-  , _eChartSeries_colorMappingsBy :: Maybe Text
-  , _eChartSeries_visibleMin :: Maybe Int
-  , _eChartSeries_childrenVisibleMin :: Maybe Int
+  , _eChartSeries_colorMappingsBy :: Maybe Aeson.Value
+  , _eChartSeries_visibleMin :: Maybe Aeson.Value
+  , _eChartSeries_childrenVisibleMin :: Maybe Aeson.Value
   , _eChartSeries_breadcrumb :: Maybe Aeson.Value
   -- sunburst options
   , _eChartSeries_sort :: Maybe Aeson.Value
-  , _eChartSeries_renderLabelForZeroData :: Maybe Bool
+  , _eChartSeries_renderLabelForZeroData :: Maybe Aeson.Value
   , _eChartSeries_downplay :: Maybe Aeson.Value
   -- boxplot options
-  , _eChartSeries_boxWidth :: Maybe (AbsOrPercentage, AbsOrPercentage)
+  , _eChartSeries_boxWidth :: Maybe Aeson.Value
   -- candlestick options
-  , _eChartSeries_barWidth :: Maybe AbsOrPercentage
-  , _eChartSeries_barMinWidth :: Maybe AbsOrPercentage
-  , _eChartSeries_barMaxWidth :: Maybe AbsOrPercentage
+  , _eChartSeries_barWidth :: Maybe Aeson.Value
+  , _eChartSeries_barMinWidth :: Maybe Aeson.Value
+  , _eChartSeries_barMaxWidth :: Maybe Aeson.Value
   -- heatmap
-  , _eChartSeries_blurSize :: Maybe Int
-  , _eChartSeries_minOpacity :: Maybe Scientific
-  , _eChartSeries_maxOpacity :: Maybe Scientific
+  , _eChartSeries_blurSize :: Maybe Aeson.Value
+  , _eChartSeries_minOpacity :: Maybe Aeson.Value
+  , _eChartSeries_maxOpacity :: Maybe Aeson.Value
   -- map
-  , _eChartSeries_aspectScale :: Maybe Scientific
+  , _eChartSeries_aspectScale :: Maybe Aeson.Value
   , _eChartSeries_boundingCoords :: Maybe Aeson.Value
-  , _eChartSeries_zoom :: Maybe Scientific
-  , _eChartSeries_scaleLimit :: (Maybe Scientific, Maybe Scientific)
+  , _eChartSeries_zoom :: Maybe Aeson.Value
+  , _eChartSeries_scaleLimit :: Maybe Aeson.Value
   , _eChartSeries_nameMap :: Maybe Aeson.Value
   , _eChartSeries_layoutCenter :: Maybe Aeson.Value
-  , _eChartSeries_mapValueCalculation :: Maybe Text
-  , _eChartSeries_showLegendSymbol :: Maybe Bool
+  , _eChartSeries_mapValueCalculation :: Maybe Aeson.Value
+  , _eChartSeries_showLegendSymbol :: Maybe Aeson.Value
   -- parallel
-  , _eChartSeries_parallelIndex :: Maybe Int
-  , _eChartSeries_inactiveOpacity :: Maybe Scientific
-  , _eChartSeries_activeOpacity :: Maybe Scientific
-  , _eChartSeries_realtime :: Maybe Bool
+  , _eChartSeries_parallelIndex :: Maybe Aeson.Value
+  , _eChartSeries_inactiveOpacity :: Maybe Aeson.Value
+  , _eChartSeries_activeOpacity :: Maybe Aeson.Value
+  , _eChartSeries_realtime :: Maybe Aeson.Value
   -- lines
-  , _eChartSeries_polyline :: Maybe Bool
+  , _eChartSeries_polyline :: Maybe Aeson.Value
   -- graph
-  , _eChartSeries_circularRotateLayout :: Maybe Bool
+  , _eChartSeries_circularRotateLayout :: Maybe Aeson.Value
   , _eChartSeries_force :: Maybe Aeson.Value
-  , _eChartSeries_nodeScaleRatio :: Maybe Scientific
-  , _eChartSeries_draggable :: Maybe Bool
-  -- focusNodeAdjacency :: Maybe Bool -- sankey has more options
+  , _eChartSeries_nodeScaleRatio :: Maybe Aeson.Value
+  , _eChartSeries_draggable :: Maybe Aeson.Value
+  -- focusNodeAdjacency :: Maybe Aeson.Value
   , _eChartSeries_edgeSymbol :: Maybe Aeson.Value
   , _eChartSeries_edgeSymbolSize :: Maybe Aeson.Value
   , _eChartSeries_categories :: Maybe Aeson.Value
   , _eChartSeries_links :: Maybe Aeson.Value
   -- sankey
-  , _eChartSeries_nodeWidth :: Maybe Scientific
-  , _eChartSeries_nodeGap :: Maybe Scientific
-  , _eChartSeries_layoutIterations :: Maybe Int
-  , _eChartSeries_focusNodeAdjacency :: Maybe (Either Bool Text)
+  , _eChartSeries_nodeWidth :: Maybe Aeson.Value
+  , _eChartSeries_nodeGap :: Maybe Aeson.Value
+  , _eChartSeries_layoutIterations :: Maybe Aeson.Value
+  , _eChartSeries_focusNodeAdjacency :: Maybe Aeson.Value
   -- funnel
-  , _eChartSeries_min :: Maybe Scientific
-  , _eChartSeries_max :: Maybe Scientific
-  , _eChartSeries_minSize :: Maybe AbsOrPercentage
-  , _eChartSeries_maxSize :: Maybe AbsOrPercentage
-  , _eChartSeries_gap :: Maybe Scientific
-  , _eChartSeries_funnelAlign :: Maybe Text
+  , _eChartSeries_min :: Maybe Aeson.Value
+  , _eChartSeries_max :: Maybe Aeson.Value
+  , _eChartSeries_minSize :: Maybe Aeson.Value
+  , _eChartSeries_maxSize :: Maybe Aeson.Value
+  , _eChartSeries_gap :: Maybe Aeson.Value
+  , _eChartSeries_funnelAlign :: Maybe Aeson.Value
   , _eChartSeries_labelLine :: Maybe Aeson.Value
   -- gauge
-  , _eChartSeries_startAngle :: Maybe Scientific
-  , _eChartSeries_endAngle :: Maybe Scientific
-  , _eChartSeries_splitNumber :: Maybe Scientific
+  , _eChartSeries_startAngle :: Maybe Aeson.Value
+  , _eChartSeries_endAngle :: Maybe Aeson.Value
+  , _eChartSeries_splitNumber :: Maybe Aeson.Value
   , _eChartSeries_axisLine :: Maybe Aeson.Value
   , _eChartSeries_splitLine :: Maybe Aeson.Value
   , _eChartSeries_axisTick :: Maybe Aeson.Value
@@ -218,86 +219,86 @@ toEChartSeries (Some.This st) = def
   , _eChartSeries_name = _series_name s
   -- SeriesOptions
   , _eChartSeries_data                   = series_data_toJson st
-  -- , _eChartSeries_coordinateSystem       = _series_coordinateSystem       s
+  , _eChartSeries_coordinateSystem       = series_coordinateSystem_toJson st
   , _eChartSeries_xAxisIndex             = series_xAxisIndex_toJson st
   , _eChartSeries_yAxisIndex             = series_yAxisIndex_toJson st
-  -- , _eChartSeries_polarIndex             = _series_polarIndex             s
+  , _eChartSeries_polarIndex             = series_polarIndex_toJson st
   , _eChartSeries_symbol                 = series_symbol_toJson st
   , _eChartSeries_symbolSize             = series_symbolSize_toJson st
-  -- , _eChartSeries_symbolRotate           = _series_symbolRotate           s
-  -- , _eChartSeries_symbolKeepAspect       = _series_symbolKeepAspect       s
-  -- , _eChartSeries_symbolOffset           = _series_symbolOffset           s
+  , _eChartSeries_symbolRotate           = series_symbolRotate_toJson st
+  , _eChartSeries_symbolKeepAspect       = series_symbolKeepAspect_toJson st
+  , _eChartSeries_symbolOffset           = series_symbolOffset_toJson st
   , _eChartSeries_showSymbol             = series_showSymbol_toJson st
-  -- , _eChartSeries_showAllSymbol          = _series_showAllSymbol          s
+  , _eChartSeries_showAllSymbol          = series_showAllSymbol_toJson st
   , _eChartSeries_hoverAnimation         = series_hoverAnimation_toJson st
-  -- , _eChartSeries_legendHoverLink        = _series_legendHoverLink        s
+  , _eChartSeries_legendHoverLink        = series_legendHoverLink_toJson st
   , _eChartSeries_stack                  = series_stack_toJson st
-  -- , _eChartSeries_cursor                 = _series_cursor                 s
-  -- , _eChartSeries_connectNulls           = _series_connectNulls           s
-  -- , _eChartSeries_clipOverflow           = _series_clipOverflow           s
-  -- , _eChartSeries_step                   = _series_step                   s
+  , _eChartSeries_cursor                 = series_cursor_toJson st
+  , _eChartSeries_connectNulls           = series_connectNulls_toJson st
+  , _eChartSeries_clipOverflow           = series_clipOverflow_toJson st
+  , _eChartSeries_step                   = series_step_toJson st
   , _eChartSeries_label                  = series_label_toJson st
   , _eChartSeries_itemStyle              = series_itemStyle_toJson st
   , _eChartSeries_lineStyle              = series_lineStyle_toJson st
   , _eChartSeries_areaStyle              = series_areaStyle_toJson st
-  -- , _eChartSeries_emphasis               = _series_emphasis               s
+  -- , _eChartSeries_emphasis               = series_emphasis_toJson st
   , _eChartSeries_smooth                 = series_smooth_toJson st
-  -- , _eChartSeries_smoothMonotone         = _series_smoothMonotone         s
-  -- , _eChartSeries_sampling               = _series_sampling               s
-  -- , _eChartSeries_dimensions             = _series_dimensions             s
-  -- , _eChartSeries_encode                 = _series_encode                 s
-  -- , _eChartSeries_seriesLayoutBy         = _series_seriesLayoutBy         s
-  -- , _eChartSeries_datasetindex           = _series_datasetindex           s
-  -- , _eChartSeries_markPoint              = _series_markPoint              s
+  , _eChartSeries_smoothMonotone         = series_smoothMonotone_toJson st
+  , _eChartSeries_sampling               = series_sampling_toJson st
+  -- , _eChartSeries_dimensions             = series_dimensions_toJson st
+  -- , _eChartSeries_encode                 = series_encode_toJson st
+  , _eChartSeries_seriesLayoutBy         = series_seriesLayoutBy_toJson st
+  , _eChartSeries_datasetIndex           = series_datasetIndex_toJson st
+  , _eChartSeries_markPoint              = series_markPoint_toJson st
   , _eChartSeries_markLine               = series_markLine_toJson st
   , _eChartSeries_markArea               = series_markArea_toJson st
-  -- , _eChartSeries_zlevel                 = _series_zlevel                 s
-  -- , _eChartSeries_z                      = _series_z                      s
+  , _eChartSeries_zlevel                 = series_zlevel_toJson st
+  , _eChartSeries_z                      = series_z_toJson st
+  , _eChartSeries_silent                 = series_silent_toJson st
   , _eChartSeries_animation              = series_animation_toJson st
-  -- , _eChartSeries_animationOptions       = _series_animationOptions       s
-  -- , _eChartSeries_tooltip                = _series_tooltip                s
-  -- , _eChartSeries_barMinHeight           = _series_barMinHeight           s
-  -- , _eChartSeries_barGap                 = _series_barGap                 s
-  -- , _eChartSeries_barCategoryGap         = _series_barCategoryGap         s
-  -- , _eChartSeries_large                  = _series_large                  s
-  -- , _eChartSeries_largeThreshold         = _series_largeThreshold         s
-  -- , _eChartSeries_progressive            = _series_progressive            s
-  -- , _eChartSeries_progressiveThreshold   = _series_progressiveThreshold   s
-  -- , _eChartSeries_progressiveChunkMode   = _series_progressiveChunkMode   s
-  -- , _eChartSeries_hoverOffset            = _series_hoverOffset            s
-  -- , _eChartSeries_selectedMode           = _series_selectedMode           s
-  -- , _eChartSeries_selectedOffset         = _series_selectedOffset         s
-  -- , _eChartSeries_clockwise              = _series_clockwise              s
-  -- , _eChartSeries_minAngle               = _series_minAngle               s
-  -- , _eChartSeries_roseType               = _series_roseType               s
-  -- , _eChartSeries_avoidLabelOverlap      = _series_avoidLabelOverlap      s
-  -- , _eChartSeries_stillShowZeroSum       = _series_stillShowZeroSum       s
-  -- , _eChartSeries_center                 = _series_center                 s
-  -- , _eChartSeries_radius                 = _series_radius                 s
-  -- , _eChartSeries_geoIndex               = _series_geoIndex               s
-  -- , _eChartSeries_calendarIndex          = _series_calendarIndex          s
-  -- , _eChartSeries_showEffectOn           = _series_showEffectOn           s
-  -- , _eChartSeries_rippleEffect           = _series_rippleEffect           s
-  -- , _eChartSeries_radarIndex             = _series_radarIndex             s
-  -- , _eChartSeries_left                   = _series_left                   s
-  -- , _eChartSeries_top                    = _series_top                    s
-  -- , _eChartSeries_right                  = _series_right                  s
-  -- , _eChartSeries_bottom                 = _series_bottom                 s
-  -- , _eChartSeries_width                  = _series_width                  s
-  -- , _eChartSeries_height                 = _series_height                 s
-  -- , _eChartSeries_layout                 = _series_layout                 s
-  -- , _eChartSeries_orient                 = _series_orient                 s
-  -- , _eChartSeries_roam                   = _series_roam                   s
-  -- , _eChartSeries_expandAndCollapse      = _series_expandAndCollapse      s
-  -- , _eChartSeries_initialTreeDepth       = _series_initialTreeDepth       s
-  -- , _eChartSeries_leaves                 = _series_leaves                 s
-  -- , _eChartSeries_squareRatio            = _series_squareRatio            s
-  -- , _eChartSeries_leafDepth              = _series_leafDepth              s
-  -- , _eChartSeries_drillDownIcon          = _series_drillDownIcon          s
-  -- , _eChartSeries_nodeClick              = _series_nodeClick              s
-  -- , _eChartSeries_zoomToNodeRatio        = _series_zoomToNodeRatio        s
-  -- , _eChartSeries_levels                 = _series_levels                 s
-  -- , _eChartSeries_silent                 = _series_silent                 s
+  -- , _eChartSeries_animationOptions       = series_animationOptions_toJson st
+  , _eChartSeries_tooltip                = series_tooltip_toJson st
+  -- , _eChartSeries_barMinHeight           = series_barMinHeight_toJson st
+  -- , _eChartSeries_barGap                 = series_barGap_toJson st
+  -- , _eChartSeries_barCategoryGap         = series_barCategoryGap_toJson st
+  -- , _eChartSeries_large                  = series_large_toJson st
+  -- , _eChartSeries_largeThreshold         = series_largeThreshold_toJson st
+  -- , _eChartSeries_progressive            = series_progressive_toJson st
+  -- , _eChartSeries_progressiveThreshold   = series_progressiveThreshold_toJson st
+  -- , _eChartSeries_progressiveChunkMode   = series_progressiveChunkMode_toJson st
+  -- , _eChartSeries_hoverOffset            = series_hoverOffset_toJson st
+  -- , _eChartSeries_selectedMode           = series_selectedMode_toJson st
+  -- , _eChartSeries_selectedOffset         = series_selectedOffset_toJson st
+  -- , _eChartSeries_clockwise              = series_clockwise_toJson st
+  -- , _eChartSeries_minAngle               = series_minAngle_toJson st
+  -- , _eChartSeries_roseType               = series_roseType_toJson st
+  -- , _eChartSeries_avoidLabelOverlap      = series_avoidLabelOverlap_toJson st
+  -- , _eChartSeries_stillShowZeroSum       = series_stillShowZeroSum_toJson st
+  -- , _eChartSeries_center                 = series_center_toJson st
+  -- , _eChartSeries_radius                 = series_radius_toJson st
+  -- , _eChartSeries_geoIndex               = series_geoIndex_toJson st
+  -- , _eChartSeries_calendarIndex          = series_calendarIndex_toJson st
+  -- , _eChartSeries_showEffectOn           = series_showEffectOn_toJson st
+  -- , _eChartSeries_rippleEffect           = series_rippleEffect_toJson st
+  -- , _eChartSeries_radarIndex             = series_radarIndex_toJson st
+  -- , _eChartSeries_left                   = series_left_toJson st
+  -- , _eChartSeries_top                    = series_top_toJson st
+  -- , _eChartSeries_right                  = series_right_toJson st
+  -- , _eChartSeries_bottom                 = series_bottom_toJson st
+  -- , _eChartSeries_width                  = series_width_toJson st
+  -- , _eChartSeries_height                 = series_height_toJson st
+  -- , _eChartSeries_layout                 = series_layout_toJson st
+  -- , _eChartSeries_orient                 = series_orient_toJson st
+  -- , _eChartSeries_roam                   = series_roam_toJson st
+  -- , _eChartSeries_expandAndCollapse      = series_expandAndCollapse_toJson st
+  -- , _eChartSeries_initialTreeDepth       = series_initialTreeDepth_toJson st
+  -- , _eChartSeries_leaves                 = series_leaves_toJson st
+  -- , _eChartSeries_squareRatio            = series_squareRatio_toJson st
+  -- , _eChartSeries_leafDepth              = series_leafDepth_toJson st
+  -- , _eChartSeries_drillDownIcon          = series_drillDownIcon_toJson st
+  -- , _eChartSeries_nodeClick              = series_nodeClick_toJson st
+  -- , _eChartSeries_zoomToNodeRatio        = series_zoomToNodeRatio_toJson st
+  -- , _eChartSeries_levels                 = series_levels_toJson st
   -- , _eChartSeries_visualDimension        = _series_visualDimension        s
   -- , _eChartSeries_visualMin              = _series_visualMin              s
   -- , _eChartSeries_visualMax              = _series_visualMax              s
@@ -366,6 +367,106 @@ series_data_toJson :: SeriesT s -> Maybe Aeson.Value
 series_data_toJson = \case
   (SeriesT_Line s) -> s ^? series_data . _Just . to Aeson.toJSON
   (SeriesT_Pie s)  -> s ^? series_data . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_coordinateSystem_toJson :: SeriesT s -> Maybe Aeson.Value
+series_coordinateSystem_toJson = \case
+  (SeriesT_Line s) -> s ^? series_coordinateSystem . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_polarIndex_toJson :: SeriesT s -> Maybe Aeson.Value
+series_polarIndex_toJson = \case
+  (SeriesT_Line s) -> s ^? series_polarIndex . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_symbolRotate_toJson :: SeriesT s -> Maybe Aeson.Value
+series_symbolRotate_toJson = \case
+  (SeriesT_Line s) -> s ^? series_symbolRotate . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_symbolKeepAspect_toJson :: SeriesT s -> Maybe Aeson.Value
+series_symbolKeepAspect_toJson = \case
+  (SeriesT_Line s) -> s ^? series_symbolKeepAspect . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_symbolOffset_toJson :: SeriesT s -> Maybe Aeson.Value
+series_symbolOffset_toJson = \case
+  (SeriesT_Line s) -> s ^? series_symbolOffset . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_showAllSymbol_toJson :: SeriesT s -> Maybe Aeson.Value
+series_showAllSymbol_toJson = \case
+  (SeriesT_Line s) -> s ^? series_showAllSymbol . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_legendHoverLink_toJson :: SeriesT s -> Maybe Aeson.Value
+series_legendHoverLink_toJson = \case
+  (SeriesT_Line s) -> s ^? series_legendHoverLink . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_cursor_toJson :: SeriesT s -> Maybe Aeson.Value
+series_cursor_toJson = \case
+  (SeriesT_Line s) -> s ^? series_cursor . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_connectNulls_toJson :: SeriesT s -> Maybe Aeson.Value
+series_connectNulls_toJson = \case
+  (SeriesT_Line s) -> s ^? series_connectNulls . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_clipOverflow_toJson :: SeriesT s -> Maybe Aeson.Value
+series_clipOverflow_toJson = \case
+  (SeriesT_Line s) -> s ^? series_clipOverflow . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_step_toJson :: SeriesT s -> Maybe Aeson.Value
+series_step_toJson = \case
+  (SeriesT_Line s) -> s ^? series_step . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_smoothMonotone_toJson :: SeriesT s -> Maybe Aeson.Value
+series_smoothMonotone_toJson = \case
+  (SeriesT_Line s) -> s ^? series_smoothMonotone . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_sampling_toJson :: SeriesT s -> Maybe Aeson.Value
+series_sampling_toJson = \case
+  (SeriesT_Line s) -> s ^? series_sampling . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_seriesLayoutBy_toJson :: SeriesT s -> Maybe Aeson.Value
+series_seriesLayoutBy_toJson = \case
+  (SeriesT_Line s) -> s ^? series_seriesLayoutBy . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_datasetIndex_toJson :: SeriesT s -> Maybe Aeson.Value
+series_datasetIndex_toJson = \case
+  (SeriesT_Line s) -> s ^? series_datasetIndex . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_markPoint_toJson :: SeriesT s -> Maybe Aeson.Value
+series_markPoint_toJson = \case
+  (SeriesT_Line s) -> s ^? series_markPoint . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_zlevel_toJson :: SeriesT s -> Maybe Aeson.Value
+series_zlevel_toJson = \case
+  (SeriesT_Line s) -> s ^? series_zlevel . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_z_toJson :: SeriesT s -> Maybe Aeson.Value
+series_z_toJson = \case
+  (SeriesT_Line s) -> s ^? series_z . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_silent_toJson :: SeriesT s -> Maybe Aeson.Value
+series_silent_toJson = \case
+  (SeriesT_Line s) -> s ^? series_silent . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_tooltip_toJson :: SeriesT s -> Maybe Aeson.Value
+series_tooltip_toJson = \case
+  (SeriesT_Line s) -> s ^? series_tooltip . _Just . to Aeson.toJSON
   _ -> Nothing
 
 series_smooth_toJson :: SeriesT s -> Maybe Aeson.Value

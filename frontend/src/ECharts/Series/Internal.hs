@@ -58,7 +58,7 @@ class SeriesOptions seriesType where
   type SeriesOptions_dimensions seriesType
   type SeriesOptions_encode seriesType
   type SeriesOptions_seriesLayoutBy seriesType
-  type SeriesOptions_datasetindex seriesType
+  type SeriesOptions_datasetIndex seriesType
   type SeriesOptions_markPoint seriesType
   type SeriesOptions_markLine seriesType
   type SeriesOptions_markArea seriesType
@@ -200,7 +200,7 @@ class SeriesOptions seriesType where
   type instance SeriesOptions_dimensions seriesType = ()
   type instance SeriesOptions_encode seriesType = ()
   type instance SeriesOptions_seriesLayoutBy seriesType = ()
-  type instance SeriesOptions_datasetindex seriesType = ()
+  type instance SeriesOptions_datasetIndex seriesType = ()
   type instance SeriesOptions_markPoint seriesType = ()
   type instance SeriesOptions_markLine seriesType = ()
   type instance SeriesOptions_markArea seriesType = ()
@@ -314,21 +314,41 @@ class SeriesOptions seriesType where
 
 instance SeriesOptions SeriesLine where
   getSeriesTypeInt _ = "line"
-  type SeriesOptions_stack SeriesLine = Maybe Text
-  type SeriesOptions_smooth SeriesLine = Maybe (Either Bool ZeroToOne)
-  type SeriesOptions_areaStyle SeriesLine = Maybe AreaStyle
-  type SeriesOptions_label SeriesLine = Maybe Label
-  type SeriesOptions_lineStyle SeriesLine = Maybe LineStyle
-  type SeriesOptions_markArea SeriesLine = Maybe MarkArea
+  type SeriesOptions_coordinateSystem SeriesLine = Maybe Text
   type SeriesOptions_xAxisIndex SeriesLine = Maybe Int
   type SeriesOptions_yAxisIndex SeriesLine = Maybe Int
-  type SeriesOptions_animation SeriesLine = Maybe Bool
-  type SeriesOptions_itemStyle SeriesLine = Maybe ItemStyle
+  type SeriesOptions_polarIndex SeriesLine = Maybe Int
   type SeriesOptions_symbol SeriesLine = Maybe Symbol
   type SeriesOptions_symbolSize SeriesLine = Maybe SymbolSize
+  type SeriesOptions_symbolRotate SeriesLine = Maybe Int
+  type SeriesOptions_symbolKeepAspect SeriesLine = Maybe Bool
+  type SeriesOptions_symbolOffset SeriesLine = Maybe AbsOrPercent
   type SeriesOptions_showSymbol SeriesLine = Maybe Bool
+  type SeriesOptions_showAllSymbol SeriesLine = Maybe Bool
   type SeriesOptions_hoverAnimation SeriesLine = Maybe Bool
+  type SeriesOptions_legendHoverLink SeriesLine = Maybe Bool
+  type SeriesOptions_stack SeriesLine = Maybe Text
+  type SeriesOptions_cursor SeriesLine = Maybe Text
+  type SeriesOptions_connectNulls SeriesLine = Maybe Bool
+  type SeriesOptions_clipOverflow SeriesLine = Maybe Bool
+  type SeriesOptions_step SeriesLine = Maybe Step
+  type SeriesOptions_label SeriesLine = Maybe Label
+  type SeriesOptions_itemStyle SeriesLine = Maybe ItemStyle
+  type SeriesOptions_lineStyle SeriesLine = Maybe LineStyle
+  type SeriesOptions_areaStyle SeriesLine = Maybe AreaStyle
+  type SeriesOptions_smooth SeriesLine = Maybe (Either Bool ZeroToOne)
+  type SeriesOptions_smoothMonotone SeriesLine = Maybe Text
+  type SeriesOptions_sampling SeriesLine = Maybe Text
+  type SeriesOptions_seriesLayoutBy SeriesLine = Maybe Text
+  type SeriesOptions_datasetIndex SeriesLine = Maybe Int
+  type SeriesOptions_markPoint SeriesLine = Maybe MarkPoint
   type SeriesOptions_markLine SeriesLine = Maybe MarkLine
+  type SeriesOptions_markArea SeriesLine = Maybe MarkArea
+  type SeriesOptions_z SeriesLine = Maybe Int
+  type SeriesOptions_zlevel SeriesLine = Maybe Int
+  type SeriesOptions_silent SeriesLine = Maybe Bool
+  type SeriesOptions_animation SeriesLine = Maybe Bool
+  type SeriesOptions_tooltip SeriesLine = Maybe ToolTip
 
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"

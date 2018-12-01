@@ -25,7 +25,6 @@ type ZeroToOne = Scientific
 type CoordinateSystem = Aeson.Value
 type Symbol = Text -- TODO
 type SymbolSize = Aeson.Value
-type Step = Aeson.Value
 type Emphasis = Aeson.Value
 type SmoothMonotone = Aeson.Value
 type Sampling = Aeson.Value
@@ -33,7 +32,6 @@ type Encode = Aeson.Value
 type MarkPoint = Aeson.Value
 type Animation = Aeson.Value
 type SelectedMode = Aeson.Value
-type AbsOrPercentage = Aeson.Value
 type RippleEffect = Aeson.Value
 type TextOrScientific = Aeson.Value
 type Color = Text
@@ -107,6 +105,28 @@ instance ToJSON VerticalAlign where
   toJSON VerticalAlign_Top = Aeson.String "top"
   toJSON VerticalAlign_Middle = Aeson.String "middle"
   toJSON VerticalAlign_Bottom = Aeson.String "bottom"
+
+data Step = Step_Enable Bool
+          | Step_Start
+          | Step_Middle
+          | Step_End
+
+instance ToJSON Step where
+  toJSON (Step_Enable b) = Aeson.toJSON b
+  toJSON Step_Start = Aeson.String "start"
+  toJSON Step_Middle = Aeson.String "middle"
+  toJSON Step_End = Aeson.String "end"
+
+data AbsOrPercent = AbsOrPercent_Abs Int
+                  | AbsOrPercent_Percent Int
+
+absOrPercentToSN :: AbsOrPercent -> SN
+absOrPercentToSN = \case
+  AbsOrPercent_Percent n -> SN_String $ T.pack (show n) <> "%"
+  AbsOrPercent_Abs n -> SN_Number $ fromIntegral n
+
+instance ToJSON AbsOrPercent where
+  toJSON = Aeson.toJSON . absOrPercentToSN
 
 data SizeValue = SizeValue_Auto
                | SizeValue_Percent Int
@@ -338,7 +358,7 @@ data Legend = Legend
   , _legend_inactiveColor :: Maybe Text
   , _legend_selected :: Maybe (Map Text Bool)
   , _legend_textStyle :: Maybe TextStyle
-  -- , _legend_tooltip :: TODO
+  , _legend_tooltip :: Maybe ToolTip
   , _legend_data :: Maybe [(Text, LegendData)]
   , _legend_backgroundColor :: Maybe Text
   , _legend_border :: Maybe Border
@@ -394,7 +414,7 @@ data Grid = Grid
   , _grid_backgroundColor :: Maybe Text
   , _grid_border :: Maybe Border
   , _grid_shadow :: Maybe Shadow
-  -- , _grid_tooltip :: Maybe TODO
+  , _grid_tooltip :: Maybe ToolTip
   }
   deriving (Generic)
 

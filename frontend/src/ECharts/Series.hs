@@ -48,6 +48,7 @@ data Series seriesType = Series
   , _series_color                  :: Maybe [Text]
   , _series_backgroundColor        :: Maybe [Text]
   -- SeriesOptions based on seriesType
+  -- coordinateSystem can be cartesian2d, polar, geo, none, single
   , _series_coordinateSystem       :: SeriesOptions_coordinateSystem seriesType
   , _series_xAxisIndex             :: SeriesOptions_xAxisIndex seriesType
   , _series_yAxisIndex             :: SeriesOptions_yAxisIndex seriesType
@@ -77,7 +78,7 @@ data Series seriesType = Series
   , _series_dimensions             :: SeriesOptions_dimensions seriesType
   , _series_encode                 :: SeriesOptions_encode seriesType
   , _series_seriesLayoutBy         :: SeriesOptions_seriesLayoutBy seriesType
-  , _series_datasetindex           :: SeriesOptions_datasetindex seriesType
+  , _series_datasetIndex           :: SeriesOptions_datasetIndex seriesType
   , _series_data                   :: Maybe [Data seriesType]
   , _series_markPoint              :: SeriesOptions_markPoint seriesType
   , _series_markLine               :: SeriesOptions_markLine seriesType
