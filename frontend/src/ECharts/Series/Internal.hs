@@ -65,7 +65,13 @@ class SeriesOptions seriesType where
   type SeriesOptions_zlevel seriesType
   type SeriesOptions_z seriesType
   type SeriesOptions_animation seriesType
-  type SeriesOptions_animationOptions seriesType
+  type SeriesOptions_animationThreshold seriesType
+  type SeriesOptions_animationDuration seriesType
+  type SeriesOptions_animationEasing seriesType
+  type SeriesOptions_animationDelay seriesType
+  type SeriesOptions_animationDurationUpdate seriesType
+  type SeriesOptions_animationEasingUpdate seriesType
+  type SeriesOptions_animationDelayUpdate seriesType
   type SeriesOptions_tooltip seriesType
   type SeriesOptions_barMinHeight seriesType
   type SeriesOptions_barGap seriesType
@@ -207,7 +213,13 @@ class SeriesOptions seriesType where
   type instance SeriesOptions_zlevel seriesType = ()
   type instance SeriesOptions_z seriesType = ()
   type instance SeriesOptions_animation seriesType = ()
-  type instance SeriesOptions_animationOptions seriesType = ()
+  type instance SeriesOptions_animationThreshold seriesType = ()
+  type instance SeriesOptions_animationDuration seriesType = ()
+  type instance SeriesOptions_animationEasing seriesType = ()
+  type instance SeriesOptions_animationDelay seriesType = ()
+  type instance SeriesOptions_animationDurationUpdate seriesType = ()
+  type instance SeriesOptions_animationEasingUpdate seriesType = ()
+  type instance SeriesOptions_animationDelayUpdate seriesType = ()
   type instance SeriesOptions_tooltip seriesType = ()
   type instance SeriesOptions_barMinHeight seriesType = ()
   type instance SeriesOptions_barGap seriesType = ()
@@ -348,6 +360,13 @@ instance SeriesOptions SeriesLine where
   type SeriesOptions_zlevel SeriesLine = Maybe Int
   type SeriesOptions_silent SeriesLine = Maybe Bool
   type SeriesOptions_animation SeriesLine = Maybe Bool
+  type SeriesOptions_animationThreshold SeriesLine = Maybe Int
+  type SeriesOptions_animationDuration SeriesLine = Maybe Aeson.Value
+  type SeriesOptions_animationEasing SeriesLine = Maybe Text
+  type SeriesOptions_animationDelay SeriesLine = Maybe Aeson.Value
+  type SeriesOptions_animationDurationUpdate SeriesLine = Maybe Aeson.Value
+  type SeriesOptions_animationEasingUpdate SeriesLine = Maybe Text
+  type SeriesOptions_animationDelayUpdate SeriesLine = Maybe Aeson.Value
   type SeriesOptions_tooltip SeriesLine = Maybe ToolTip
 
 instance SeriesOptions SeriesPie where

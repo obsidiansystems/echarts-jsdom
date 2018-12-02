@@ -65,7 +65,13 @@ data EChartSeries = EChartSeries
   , _eChartSeries_zlevel :: Maybe Aeson.Value
   , _eChartSeries_z :: Maybe Aeson.Value
   , _eChartSeries_animation :: Maybe Aeson.Value
-  , _eChartSeries_animationOptions :: Maybe Aeson.Value
+  , _eChartSeries_animationThreshold :: Maybe Aeson.Value
+  , _eChartSeries_animationDuration :: Maybe Aeson.Value
+  , _eChartSeries_animationEasing :: Maybe Aeson.Value
+  , _eChartSeries_animationDelay :: Maybe Aeson.Value
+  , _eChartSeries_animationDurationUpdate :: Maybe Aeson.Value
+  , _eChartSeries_animationEasingUpdate :: Maybe Aeson.Value
+  , _eChartSeries_animationDelayUpdate :: Maybe Aeson.Value
   , _eChartSeries_tooltip :: Maybe Aeson.Value
   -- bar options
   -- candlestick has AbsOrPercent
@@ -256,7 +262,13 @@ toEChartSeries (Some.This st) = def
   , _eChartSeries_z                      = series_z_toJson st
   , _eChartSeries_silent                 = series_silent_toJson st
   , _eChartSeries_animation              = series_animation_toJson st
-  -- , _eChartSeries_animationOptions       = series_animationOptions_toJson st
+  , _eChartSeries_animationThreshold     = series_animationThreshold_toJson st
+  , _eChartSeries_animationDuration = series_animationDuration_toJson st
+  , _eChartSeries_animationEasing = series_animationEasing_toJson st
+  , _eChartSeries_animationDelay = series_animationDelay_toJson st
+  , _eChartSeries_animationDurationUpdate = series_animationDurationUpdate_toJson st
+  , _eChartSeries_animationEasingUpdate = series_animationEasingUpdate_toJson st
+  , _eChartSeries_animationDelayUpdate = series_animationDelayUpdate_toJson st
   , _eChartSeries_tooltip                = series_tooltip_toJson st
   -- , _eChartSeries_barMinHeight           = series_barMinHeight_toJson st
   -- , _eChartSeries_barGap                 = series_barGap_toJson st
@@ -492,6 +504,41 @@ series_label_toJson = \case
 series_animation_toJson :: SeriesT s -> Maybe Aeson.Value
 series_animation_toJson = \case
   (SeriesT_Line s) -> s ^? series_animation . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_animationThreshold_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animationThreshold_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animationThreshold . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_animationDuration_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animationDuration_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animationDuration . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_animationEasing_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animationEasing_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animationEasing . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_animationDelay_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animationDelay_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animationDelay . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_animationDurationUpdate_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animationDurationUpdate_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animationDurationUpdate . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_animationEasingUpdate_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animationEasingUpdate_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animationEasingUpdate . _Just . to Aeson.toJSON
+  _ -> Nothing
+
+series_animationDelayUpdate_toJson :: SeriesT s -> Maybe Aeson.Value
+series_animationDelayUpdate_toJson = \case
+  (SeriesT_Line s) -> s ^? series_animationDelayUpdate . _Just . to Aeson.toJSON
   _ -> Nothing
 
 series_lineStyle_toJson :: SeriesT s -> Maybe Aeson.Value

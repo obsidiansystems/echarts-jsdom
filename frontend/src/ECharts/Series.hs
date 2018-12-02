@@ -86,7 +86,13 @@ data Series seriesType = Series
   , _series_zlevel                 :: SeriesOptions_zlevel seriesType
   , _series_z                      :: SeriesOptions_z seriesType
   , _series_animation              :: SeriesOptions_animation seriesType
-  , _series_animationOptions       :: SeriesOptions_animationOptions seriesType
+  , _series_animationThreshold       :: SeriesOptions_animationThreshold seriesType
+  , _series_animationDuration       :: SeriesOptions_animationDuration seriesType
+  , _series_animationEasing       :: SeriesOptions_animationEasing seriesType
+  , _series_animationDelay       :: SeriesOptions_animationDelay seriesType
+  , _series_animationDurationUpdate       :: SeriesOptions_animationDurationUpdate seriesType
+  , _series_animationEasingUpdate       :: SeriesOptions_animationEasingUpdate seriesType
+  , _series_animationDelayUpdate       :: SeriesOptions_animationDelayUpdate seriesType
   , _series_tooltip                :: SeriesOptions_tooltip seriesType
   , _series_barMinHeight           :: SeriesOptions_barMinHeight seriesType
   , _series_barGap                 :: SeriesOptions_barGap seriesType
