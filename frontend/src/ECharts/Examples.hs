@@ -58,6 +58,7 @@ seriesExamples rGen (confData, aqiData) = elAttr "div" ("style" =: "display: fle
     , confidenceBand confData
     , rainfallAndWaterFlow
     , aqiChart aqiData
+    , multipleXAxes
     ]
 
 renderChartOptions
@@ -666,3 +667,56 @@ aqiChart aqiData = def
         , (200, "#660099")
         , (300, "#7e0023")
         ]
+
+multipleXAxes :: ChartOptions
+multipleXAxes = def
+  & chartOptions_legend ?~ (def
+    & legend_data ?~ [ (xSeriesName1, def)
+                     , (xSeriesName2, def)
+                     ])
+  & chartOptions_tooltip .~ (def
+    & toolTip_trigger ?~ "none"
+    & toolTip_axisPointer ?~ (def
+      & axisPointer_type ?~ "Cross"))
+  & chartOptions_grid .~ (def
+    & grid_pos ?~ (def
+      & pos_top ?~ PosAlign_Pixel 70
+      & pos_bottom ?~ PosAlign_Pixel 50)) : []
+  & chartOptions_yAxis .~ (def
+    & axis_type ?~ AxisType_Value) : []
+  & chartOptions_xAxis .~ (def
+    & axis_type ?~ AxisType_Category
+    & axis_axisTick ?~ (def & axisTick_alignWithLabel ?~ True)
+    & axis_axisLine ?~ (def
+      & axisLine_onZero ?~ False
+      & axisLine_lineStyle ?~ (def & lineStyle_color ?~ colors !! 1))
+    -- TODO formatter
+    -- & axis_axisPointer ?~ (def
+    --   & axisPointer_label ?~ def)
+    & axis_data ?~ zip (months xSeriesName2) (repeat Nothing))
+  : (def
+    & axis_type ?~ AxisType_Category
+    & axis_axisTick ?~ (def & axisTick_alignWithLabel ?~ True)
+    & axis_axisLine ?~ (def
+      & axisLine_onZero ?~ False
+      & axisLine_lineStyle ?~ (def & lineStyle_color ?~ colors !! 0))
+    -- TODO formatter
+    -- & axis_axisPointer ?~ (def
+    --   & axisPointer_label ?~ def)
+    & axis_data ?~ zip (months xSeriesName1) (repeat Nothing)) : []
+  & chartOptions_series .~ (Some.This $ SeriesT_Line $ def
+    & series_smooth ?~ Left True
+    & series_name ?~ xSeriesName1
+    & series_xAxisIndex ?~ 1
+    & series_data ?~ map DataNumber x1)
+  : (Some.This $ SeriesT_Line $ def
+    & series_smooth ?~ Left True
+    & series_name ?~ xSeriesName2
+    & series_data ?~ map DataNumber x2) : []
+  where
+    xSeriesName1 = "2015"
+    xSeriesName2 = "2016"
+    colors = ["#5793f3", "#d14a61", "#675bba"]
+    months y = map (\m -> y <> "-" <> tshow m) [1..12]
+    x1 = [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3]
+    x2 = [3.9, 5.9, 11.1, 18.7, 48.3, 69.2, 231.6, 46.6, 55.4, 18.4, 10.3, 0.7]

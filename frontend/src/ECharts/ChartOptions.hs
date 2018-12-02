@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 module ECharts.ChartOptions where
 
 import ECharts.Types
@@ -6,6 +7,7 @@ import ECharts.Series
 import Data.Default (Default, def)
 import Data.Some (Some)
 import GHC.Generics (Generic)
+import Control.Lens
 
 data ChartOptions = ChartOptions
   { _chartOptions_title :: Title
@@ -23,3 +25,5 @@ data ChartOptions = ChartOptions
   deriving (Generic)
 
 instance Default ChartOptions where
+
+makeLenses ''ChartOptions

@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE TemplateHaskell #-}
 module ECharts.Types where
 
 import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
@@ -20,6 +21,7 @@ import Data.Scientific
 import Data.Time
 import Data.Time.Clock.POSIX
 import GHC.Generics (Generic)
+import Control.Lens
 
 type ZeroToOne = Scientific
 type CoordinateSystem = Aeson.Value
@@ -373,38 +375,9 @@ data Legend = Legend
   , _legend_animation :: Maybe Bool
   , _legend_animationDurationUpdate :: Maybe Int
   }
+  deriving (Generic)
 
 instance Default Legend where
-  def = Legend
-    { _legend_type = Nothing
-    , _legend_show = Nothing
-    , _legend_pos = Nothing
-    , _legend_size = Nothing
-    , _legend_orient = Nothing
-    , _legend_align = Nothing
-    , _legend_padding = Nothing
-    , _legend_itemGap = Nothing
-    , _legend_itemWidth = Nothing
-    , _legend_itemHeight = Nothing
-    , _legend_symbolKeepAspect = Nothing
-    , _legend_formatter = Nothing
-    , _legend_selectedMode = Nothing
-    , _legend_inactiveColor = Nothing
-    , _legend_selected = Nothing
-    , _legend_textStyle = Nothing
-    , _legend_data = Nothing
-    , _legend_backgroundColor = Nothing
-    , _legend_border = Nothing
-    , _legend_shadow = Nothing
-    , _legend_scrollDataIndex = Nothing
-    , _legend_pageButtonItemGap = Nothing
-    , _legend_pageButtonGap = Nothing
-    , _legend_pageButtonPosition = Nothing
-    , _legend_pageFormatter = Nothing
-    , _legend_pageTextStyle = Nothing
-    , _legend_animation = Nothing
-    , _legend_animationDurationUpdate = Nothing
-    }
 
 data Grid = Grid
   { _grid_show :: Maybe Bool
@@ -533,6 +506,7 @@ data AxisTick = AxisTick
   , _axisTick_length :: Maybe Int
   , _axisTick_lineStyle :: Maybe LineStyle
   }
+  deriving (Generic)
 
 data AxisLabel = AxisLabel
   { _axisLabel_show :: Maybe Bool
@@ -557,6 +531,10 @@ data AxisLabel = AxisLabel
   , _axisLabel_textShadow :: Maybe Shadow
   -- , _axisLabel_rich :: Maybe TODO
   }
+  deriving (Generic)
+
+instance Default AxisLabel where
+instance Default AxisTick where
 
 data SN = SN_String Text
         | SN_Number Double
@@ -981,3 +959,53 @@ data InOutOfRange = InOutOfRange
   deriving (Generic)
 
 instance Default InOutOfRange where
+
+makePrisms ''Target
+makePrisms ''FontStyle
+makePrisms ''FontWeight
+makePrisms ''FontFamily
+makeLenses ''Font
+makePrisms ''Align
+makePrisms ''VerticalAlign
+makePrisms ''Step
+makePrisms ''AbsOrPercent
+makePrisms ''SizeValue
+makeLenses ''TextStyle
+makeLenses ''Border
+makeLenses ''Shadow
+makePrisms ''PosAlign
+makeLenses ''Pos
+makePrisms ''Position
+makeLenses ''Size
+makePrisms ''Orientation
+makeLenses ''Title
+makePrisms ''LegendType
+makePrisms ''Icon
+makeLenses ''LegendData
+makePrisms ''PageButtonPosition
+makeLenses ''Legend
+makeLenses ''Grid
+makePrisms ''AxisPosition
+makePrisms ''AxisType
+makePrisms ''AxisNameLocation
+makeLenses ''Axis
+makeLenses ''AxisLine
+makePrisms ''LineStyleType
+makeLenses ''LineStyle
+makeLenses ''AxisTick
+makeLenses ''AxisLabel
+makePrisms ''SN
+makeLenses ''AreaStyle
+makeLenses ''Label
+makeLenses ''ToolTip
+makeLenses ''ToolBox
+makeLenses ''Feature
+makeLenses ''DataZoom
+makeLenses ''MarkArea
+makeLenses ''MarkLine
+makeLenses ''ItemStyle
+makeLenses ''AxisPointer
+makeLenses ''SplitLine
+makeLenses ''SplitArea
+makeLenses ''VisualMap
+makeLenses ''InOutOfRange
