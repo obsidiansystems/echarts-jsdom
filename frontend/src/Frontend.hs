@@ -64,7 +64,6 @@ frontend = Frontend
           "https:" -> "wss:"
           _ -> "ws:"
         wsUrl = T.pack $ wsScheme <> (uriRegName auth) <> (uriPort auth) <> "/listen"
-    -- prerender blank (echarts wsUrl >> seriesExamples)
     prerender blank $ do
       dEv <- do
         pb <- getPostBuild
@@ -77,6 +76,8 @@ frontend = Frontend
           (Just v1, Just v2) -> Just (v1, v2)
           _ -> Nothing
 
+      clEv <- button "Show Dynamic"
+      widgetHold blank $ echarts wsUrl <$ clEv
       widgetHold blank $ seriesExamples (mkStdGen 0) <$> dEv
       blank
   }
@@ -148,13 +149,7 @@ dynamicTimeSeries title ts = do
   performEvent_ $ fforMaybe opts $ \case
     (Nothing, _) -> Nothing
     (Just c, ts') -> Just $ liftJSM $ setOption c $ opts0
-      {
-      --   _chartOptions_xAxis = def { _axis_type = Just AxisType_Time
-      --                             -- , _axis_data = ffor (Map.lookup "idle" ts') $
-      --                             --   map (\(t, _) -> (T.pack $ show $ utcTimeToEpoch t, Nothing))
-      --                             } :[]
-      -- ,
-        _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) -> Some.This $
+      { _chartOptions_series = ffor (reverse $ Map.toList ts') $ \(k, vs) -> Some.This $
         SeriesT_Line $ def
           & series_name ?~ k
           & series_smooth ?~ Right (scientific 7 (-1))
