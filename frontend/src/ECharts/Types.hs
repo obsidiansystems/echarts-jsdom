@@ -22,6 +22,7 @@ import Data.Time
 import Data.Time.Clock.POSIX
 import GHC.Generics (Generic)
 import Control.Lens
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
 type ZeroToOne = Scientific
 type CoordinateSystem = Aeson.Value
@@ -183,6 +184,9 @@ data Shadow = Shadow
   deriving (Generic)
 
 instance Default Shadow where
+
+instance ToJSVal Shadow where
+  toJSVal = toJSVal_generic (drop $ T.length "_shadow_")
 
 instance ToJSON Shadow where
   toJSON = genericToJSON $ defaultOptions
