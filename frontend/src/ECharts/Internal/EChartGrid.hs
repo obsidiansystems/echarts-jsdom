@@ -17,6 +17,7 @@ import ECharts.Types
 import ECharts.Internal.EChartTypes
 import ECharts.Series
 import ECharts.ChartOptions
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
 data EChartGrid = EChartGrid
   { _eChartGrid_show :: Maybe Bool
@@ -40,6 +41,9 @@ data EChartGrid = EChartGrid
   , _eChartGrid_tooltip :: Maybe Aeson.Value
   }
   deriving (Generic)
+
+instance ToJSVal EChartGrid where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartGrid_")
 
 instance ToJSON EChartGrid where
   toJSON = genericToJSON $ defaultOptions

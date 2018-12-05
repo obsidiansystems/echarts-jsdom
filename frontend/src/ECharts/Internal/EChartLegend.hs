@@ -13,6 +13,7 @@ import GHC.Generics (Generic)
 import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
 
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 import ECharts.Types
 import ECharts.Internal.EChartTypes
 import ECharts.Series
@@ -70,3 +71,6 @@ instance ToJSON EChartLegend where
     { fieldLabelModifier = drop $ T.length "_eChartLegend_"
     , omitNothingFields = True
     }
+
+instance ToJSVal EChartLegend where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartLegend_")

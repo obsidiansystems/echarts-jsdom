@@ -119,8 +119,8 @@ class DataOptions seriesType where
   type instance DataOptions_hoverAnimation seriesType = ()
 
 instance DataOptions SeriesLine where
-  type DataOptions_name SeriesLine = Maybe Scientific
-  type DataOptions_value SeriesLine = Maybe (Scientific, Scientific)
+  type DataOptions_name SeriesLine = Maybe Int
+  type DataOptions_value SeriesLine = Maybe (Int, Double)
 
 instance DataOptions SeriesPie where
   type DataOptions_name SeriesPie = Maybe Text

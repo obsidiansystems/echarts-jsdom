@@ -20,6 +20,7 @@ import ECharts.Types
 import ECharts.Internal.EChartTypes
 import ECharts.Series
 import ECharts.ChartOptions
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
 data EChartToolBox = EChartToolBox
   { _eChartToolBox_show :: Maybe Bool
@@ -40,6 +41,9 @@ data EChartToolBox = EChartToolBox
   , _eChartToolBox_height :: Maybe SN
   }
   deriving (Generic)
+
+instance ToJSVal EChartToolBox where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartToolBox_")
 
 instance ToJSON EChartToolBox where
   toJSON = genericToJSON $ defaultOptions

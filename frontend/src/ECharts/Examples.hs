@@ -16,9 +16,10 @@ import ECharts.Data
 import ECharts.ChartOptions
 import ECharts.ExamplesData (rainfallData, waterFlowData)
 
+import Control.Monad.IO.Class (liftIO, MonadIO)
+import Control.Monad.Fix (MonadFix)
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Scientific
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -40,8 +41,11 @@ seriesExamples
      , PerformEvent t m
      , PostBuild t m
      , MonadHold t m
+     , TriggerEvent t m
+     , MonadFix m
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
+     , MonadIO m
      , RandomGen g
      )
   => g
@@ -66,16 +70,35 @@ renderChartOptions
      , PerformEvent t m
      , PostBuild t m
      , MonadHold t m
+     , TriggerEvent t m
+     , MonadFix m
+     , MonadIO m
      , MonadJSM (Performable m)
      , GhcjsDomSpace ~ DomBuilderSpace m
      )
   => ChartOptions
   -> m ()
 renderChartOptions opts = do
-  e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px; padding: 50px;") blank
-  p <- getPostBuild
-  chart <- performEvent $ ffor p $ \_ -> liftJSM $ ECharts.init $ _element_raw e
-  performEvent_ $ ffor chart $ \c -> liftJSM $ setOption c opts
+  chart <- do
+    e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px; padding: 50px;") blank
+    p <- getPostBuild
+    performEvent $ ffor p $ \_ -> liftJSM $ ECharts.init $ _element_raw e
+  performEvent_ $ ffor chart $ \c -> do
+    liftJSM $ setOption c opts
+
+  widgetHold blank $ ffor chart getRenderTime
+  blank
+  where
+    getRenderTime c = do
+      clEv <- button "Make Dynamic"
+      widgetHold blank $ ffor clEv $ \_ -> do
+        ev <- tickLossyFromPostBuildTime 0.2
+        performEvent_ $ ffor ev $ \_ -> do
+          t1 <- liftIO $ getCurrentTime
+          liftJSM $ setOption c opts
+          t2 <- liftIO $ getCurrentTime
+          liftIO $ putStrLn $ show (diffUTCTime t2 t1)
+      blank
 
 basicLineChart :: ChartOptions
 basicLineChart = def
@@ -84,7 +107,7 @@ basicLineChart = def
                           ]
   , _chartOptions_yAxis = [def { _axis_type = Just AxisType_Value }]
   , _chartOptions_series = [Some.This $ SeriesT_Line $ def
-    & series_data ?~ (map DataNumber yAxisData)]
+    & series_data ?~ (map DataInt yAxisData)]
   }
   where
     xAxisData = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -99,7 +122,7 @@ basicAreaChart = def
                           ]
   , _chartOptions_yAxis = [def { _axis_type = Just AxisType_Value }]
   , _chartOptions_series = [Some.This $ SeriesT_Line $ def
-    & series_data ?~ (map DataNumber yAxisData)
+    & series_data ?~ (map DataInt yAxisData)
     & series_areaStyle ?~ def ]
   }
   where
@@ -113,7 +136,7 @@ smoothedLineChart = def
                           ]
   , _chartOptions_yAxis = [def { _axis_type = Just AxisType_Value }]
   , _chartOptions_series = [Some.This $ SeriesT_Line $ def
-    & series_data ?~ (map DataNumber yAxisData)
+    & series_data ?~ (map DataInt yAxisData)
     & series_smooth ?~ Left True]
   }
   where
@@ -122,8 +145,8 @@ smoothedLineChart = def
 
 stackedAreaChart :: ChartOptions
 stackedAreaChart = def
-  { _chartOptions_title = def { _title_text = Just title }
-  , _chartOptions_tooltip = def
+  { _chartOptions_title = Just $ def { _title_text = Just title }
+  , _chartOptions_tooltip = Just $ def
     { _toolTip_trigger = Just "axis"
     , _toolTip_axisPointer = Just $ def
       { _axisPointer_type = Just $ "cross"
@@ -132,7 +155,7 @@ stackedAreaChart = def
         }
       }
     }
-  , _chartOptions_toolbox = def
+  , _chartOptions_toolbox = Just $ def
     { _toolBox_features =
       [ emptySaveAsImage { _feature_title = Just "Save as PNG" }
       ]
@@ -167,36 +190,36 @@ stackedAreaChart = def
       & series_name ?~ "A"
       & series_areaStyle ?~ def
       & series_data ?~
-      (map DataNumber [120, 132, 101, 134, 90, 230, 210])
+      (map DataInt [120, 132, 101, 134, 90, 230, 210])
     l2 = Some.This $ SeriesT_Line $ def
       & series_stack ?~ stackLabel
       & series_name ?~ "B"
       & series_areaStyle ?~ def
       & series_data ?~
-      (map DataNumber [220, 182, 191, 234, 290, 330, 310])
+      (map DataInt [220, 182, 191, 234, 290, 330, 310])
     l3 = Some.This $ SeriesT_Line $ def
       & series_stack ?~ stackLabel
       & series_name ?~ "C"
       & series_areaStyle ?~ def
       & series_data ?~
-      (map DataNumber [150, 232, 201, 154, 190, 330, 410])
+      (map DataInt [150, 232, 201, 154, 190, 330, 410])
     l4 = Some.This $ SeriesT_Line $ def
       & series_stack ?~ stackLabel
       & series_name ?~ "D"
       & series_areaStyle ?~ def
       & series_data ?~
-      (map DataNumber [320, 332, 301, 334, 390, 330, 320])
+      (map DataInt [320, 332, 301, 334, 390, 330, 320])
     l5 = Some.This $ SeriesT_Line $ def
       & series_stack ?~ stackLabel
       & series_name ?~ "E"
       & series_areaStyle ?~ def
       & series_label ?~ def { _label_show = Just True, _label_position = Just $ Position_String "top"}
       & series_data ?~
-      (map DataNumber [820, 932, 901, 934, 1290, 1330, 1320])
+      (map DataInt [820, 932, 901, 934, 1290, 1330, 1320])
 
 rainfall :: ChartOptions
 rainfall = def
-  { _chartOptions_title = def
+  { _chartOptions_title = Just $ def
     {
       _title_text = Just "Rainfall/Water volume"
     , _title_subtext = Just "Flow of water and rainfall"
@@ -207,14 +230,14 @@ rainfall = def
   , _chartOptions_grid = def
     { _grid_pos = Just $ def { _pos_bottom = Just $ PosAlign_Pixel 80 }
     } : []
-  , _chartOptions_toolbox = def
+  , _chartOptions_toolbox = Just $ def
     { _toolBox_features =
       [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
       , emptyRestore
       , emptySaveAsImage
       ]
     }
-  , _chartOptions_tooltip = def
+  , _chartOptions_tooltip = Just $ def
     { _toolTip_trigger = Just "axis"
     , _toolTip_axisPointer = Just $ def
       { _axisPointer_type = Just $ "cross"
@@ -261,7 +284,7 @@ rainfall = def
     ]
   , _chartOptions_series =
     [ Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . fromFloatDigits) waterFlowData)
+        & series_data ?~ (map DataDouble waterFlowData)
         & series_name ?~ xSeriesName
         & series_animation ?~ False
         & series_areaStyle ?~ def
@@ -276,7 +299,7 @@ rainfall = def
             ]
         }
     , Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . fromFloatDigits) rainfallData)
+        & series_data ?~ (map DataDouble rainfallData)
         & series_name ?~ ySeriesName
         & series_yAxisIndex ?~ 1
         & series_animation ?~ False
@@ -310,19 +333,19 @@ tshow = T.pack . show
 
 largeScaleAreaChart :: RandomGen g => g -> ChartOptions
 largeScaleAreaChart rGen = def
-  { _chartOptions_title = def
+  { _chartOptions_title = Just $ def
     {
       _title_text = Just "Large Scale Area Chart"
     , _title_pos = Just $ def {
         _pos_left = Just $ PosAlign_Align Align_Center
         }
     }
-  , _chartOptions_tooltip = def
+  , _chartOptions_tooltip = Just $ def
     { _toolTip_trigger = Just "axis"
     -- TODO
     -- , _toolTip_pos = 
     }
-  , _chartOptions_toolbox = def
+  , _chartOptions_toolbox = Just $ def
     { _toolBox_features =
       [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
       , emptyRestore
@@ -362,7 +385,7 @@ largeScaleAreaChart rGen = def
     ]
   , _chartOptions_series =
     [ Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . fromFloatDigits) randomData)
+        & series_data ?~ (map DataDouble randomData)
         & series_name ?~ xSeriesName
         & series_smooth ?~ Left True
         & series_itemStyle ?~ def { _itemStyle_color = Just "rgb(255, 70, 131)" }
@@ -384,10 +407,10 @@ confidenceBandJsonData = do
   "https://raw.githubusercontent.com/ecomfe/echarts-examples/gh-pages/public/data/asset/data/confidence-band.json"
 
 data ConfidenceData = ConfidenceData
-  { _confidenceData_value :: Scientific
+  { _confidenceData_value :: Double
   , _confidenceData_date :: Text
-  , _confidenceData_l :: Scientific
-  , _confidenceData_u :: Scientific
+  , _confidenceData_l :: Double
+  , _confidenceData_u :: Double
   }
   deriving (Generic)
 
@@ -398,14 +421,14 @@ instance FromJSON ConfidenceData where
 
 confidenceBand :: [ConfidenceData] -> ChartOptions
 confidenceBand confData = def
-  { _chartOptions_title = def
+  { _chartOptions_title = Just $ def
     {
       _title_text = Just "Confidence Band"
     , _title_pos = Just $ def {
         _pos_left = Just $ PosAlign_Align Align_Center
         }
     }
-  , _chartOptions_tooltip = def
+  , _chartOptions_tooltip = Just $ def
     { _toolTip_trigger = Just "axis"
     , _toolTip_axisPointer = Just $ def
       { _axisPointer_type = Just $ "cross"
@@ -455,20 +478,20 @@ confidenceBand confData = def
     ]
   , _chartOptions_series =
     [ Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . ((+) base) . _confidenceData_l) confData)
+        & series_data ?~ (map (DataDouble . ((+) base) . _confidenceData_l) confData)
         & series_name ?~ "L"
         & series_stack ?~ "confidence-band"
         & series_symbol ?~ "none"
         & series_lineStyle ?~ def { _lineStyle_opacity = Just 0 }
     , Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . (\v -> _confidenceData_u v - _confidenceData_l v)) confData)
+        & series_data ?~ (map (DataDouble . (\v -> _confidenceData_u v - _confidenceData_l v)) confData)
         & series_name ?~ "U"
         & series_stack ?~ "confidence-band"
         & series_symbol ?~ "none"
         & series_lineStyle ?~ def { _lineStyle_opacity = Just 0 }
         & series_areaStyle ?~ def { _areaStyle_color = Just "#ccc" }
     , Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . ((+) base) . _confidenceData_value) confData)
+        & series_data ?~ (map (DataDouble . ((+) base) . _confidenceData_value) confData)
         & series_symbolSize ?~ Aeson.Number 6
         & series_showSymbol ?~ False
         & series_hoverAnimation ?~ False
@@ -482,7 +505,7 @@ confidenceBand confData = def
 
 rainfallAndWaterFlow :: ChartOptions
 rainfallAndWaterFlow = def
-  { _chartOptions_title = def
+  { _chartOptions_title = Just $ def
     {
       _title_text = Just "Rainfall and Water volume"
     , _title_subtext = Just "Flow of water and rainfall"
@@ -490,7 +513,7 @@ rainfallAndWaterFlow = def
         _pos_left = Just $ PosAlign_Align Align_Center
         }
     }
-  , _chartOptions_tooltip = def
+  , _chartOptions_tooltip = Just $ def
     { _toolTip_trigger = Just "axis"
     }
   , _chartOptions_legend = Just $ def
@@ -499,7 +522,7 @@ rainfallAndWaterFlow = def
                             ]
     , _legend_pos = Just $ def {_pos_left = Just $ PosAlign_Align Align_Left }
     }
-  , _chartOptions_toolbox = def
+  , _chartOptions_toolbox = Just $ def
     { _toolBox_features =
       [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
       , emptyRestore
@@ -569,12 +592,12 @@ rainfallAndWaterFlow = def
     ]
   , _chartOptions_series =
     [ Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . fromFloatDigits) waterFlowData)
+        & series_data ?~ (map DataDouble waterFlowData)
         & series_name ?~ xSeriesName
         & series_hoverAnimation ?~ False
         & series_symbolSize ?~ Aeson.Number 8
     , Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . fromFloatDigits) rainfallData)
+        & series_data ?~ (map DataDouble rainfallData)
         & series_name ?~ ySeriesName
         & series_xAxisIndex ?~ 1
         & series_yAxisIndex ?~ 1
@@ -593,15 +616,15 @@ rainfallAndWaterFlow = def
       <> [dateF 10 18 t | t <- [0..8]]
     dateF m d t = "2009/" <> tshow m <> "/" <> tshow d <> "\n" <> tshow t <> ":00"
 
-type AqiData = [(Text, Scientific)]
+type AqiData = [(Text, Double)]
 
 aqiChart :: AqiData -> ChartOptions
 aqiChart aqiData = def
-  { _chartOptions_title = def { _title_text = Just title }
-  , _chartOptions_tooltip = def
+  { _chartOptions_title = Just $ def { _title_text = Just title }
+  , _chartOptions_tooltip = Just $ def
     { _toolTip_trigger = Just "axis"
     }
-  , _chartOptions_toolbox = def
+  , _chartOptions_toolbox = Just $ def
     { _toolBox_features =
       [ emptyDataZoom { _feature_yAxisIndex = Just $ Aeson.String "none" }
       , emptyRestore
@@ -647,7 +670,7 @@ aqiChart aqiData = def
     } : []
   , _chartOptions_series =
     [ Some.This $ SeriesT_Line $ def
-        & series_data ?~ (map (DataNumber . snd) aqiData)
+        & series_data ?~ (map (DataDouble . snd) aqiData)
         & series_name ?~ title
         & series_markLine ?~ def
         { _markLine_silent = Just True
@@ -674,7 +697,7 @@ multipleXAxes = def
     & legend_data ?~ [ (xSeriesName1, def)
                      , (xSeriesName2, def)
                      ])
-  & chartOptions_tooltip .~ (def
+  & chartOptions_tooltip ?~ (def
     & toolTip_trigger ?~ "none"
     & toolTip_axisPointer ?~ (def
       & axisPointer_type ?~ "Cross"))
@@ -708,11 +731,11 @@ multipleXAxes = def
     & series_smooth ?~ Left True
     & series_name ?~ xSeriesName1
     & series_xAxisIndex ?~ 1
-    & series_data ?~ map DataNumber x1)
+    & series_data ?~ map DataDouble x1)
   : (Some.This $ SeriesT_Line $ def
     & series_smooth ?~ Left True
     & series_name ?~ xSeriesName2
-    & series_data ?~ map DataNumber x2) : []
+    & series_data ?~ map DataDouble x2) : []
   where
     xSeriesName1 = "2015"
     xSeriesName2 = "2016"

@@ -29,13 +29,17 @@ library
                , text
                , time
                , unordered-containers
+               , jsaddle
                , vector
+  if impl(ghcjs)
+     build-depends: ghcjs-base
   exposed-modules:
     Frontend
     ECharts.Examples
     ECharts.ExamplesData
     ECharts
     ECharts.Data
+    ECharts.DeriveToJSVal
     ECharts.Data.Internal
     ECharts.Series
     ECharts.Series.Internal

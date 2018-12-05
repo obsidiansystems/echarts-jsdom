@@ -6,6 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TemplateHaskell #-}
 module ECharts.Internal where
 
 import Control.Monad (join, void)
@@ -22,6 +23,7 @@ import GHC.Generics (Generic)
 import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Vector as V
 import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
+import Control.Lens
 
 import Reflex.Class (ffor)
 
@@ -29,6 +31,7 @@ import ECharts.Types
 import ECharts.Series
 import ECharts.ChartOptions
 
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 import ECharts.Internal.EChartSeries
 import ECharts.Internal.EChartTypes
 import ECharts.Internal.EChartToolTip
@@ -38,11 +41,11 @@ import ECharts.Internal.EChartLegend
 import ECharts.Internal.EChartTitle
 
 data EChartConfig = EChartConfig
-  { _eChartConfig_title :: EChartTitle
+  { _eChartConfig_title :: Maybe EChartTitle
   , _eChartConfig_legend :: Maybe EChartLegend
-  , _eChartConfig_tooltip :: EChartToolTip
+  , _eChartConfig_tooltip :: Maybe EChartToolTip
   , _eChartConfig_axisPointer :: Maybe AxisPointer
-  , _eChartConfig_toolbox :: EChartToolBox
+  , _eChartConfig_toolbox :: Maybe EChartToolBox
   , _eChartConfig_dataZoom :: [EChartDataZoom]
   , _eChartConfig_visualMap :: Maybe [EChartVisualMap]
   , _eChartConfig_grid :: Maybe [EChartGrid]
@@ -51,6 +54,13 @@ data EChartConfig = EChartConfig
   , _eChartConfig_series :: [EChartSeries]
   }
   deriving (Generic)
+
+makeLenses ''EChartConfig
+
+instance Default EChartConfig where
+
+instance ToJSVal EChartConfig where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartConfig_")
 
 instance ToJSON EChartConfig where
   toJSON = genericToJSON (defaultOptions
@@ -66,20 +76,19 @@ onlyNonEmpty = \case
   [] -> Nothing
   vs -> Just vs
 
-toEChartConfig :: ChartOptions -> EChartConfig
-toEChartConfig c = EChartConfig
-  { _eChartConfig_title = toEChartTitle $ _chartOptions_title c
+toEChartConfig :: ChartOptions -> JSM EChartConfig
+toEChartConfig c = def
+  { _eChartConfig_title = toEChartTitle <$> _chartOptions_title c
   , _eChartConfig_legend = toEChartLegend <$> _chartOptions_legend c
-  , _eChartConfig_tooltip = toEChartToolTip $ _chartOptions_tooltip c
+  , _eChartConfig_tooltip = toEChartToolTip <$> _chartOptions_tooltip c
   , _eChartConfig_axisPointer = _chartOptions_axisPointer c
-  , _eChartConfig_toolbox = toEChartToolBox $ _chartOptions_toolbox c
+  , _eChartConfig_toolbox = toEChartToolBox <$> _chartOptions_toolbox c
   , _eChartConfig_dataZoom = toEChartDataZoom <$> _chartOptions_dataZoom c
   , _eChartConfig_visualMap = onlyNonEmpty (toEChartVisualMap <$> _chartOptions_visualMap c)
   , _eChartConfig_grid = onlyNonEmpty (toEChartGrid <$> _chartOptions_grid c)
   , _eChartConfig_xAxis = fmap toEChartAxis $ _chartOptions_xAxis c
   , _eChartConfig_yAxis = fmap toEChartAxis $ _chartOptions_yAxis c
-  , _eChartConfig_series = fmap toEChartSeries $ _chartOptions_series c
-  }
+  } & eChartConfig_series %%~ \_ -> mapM toEChartSeries $ _chartOptions_series c
   where
     toEChartTitle :: Title -> EChartTitle
     toEChartTitle t = EChartTitle

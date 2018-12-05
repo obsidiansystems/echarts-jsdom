@@ -43,8 +43,16 @@ type IconStyle = Aeson.Value
 utcTimeToEpoch :: UTCTime -> Int
 utcTimeToEpoch t = round $ (utcTimeToPOSIXSeconds t * 1000)
 
+instance ToJSVal Scientific where
+  toJSVal v = toJSVal $ (toRealFloat v :: Double)
+
 data Target = Target_Blank
             | Target_Self
+
+instance ToJSVal Target where
+  toJSVal = \case
+    Target_Blank -> toJSVal ("blank" :: Text)
+    Target_Self -> toJSVal ("self" :: Text)
 
 instance ToJSON Target where
   toJSON Target_Blank = Aeson.String "blank"
@@ -53,6 +61,12 @@ instance ToJSON Target where
 data FontStyle = FontStyle_Normal
                | FontStyle_Italic
                | FontStyle_Oblique
+
+instance ToJSVal FontStyle where
+  toJSVal = \case
+    FontStyle_Normal -> toJSVal ("normal" :: Text)
+    FontStyle_Italic -> toJSVal ("italic" :: Text)
+    FontStyle_Oblique -> toJSVal ("oblique" :: Text)
 
 instance ToJSON FontStyle where
   toJSON FontStyle_Normal = Aeson.String "normal"
@@ -65,6 +79,14 @@ data FontWeight = FontWeight_Normal
                 | FontWeight_Lighter
                 | FontWeight_Numeric Int
 
+instance ToJSVal FontWeight where
+  toJSVal = \case
+    FontWeight_Normal -> toJSVal ("normal" :: Text)
+    FontWeight_Bold -> toJSVal ("bold" :: Text)
+    FontWeight_Bolder -> toJSVal ("bolder" :: Text)
+    FontWeight_Lighter -> toJSVal ("lighter" :: Text)
+    (FontWeight_Numeric n) -> toJSVal n
+
 instance ToJSON FontWeight where
   toJSON FontWeight_Normal = Aeson.String "normal"
   toJSON FontWeight_Bold = Aeson.String "bold"
@@ -76,6 +98,13 @@ data FontFamily = FontFamily_Serif
                 | FontFamily_SansSerif
                 | FontFamily_Monospace
                 | FontFamily_Other Text
+
+instance ToJSVal FontFamily where
+  toJSVal = \case
+    FontFamily_Serif -> toJSVal ("serif" :: Text)
+    FontFamily_SansSerif -> toJSVal ("sans-serif" :: Text)
+    FontFamily_Monospace -> toJSVal ("monospace" :: Text)
+    (FontFamily_Other t) -> toJSVal t
 
 instance ToJSON FontFamily where
   toJSON FontFamily_Serif = Aeson.String "serif"
@@ -95,6 +124,9 @@ data Align = Align_Auto
            | Align_Center
            | Align_Right
 
+instance ToJSVal Align where
+  toJSVal = toJSVal . alignToText
+
 instance ToJSON Align where
   toJSON a = Aeson.String $ alignToText a
 
@@ -102,6 +134,13 @@ data VerticalAlign = VerticalAlign_Auto
                    | VerticalAlign_Top
                    | VerticalAlign_Middle
                    | VerticalAlign_Bottom
+
+instance ToJSVal VerticalAlign where
+  toJSVal = \case
+    VerticalAlign_Auto -> toJSVal ("auto" :: Text)
+    VerticalAlign_Top -> toJSVal ("top" :: Text)
+    VerticalAlign_Middle -> toJSVal ("middle" :: Text)
+    VerticalAlign_Bottom -> toJSVal ("bottom" :: Text)
 
 instance ToJSON VerticalAlign where
   toJSON VerticalAlign_Auto = Aeson.String "auto"
@@ -113,6 +152,13 @@ data Step = Step_Enable Bool
           | Step_Start
           | Step_Middle
           | Step_End
+
+instance ToJSVal Step where
+  toJSVal = \case
+    (Step_Enable b) -> toJSVal b
+    Step_Start -> toJSVal ("start" :: Text)
+    Step_Middle -> toJSVal ("middle" :: Text)
+    Step_End -> toJSVal ("end" :: Text)
 
 instance ToJSON Step where
   toJSON (Step_Enable b) = Aeson.toJSON b
@@ -128,6 +174,9 @@ absOrPercentToSN = \case
   AbsOrPercent_Percent n -> SN_String $ T.pack (show n) <> "%"
   AbsOrPercent_Abs n -> SN_Number $ fromIntegral n
 
+instance ToJSVal AbsOrPercent where
+  toJSVal = toJSVal . absOrPercentToSN
+
 instance ToJSON AbsOrPercent where
   toJSON = Aeson.toJSON . absOrPercentToSN
 
@@ -140,6 +189,9 @@ sizeValueToSN = \case
   SizeValue_Auto -> SN_String "auto"
   SizeValue_Percent n -> SN_String $ T.pack (show n) <> "%"
   SizeValue_Numeric n -> SN_Number $ fromIntegral n
+
+instance ToJSVal SizeValue where
+  toJSVal = toJSVal . sizeValueToSN
 
 instance ToJSON SizeValue where
   toJSON = Aeson.toJSON . sizeValueToSN
@@ -235,6 +287,12 @@ data Position =
   | Position_Function Text
   deriving (Generic)
 
+instance ToJSVal Position where
+  toJSVal = \case
+    (Position_Array a) -> toJSVal a
+    (Position_String a) -> toJSVal a
+    (Position_Function a) -> error "not implemented"
+
 instance ToJSON Position where
   toJSON = genericToJSON $ defaultOptions
     { sumEncoding = Aeson.UntaggedValue
@@ -251,6 +309,12 @@ instance Default Size where
 data Orientation = Orientation_Horizontal
                  | Orientation_Vertical
                  | Orientation_Auto
+
+instance ToJSVal Orientation where
+  toJSVal = \case
+    Orientation_Auto -> toJSVal ("auto" :: Text)
+    Orientation_Horizontal -> toJSVal ("horizontal" :: Text)
+    Orientation_Vertical -> toJSVal ("vertical" :: Text)
 
 instance ToJSON Orientation where
   toJSON = \case
@@ -276,29 +340,17 @@ data Title = Title
   , _title_shadow :: Maybe Shadow
   , _title_pos :: Maybe Pos
   }
+  deriving (Generic)
 
 instance Default Title where
-  def = Title
-    { _title_show = Nothing
-    , _title_text = Nothing
-    , _title_link = Nothing
-    , _title_target = Nothing
-    , _title_textStyle = Nothing
-    , _title_subtext = Nothing
-    , _title_sublink = Nothing
-    , _title_subtarget = Nothing
-    , _title_subtextStyle = Nothing
-    , _title_triggerEvent = Nothing
-    , _title_padding = Nothing
-    , _title_itemGap = Nothing
-    , _title_backgroundColor = Nothing
-    , _title_border = Nothing
-    , _title_shadow = Nothing
-    , _title_pos = Nothing
-    }
 
 data LegendType = LegendType_Plain
                 | LegendType_Scroll
+
+instance ToJSVal LegendType where
+  toJSVal = \case
+    LegendType_Plain -> toJSVal ("plain" :: Text)
+    LegendType_Scroll -> toJSVal ("scroll" :: Text)
 
 instance ToJSON LegendType where
   toJSON LegendType_Plain = Aeson.String "plain"
@@ -315,6 +367,20 @@ data Icon = Icon_Circle
           | Icon_Image Text -- URL
           | Icon_DataURI Text
           | Icon_SVGPath Text
+
+instance ToJSVal Icon where
+  toJSVal = toJSVal . \case
+    Icon_Circle -> "circle"
+    Icon_Rect -> "rect"
+    Icon_RoundRect -> "roundRect"
+    Icon_Triangle -> "triangle"
+    Icon_Diamond -> "diamond"
+    Icon_Pin -> "pin"
+    Icon_Arrow -> "arrow"
+    Icon_None -> "none"
+    Icon_Image url -> "image://" <> url
+    Icon_DataURI uri -> "image://" <> uri
+    Icon_SVGPath svg -> "path://" <> svg
 
 instance ToJSON Icon where
   toJSON = Aeson.String . \case
@@ -341,6 +407,11 @@ instance Default LegendData where
 
 data PageButtonPosition = PageButtonPosition_Start
                         | PageButtonPosition_End
+
+instance ToJSVal PageButtonPosition where
+  toJSVal = \case
+    PageButtonPosition_Start -> toJSVal ("start" :: Text)
+    PageButtonPosition_End -> toJSVal ("end" :: Text)
 
 instance ToJSON PageButtonPosition where
   toJSON = Aeson.String . \case
@@ -400,6 +471,11 @@ instance Default Grid where
 data AxisPosition = AxisPosition_Top
                   | AxisPosition_Bottom
 
+instance ToJSVal AxisPosition where
+  toJSVal = toJSVal . \case
+    AxisPosition_Top -> "top" :: Text
+    AxisPosition_Bottom -> "bottom"
+
 instance ToJSON AxisPosition where
   toJSON = Aeson.String . \case
     AxisPosition_Top -> "top"
@@ -409,6 +485,13 @@ data AxisType = AxisType_Value
                | AxisType_Category
                | AxisType_Time
                | AxisType_Log
+
+instance ToJSVal AxisType where
+  toJSVal = toJSVal . \case
+    AxisType_Value -> "value" :: Text
+    AxisType_Category -> "category"
+    AxisType_Time -> "time"
+    AxisType_Log -> "log"
 
 instance ToJSON AxisType where
   toJSON = Aeson.String . \case
@@ -420,6 +503,12 @@ instance ToJSON AxisType where
 data AxisNameLocation = AxisNameLocation_Start
                       | AxisNameLocation_Center
                       | AxisNameLocation_End
+
+instance ToJSVal AxisNameLocation where
+  toJSVal = toJSVal . \case
+    AxisNameLocation_Start -> "start" :: Text
+    AxisNameLocation_Center -> "center"
+    AxisNameLocation_End -> "end"
 
 instance ToJSON AxisNameLocation where
   toJSON = Aeson.String . \case
@@ -480,6 +569,12 @@ data LineStyleType = LineStyleType_Solid
                    | LineStyleType_Dashed
                    | LineStyleType_Dotted
 
+instance ToJSVal LineStyleType where
+  toJSVal = toJSVal . \case
+    LineStyleType_Solid -> "solid" :: Text
+    LineStyleType_Dashed -> "dashed"
+    LineStyleType_Dotted -> "dotted"
+
 instance ToJSON LineStyleType where
   toJSON LineStyleType_Solid = Aeson.String "solid"
   toJSON LineStyleType_Dashed = Aeson.String "dashed"
@@ -495,6 +590,9 @@ data LineStyle = LineStyle
   deriving (Generic)
 
 instance Default LineStyle where
+
+instance ToJSVal LineStyle where
+  toJSVal = toJSVal_generic (drop $ T.length "_lineStyle_")
 
 instance ToJSON LineStyle where
   toJSON = genericToJSON $ defaultOptions
@@ -544,6 +642,11 @@ data SN = SN_String Text
         | SN_Number Double
         deriving (Generic)
 
+instance ToJSVal SN where
+  toJSVal = \case
+    (SN_String a) -> toJSVal a
+    (SN_Number a) -> toJSVal a
+
 instance ToJSON SN where
   toJSON (SN_String a) = Aeson.String a
   toJSON (SN_Number a) = Aeson.Number $ realToFrac a
@@ -581,6 +684,9 @@ data AreaStyle = AreaStyle
   , _areaStyle_opacity :: Maybe ZeroToOne
   }
   deriving (Generic)
+
+instance ToJSVal AreaStyle where
+  toJSVal = toJSVal_generic (drop $ T.length "_areaStyle_")
 
 instance ToJSON AreaStyle where
   toJSON = genericToJSON $ defaultOptions
@@ -779,6 +885,9 @@ emptyBrush = Feature_Brush
   { _feature_type = Nothing
   , _feature_icon = Nothing
   }
+
+instance ToJSVal Feature where
+  toJSVal = toJSVal_generic (drop $ T.length "_feature_")
 
 instance ToJSON Feature where
   toJSON = genericToJSON $ defaultOptions

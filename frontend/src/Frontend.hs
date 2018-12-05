@@ -99,7 +99,7 @@ echarts
   -> m ()
 echarts wsUrl = el "main" $ do
   ws <- webSocket wsUrl $ def & webSocketConfig_send .~ (never :: Event t [Text])
-  receivedMessages :: Dynamic t [(UTCTime, CpuStat Scientific)] <- foldDyn (\m ms -> case Aeson.decode (LBS.fromStrict m) of
+  receivedMessages :: Dynamic t [(UTCTime, CpuStat Double)] <- foldDyn (\m ms -> case Aeson.decode (LBS.fromStrict m) of
     Nothing -> ms
     Just m' -> take 50 $ m' : ms) [] $ _webSocket_recv ws
   let cpuStatMap (t, c) = mconcat
@@ -125,14 +125,14 @@ dynamicTimeSeries
      , GhcjsDomSpace ~ DomBuilderSpace m
      )
   => Text
-  -> Dynamic t (Map Text [(UTCTime, Scientific)])
+  -> Dynamic t (Map Text [(UTCTime, Double)])
   -> m ()
 dynamicTimeSeries title ts = do
   e <- fst <$> elAttr' "div" ("style" =: "width:600px; height:400px;") blank
   p <- getPostBuild
   chart <- performEvent $ ffor p $ \_ -> liftJSM $ ECharts.init $ _element_raw e
   let opts0 = def
-        { _chartOptions_title = def { _title_text = Just title }
+        { _chartOptions_title = Just $ def { _title_text = Just title }
         , _chartOptions_xAxis = def { _axis_type = Just AxisType_Time } :[]
         , _chartOptions_yAxis = def { _axis_type = Just AxisType_Value
                                     , _axis_min = Just $ Left 0
@@ -154,7 +154,7 @@ dynamicTimeSeries title ts = do
           & series_name ?~ k
           & series_smooth ?~ Right (scientific 7 (-1))
           & series_data ?~ (ffor vs $ \(t, v) -> def
-            & data_name ?~ (scientific (toInteger $ utcTimeToEpoch t) 0)
-            & data_value ?~ (scientific (toInteger $ utcTimeToEpoch t) 0, v)
+            & data_name ?~ utcTimeToEpoch t
+            & data_value ?~ (utcTimeToEpoch t, v)
                            )
       }

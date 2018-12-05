@@ -9,10 +9,8 @@ import qualified Data.Text as T
 
 import Language.Javascript.JSaddle
 -- import GHCJS.Marshal.Internal (toJSVal_generic)
-import qualified JavaScript.Object.Internal as OI (Object(..), create, setProp, getProp)
-import qualified JavaScript.Array.Internal as AI (SomeJSArray(..), create, push, read, fromListIO, toListIO)
-import qualified GHCJS.Prim.Internal        as Prim
-import qualified GHCJS.Foreign.Internal     as F
+import qualified Language.Javascript.JSaddle.Object as OI (Object(..), create, setProp, getProp)
+import qualified JavaScript.Array.Internal as AI (SomeJSArray(..), create, push)
 
 class GToJSVal a where
   gToJSVal :: (String -> String) -> Bool -> a -> JSM JSVal
@@ -87,10 +85,10 @@ instance GToJSVal (a p) => GToJSArr (M1 S c a p) where
     AI.push r a
 
 instance GToJSVal (V1 p) where
-  gToJSVal _ _ _ = return Prim.jsNull
+  gToJSVal _ _ _ = return jsNull
 
 instance GToJSVal (U1 p) where
-  gToJSVal _ _ _ = return F.jsTrue
+  gToJSVal _ _ _ = return jsTrue
 
 toJSVal_generic :: forall a . (Generic a, GToJSVal (Rep a ()))
                 => (String -> String) -> a -> JSM JSVal

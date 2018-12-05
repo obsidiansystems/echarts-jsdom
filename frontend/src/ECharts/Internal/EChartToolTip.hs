@@ -13,6 +13,7 @@ import GHC.Generics (Generic)
 import qualified Data.Aeson as Aeson
 import Data.Default (Default, def)
 
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 import ECharts.Types
 import ECharts.Internal.EChartTypes
 import ECharts.Series
@@ -41,6 +42,9 @@ data EChartToolTip = EChartToolTip
   }
   deriving (Generic)
 
+instance ToJSVal EChartToolTip where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartToolTip_")
+
 instance ToJSON EChartToolTip where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartToolTip_"
@@ -50,6 +54,9 @@ instance ToJSON EChartToolTip where
     { fieldLabelModifier = drop $ T.length "_eChartToolTip_"
     , omitNothingFields = True
     }
+
+instance ToJSVal ToolTip where
+  toJSVal = toJSVal . toEChartToolTip
 
 instance ToJSON ToolTip where
   toJSON = Aeson.toJSON . toEChartToolTip

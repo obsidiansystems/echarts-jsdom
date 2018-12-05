@@ -12,6 +12,7 @@ import GHC.Generics (Generic)
 import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
 
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 import ECharts.Types
 import ECharts.Internal.EChartLabel
 
@@ -36,6 +37,9 @@ data EChartTextStyle = EChartTextStyle
   , _eChartTextStyle_textShadowOffsetY :: Maybe Int
   }
   deriving (Generic)
+
+instance ToJSVal EChartTextStyle where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartTextStyle_")
 
 instance ToJSON EChartTextStyle where
   toJSON = genericToJSON $ defaultOptions
@@ -80,6 +84,9 @@ data EChartAxis = EChartAxis
   }
   deriving (Generic)
 
+instance ToJSVal EChartAxis where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartAxis_")
+
 instance ToJSON EChartAxis where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartAxis_"
@@ -100,6 +107,9 @@ data EChartAxisLine = EChartAxisLine
   , _eChartAxisLine_lineStyle :: Maybe EChartLineStyle
   }
   deriving (Generic)
+
+instance ToJSVal EChartAxisLine where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartAxisLine_")
 
 instance ToJSON EChartAxisLine where
   toJSON = genericToJSON $ defaultOptions
@@ -123,6 +133,9 @@ data EChartLineStyle = EChartLineStyle
   }
   deriving (Generic)
 
+instance ToJSVal EChartLineStyle where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartLineStyle_")
+
 instance ToJSON EChartLineStyle where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartLineStyle_"
@@ -141,6 +154,9 @@ data EChartAxisTick = EChartAxisTick
   , _eChartAxisTick_lineStyle :: Maybe EChartLineStyle
   }
   deriving (Generic)
+
+instance ToJSVal EChartAxisTick where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartAxisTick_")
 
 instance ToJSON EChartAxisTick where
   toJSON = genericToJSON $ defaultOptions
@@ -187,6 +203,9 @@ data EChartAxisLabel = EChartAxisLabel
   }
   deriving (Generic)
 
+instance ToJSVal EChartAxisLabel where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartAxisLabel_")
+
 instance ToJSON EChartAxisLabel where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_eChartAxisLabel_"
@@ -216,6 +235,9 @@ toEChartTextStyle v = EChartTextStyle
   , _eChartTextStyle_textShadowOffsetX = _shadow_offsetX =<< _textStyle_textShadow v
   , _eChartTextStyle_textShadowOffsetY = _shadow_offsetY =<< _textStyle_textShadow v
   }
+
+instance ToJSVal TextStyle where
+  toJSVal = toJSVal . toEChartTextStyle
 
 instance ToJSON TextStyle where
   toJSON = Aeson.toJSON . toEChartTextStyle
@@ -336,6 +358,9 @@ toEChartDataZoom v = EChartDataZoom
   , _eChartDataZoom_bottom = posAlignToSN <$> (_pos_bottom =<< _dataZoom_pos v)
   }
 
+instance ToJSVal EChartDataZoom where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartDataZoom_")
+
 instance ToJSON EChartDataZoom where
   toJSON = genericToJSON (defaultOptions
     { fieldLabelModifier = drop (T.length "_eChartDataZoom_")
@@ -358,6 +383,9 @@ data EChartItemStyle = EChartItemStyle
   , _eChartItemStyle_opacity :: Maybe Scientific
   }
   deriving (Generic)
+
+instance ToJSVal EChartItemStyle where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartItemStyle_")
 
 instance ToJSON EChartItemStyle where
   toJSON = genericToJSON (defaultOptions
@@ -471,6 +499,9 @@ toEChartVisualMap v = EChartVisualMap
   , _eChartVisualMap_formatter = _visualMap_formatter v
   }
 
+instance ToJSVal EChartVisualMap where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartVisualMap_")
+
 instance ToJSON EChartVisualMap where
   toJSON = genericToJSON (defaultOptions
     { fieldLabelModifier = drop (T.length "_eChartVisualMap_")
@@ -483,6 +514,9 @@ instance ToJSON EChartVisualMap where
 
 
 -- Instances for Types
+instance ToJSVal MarkArea where
+  toJSVal = toJSVal_generic (drop $ T.length "_markArea_")
+
 instance ToJSON MarkArea where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_markArea_"
@@ -492,6 +526,9 @@ instance ToJSON MarkArea where
     { fieldLabelModifier = drop $ T.length "_markArea_"
     , omitNothingFields = True
     }
+
+instance ToJSVal MarkLine where
+  toJSVal = toJSVal_generic (drop $ T.length "_markLine_")
 
 instance ToJSON MarkLine where
   toJSON = genericToJSON $ defaultOptions
@@ -503,8 +540,14 @@ instance ToJSON MarkLine where
     , omitNothingFields = True
     }
 
+instance ToJSVal ItemStyle where
+  toJSVal = toJSVal . toEChartItemStyle
+
 instance ToJSON ItemStyle where
   toJSON = Aeson.toJSON . toEChartItemStyle
+
+instance ToJSVal EChartLabel where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartLabel_")
 
 instance ToJSON EChartLabel where
   toJSON = genericToJSON $ defaultOptions
@@ -516,8 +559,14 @@ instance ToJSON EChartLabel where
     , omitNothingFields = True
     }
 
+instance ToJSVal Label where
+  toJSVal = toJSVal . toEChartLabel
+
 instance ToJSON Label where
   toJSON = Aeson.toJSON . toEChartLabel
+
+instance ToJSVal AxisPointer where
+  toJSVal = toJSVal_generic (drop $ T.length "_axisPointer_")
 
 instance ToJSON AxisPointer where
   toJSON = genericToJSON $ defaultOptions
@@ -529,6 +578,9 @@ instance ToJSON AxisPointer where
     , omitNothingFields = True
     }
 
+instance ToJSVal SplitLine where
+  toJSVal = toJSVal_generic (drop $ T.length "_splitLine_")
+
 instance ToJSON SplitLine where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_splitLine_"
@@ -539,6 +591,9 @@ instance ToJSON SplitLine where
     , omitNothingFields = True
     }
 
+instance ToJSVal SplitArea where
+  toJSVal = toJSVal_generic (drop $ T.length "_splitArea_")
+
 instance ToJSON SplitArea where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_splitArea_"
@@ -548,6 +603,9 @@ instance ToJSON SplitArea where
     { fieldLabelModifier = drop $ T.length "_splitArea_"
     , omitNothingFields = True
     }
+
+instance ToJSVal InOutOfRange where
+  toJSVal = toJSVal_generic (drop $ T.length "_inOutOfRange_")
 
 instance ToJSON InOutOfRange where
   toJSON = genericToJSON $ defaultOptions

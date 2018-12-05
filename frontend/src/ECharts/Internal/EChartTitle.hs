@@ -17,6 +17,7 @@ import ECharts.Types
 import ECharts.Internal.EChartTypes
 import ECharts.Series
 import ECharts.ChartOptions
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
 data EChartTitle = EChartTitle
   { _eChartTitle_show :: Maybe Bool
@@ -57,3 +58,6 @@ instance ToJSON EChartTitle where
     { fieldLabelModifier = drop $ T.length "_eChartTitle_"
     , omitNothingFields = True
     }
+
+instance ToJSVal EChartTitle where
+  toJSVal = toJSVal_generic (drop $ T.length "_eChartTitle_")
