@@ -1,0 +1,42 @@
+name: echarts
+version: 0.1
+cabal-version: >= 1.8
+build-type: Simple
+
+library
+  hs-source-dirs: src
+  build-depends: base
+               , aeson
+               , bytestring
+               , containers
+               , data-default
+               , ghcjs-dom
+               , jsaddle
+               , dependent-sum
+               , lens
+               , scientific
+               , text
+               , time
+               , unordered-containers
+               , vector
+  if impl(ghcjs)
+     build-depends: ghcjs-base
+  exposed-modules:
+    ECharts
+    ECharts.ChartOptions
+    ECharts.Data
+    ECharts.Data.Internal
+    ECharts.DeriveToJSVal
+    ECharts.Series
+    ECharts.Series.Internal
+    ECharts.Types
+    ECharts.Internal
+    ECharts.Internal.EChartSeries
+    ECharts.Internal.EChartTypes
+    ECharts.Internal.EChartToolTip
+    ECharts.Internal.EChartToolBox
+    ECharts.Internal.EChartGrid
+    ECharts.Internal.EChartLegend
+    ECharts.Internal.EChartTitle
+    ECharts.Internal.EChartLabel
+  ghc-options: -Wall
