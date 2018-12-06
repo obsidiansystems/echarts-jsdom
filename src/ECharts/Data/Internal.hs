@@ -1,30 +1,8 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 module ECharts.Data.Internal where
 
-import Control.Monad (join, void)
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
-import Data.Default (Default, def)
-import qualified Data.Aeson as Aeson
 import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Scientific
-import Data.Time
-import GHC.Generics (Generic)
-import qualified Data.HashMap.Strict as HashMap
-import qualified Data.Vector as V
-import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
-import Data.Proxy
 
-import Reflex.Class (ffor)
 import ECharts.Types
 
 class DataOptions seriesType where

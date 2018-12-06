@@ -9,7 +9,7 @@ import qualified Data.Text as T
 
 import Language.Javascript.JSaddle
 -- import GHCJS.Marshal.Internal (toJSVal_generic)
-import qualified Language.Javascript.JSaddle.Object as OI (Object(..), create, setProp, getProp)
+import qualified Language.Javascript.JSaddle.Object as OI (Object(..), create, setProp)
 import qualified JavaScript.Array.Internal as AI (SomeJSArray(..), create, push)
 
 class GToJSVal a where
@@ -35,7 +35,7 @@ instance (GToJSVal (a p), GToJSVal (b p)) => GToJSVal ((a :+: b) p) where
   gToJSVal f _ (R1 x) = gToJSVal f True x
 
 instance (Datatype c, GToJSVal (a p)) => GToJSVal (M1 D c a p) where
-  gToJSVal f b m@(M1 x) = gToJSVal f b x
+  gToJSVal f b (M1 x) = gToJSVal f b x
 
 instance (Constructor c, GToJSVal (a p)) => GToJSVal (M1 C c a p) where
   gToJSVal f True m@(M1 x) = do
@@ -66,7 +66,7 @@ instance  {-# OVERLAPPABLE #-} (GToJSProp (a p), GToJSProp (b p)) => GToJSProp (
   gToJSProp f o (x :*: y) = gToJSProp f o x >> gToJSProp f o y
 
 instance  {-# OVERLAPPABLE #-} (Selector m, ToJSVal x) => GToJSProp (S1 m (Rec0 (Maybe x)) p) where
-  gToJSProp f o m@(M1 (K1 Nothing)) = return ()
+  gToJSProp _ _ (M1 (K1 Nothing)) = return ()
   gToJSProp f o m@(M1 x@(K1 (Just _))) = do
     r <- gToJSVal f False x
     OI.setProp (packJSS . f $ selName m) r (OI.Object o)

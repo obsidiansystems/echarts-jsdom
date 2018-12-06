@@ -4,20 +4,14 @@
 
 module ECharts.Internal.EChartToolTip where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
 import GHC.Generics (Generic)
 import qualified Data.Aeson as Aeson
-import Data.Default (Default, def)
 
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 import ECharts.Types
 import ECharts.Internal.EChartTypes
-import ECharts.Series
-import ECharts.ChartOptions
 
 data EChartToolTip = EChartToolTip
   { _eChartToolTip_show :: Maybe Bool
@@ -30,7 +24,7 @@ data EChartToolTip = EChartToolTip
   , _eChartToolTip_hideDelay :: Maybe Int
   , _eChartToolTip_enterable :: Maybe Bool
   , _eChartToolTip_confine :: Maybe Bool
-  , _eChartToolTip_transitionDuration :: Maybe Scientific
+  , _eChartToolTip_transitionDuration :: Maybe Double
   , _eChartToolTip_position :: Maybe Aeson.Value
   , _eChartToolTip_formatter :: Maybe Aeson.Value
   , _eChartToolTip_backgroundColor :: Maybe Color
@@ -45,21 +39,8 @@ data EChartToolTip = EChartToolTip
 instance ToJSVal EChartToolTip where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartToolTip_")
 
-instance ToJSON EChartToolTip where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartToolTip_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartToolTip_"
-    , omitNothingFields = True
-    }
-
 instance ToJSVal ToolTip where
   toJSVal = toJSVal . toEChartToolTip
-
-instance ToJSON ToolTip where
-  toJSON = Aeson.toJSON . toEChartToolTip
 
 toEChartToolTip :: ToolTip -> EChartToolTip
 toEChartToolTip v = EChartToolTip

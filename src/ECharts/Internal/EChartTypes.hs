@@ -3,14 +3,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module ECharts.Internal.EChartTypes where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
 import GHC.Generics (Generic)
 import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
+import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 import ECharts.Types
@@ -87,16 +85,6 @@ data EChartAxis = EChartAxis
 instance ToJSVal EChartAxis where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartAxis_")
 
-instance ToJSON EChartAxis where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxis_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxis_"
-    , omitNothingFields = True
-    }
-
 data EChartAxisLine = EChartAxisLine
   { _eChartAxisLine_show :: Maybe Bool
   , _eChartAxisLine_onZero :: Maybe Bool
@@ -110,16 +98,6 @@ data EChartAxisLine = EChartAxisLine
 
 instance ToJSVal EChartAxisLine where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartAxisLine_")
-
-instance ToJSON EChartAxisLine where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxisLine_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxisLine_"
-    , omitNothingFields = True
-    }
 
 data EChartLineStyle = EChartLineStyle
   { _eChartLineStyle_color :: Maybe Text
@@ -136,16 +114,6 @@ data EChartLineStyle = EChartLineStyle
 instance ToJSVal EChartLineStyle where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartLineStyle_")
 
-instance ToJSON EChartLineStyle where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartLineStyle_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartLineStyle_"
-    , omitNothingFields = True
-    }
-
 data EChartAxisTick = EChartAxisTick
   { _eChartAxisTick_show :: Maybe Bool
   , _eChartAxisTick_alignWithLabel :: Maybe Bool
@@ -157,16 +125,6 @@ data EChartAxisTick = EChartAxisTick
 
 instance ToJSVal EChartAxisTick where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartAxisTick_")
-
-instance ToJSON EChartAxisTick where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxisTick_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxisTick_"
-    , omitNothingFields = True
-    }
 
 data EChartAxisLabel = EChartAxisLabel
   { _eChartAxisLabel_show :: Maybe Bool
@@ -206,16 +164,6 @@ data EChartAxisLabel = EChartAxisLabel
 instance ToJSVal EChartAxisLabel where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartAxisLabel_")
 
-instance ToJSON EChartAxisLabel where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxisLabel_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartAxisLabel_"
-    , omitNothingFields = True
-    }
-
 toEChartTextStyle :: TextStyle -> EChartTextStyle
 toEChartTextStyle v = EChartTextStyle
   { _eChartTextStyle_color = _textStyle_color v
@@ -241,26 +189,6 @@ instance ToJSVal TextStyle where
 
 instance ToJSON TextStyle where
   toJSON = Aeson.toJSON . toEChartTextStyle
-
-    -- toEChartTextStyle :: TextStyle -> EChartTextStyle
-    -- toEChartTextStyle t = EChartTextStyle
-    --   { _eChartTextStyle_color = _textStyle_color t
-    --   , _eChartTextStyle_fontStyle = join $ fmap _font_style $ _textStyle_font t
-    --   , _eChartTextStyle_fontWeight = join $ fmap _font_weight $ _textStyle_font t
-    --   , _eChartTextStyle_fontFamily = join $ fmap _font_family $ _textStyle_font t
-    --   , _eChartTextStyle_fontSize = join $ fmap _font_size $ _textStyle_font t
-    --   , _eChartTextStyle_align = _textStyle_align t
-    --   , _eChartTextStyle_verticalAlign = _textStyle_verticalAlign t
-    --   , _eChartTextStyle_lineHeight = _textStyle_lineHeight t
-    --   , _eChartTextStyle_width = fmap sizeValueToSN $ _textStyle_width t
-    --   , _eChartTextStyle_height = fmap sizeValueToSN $ _textStyle_height t
-    --   , _eChartTextStyle_textBorderColor = join $ fmap _border_color $ _textStyle_textBorder t
-    --   , _eChartTextStyle_textBorderWidth = join $ fmap _border_width $ _textStyle_textBorder t
-    --   , _eChartTextStyle_textShadowColor = join $ fmap _shadow_color $ _textStyle_textShadow t
-    --   , _eChartTextStyle_textShadowBlur = join $ fmap _shadow_blur $ _textStyle_textShadow t
-    --   , _eChartTextStyle_textShadowOffsetX = join $ fmap _shadow_offsetX $ _textStyle_textShadow t
-    --   , _eChartTextStyle_textShadowOffsetY = join $ fmap _shadow_offsetY $ _textStyle_textShadow t
-    --   }
 
 data EChartDataZoom = EChartDataZoom
   { _eChartDataZoom_show :: Maybe Bool
@@ -361,16 +289,6 @@ toEChartDataZoom v = EChartDataZoom
 instance ToJSVal EChartDataZoom where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartDataZoom_")
 
-instance ToJSON EChartDataZoom where
-  toJSON = genericToJSON (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartDataZoom_")
-    , omitNothingFields = True
-    })
-  toEncoding = genericToEncoding (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartDataZoom_")
-    , omitNothingFields = True
-    })
-
 data EChartItemStyle = EChartItemStyle
   { _eChartItemStyle_color :: Maybe Text
   , _eChartItemStyle_borderColor :: Maybe Text
@@ -380,22 +298,12 @@ data EChartItemStyle = EChartItemStyle
   , _eChartItemStyle_shadowBlur :: Maybe Int
   , _eChartItemStyle_shadowOffsetX :: Maybe Int
   , _eChartItemStyle_shadowOffsetY :: Maybe Int
-  , _eChartItemStyle_opacity :: Maybe Scientific
+  , _eChartItemStyle_opacity :: Maybe Double
   }
   deriving (Generic)
 
 instance ToJSVal EChartItemStyle where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartItemStyle_")
-
-instance ToJSON EChartItemStyle where
-  toJSON = genericToJSON (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
-    , omitNothingFields = True
-    })
-  toEncoding = genericToEncoding (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartItemStyle_")
-    , omitNothingFields = True
-    })
 
 toEChartItemStyle :: ItemStyle -> EChartItemStyle
 toEChartItemStyle v = EChartItemStyle
@@ -409,6 +317,16 @@ toEChartItemStyle v = EChartItemStyle
   , _eChartItemStyle_shadowOffsetY = _shadow_offsetY =<< _itemStyle_shadow v
   , _eChartItemStyle_opacity = _itemStyle_opacity v
   }
+
+instance ToJSON EChartItemStyle where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartItemStyle_"
+    , omitNothingFields = True
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_eChartItemStyle_"
+    , omitNothingFields = True
+    }
 
 data EChartVisualMap = EChartVisualMap
   { _eChartVisualMap_show :: Maybe Bool
@@ -502,43 +420,12 @@ toEChartVisualMap v = EChartVisualMap
 instance ToJSVal EChartVisualMap where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartVisualMap_")
 
-instance ToJSON EChartVisualMap where
-  toJSON = genericToJSON (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartVisualMap_")
-    , omitNothingFields = True
-    })
-  toEncoding = genericToEncoding (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartVisualMap_")
-    , omitNothingFields = True
-    })
-
-
 -- Instances for Types
 instance ToJSVal MarkArea where
   toJSVal = toJSVal_generic (drop $ T.length "_markArea_")
 
-instance ToJSON MarkArea where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_markArea_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_markArea_"
-    , omitNothingFields = True
-    }
-
 instance ToJSVal MarkLine where
   toJSVal = toJSVal_generic (drop $ T.length "_markLine_")
-
-instance ToJSON MarkLine where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_markLine_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_markLine_"
-    , omitNothingFields = True
-    }
 
 instance ToJSVal ItemStyle where
   toJSVal = toJSVal . toEChartItemStyle

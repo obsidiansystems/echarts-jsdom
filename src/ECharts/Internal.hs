@@ -9,26 +9,18 @@
 {-# LANGUAGE TemplateHaskell #-}
 module ECharts.Internal where
 
-import Control.Monad (join, void)
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
+import Control.Monad (join)
 import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
-import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.Scientific
-import Data.Time
 import GHC.Generics (Generic)
 import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Vector as V
-import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
 import Control.Lens
-
-import Reflex.Class (ffor)
+import Language.Javascript.JSaddle
 
 import ECharts.Types
-import ECharts.Series
 import ECharts.ChartOptions
 
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
@@ -62,16 +54,7 @@ instance Default EChartConfig where
 instance ToJSVal EChartConfig where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartConfig_")
 
-instance ToJSON EChartConfig where
-  toJSON = genericToJSON (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartConfig_")
-    , omitNothingFields = True
-    })
-  toEncoding = genericToEncoding (defaultOptions
-    { fieldLabelModifier = drop (T.length "_eChartConfig_")
-    , omitNothingFields = True
-    })
-
+onlyNonEmpty :: [a] -> Maybe [a]
 onlyNonEmpty = \case
   [] -> Nothing
   vs -> Just vs
@@ -173,7 +156,6 @@ toEChartConfig c = def
 
 data ECharts = ECharts { unECharts :: JSVal }
 
-
 toEChartAxis :: Axis -> EChartAxis
 toEChartAxis x = EChartAxis
   { _eChartAxis_show = _axis_show x
@@ -220,6 +202,7 @@ toEChartAxis x = EChartAxis
           ]) d
   }
 
+toEChartAxisLabel :: AxisLabel -> EChartAxisLabel
 toEChartAxisLabel x = EChartAxisLabel
   { _eChartAxisLabel_show = _axisLabel_show x
   , _eChartAxisLabel_inside = _axisLabel_inside x
@@ -254,6 +237,7 @@ toEChartAxisLabel x = EChartAxisLabel
   , _eChartAxisLabel_textShadowOffsetY = join $ fmap _shadow_offsetY $ _axisLabel_textShadow x
   }
 
+toEChartAxisTick :: AxisTick -> EChartAxisTick
 toEChartAxisTick x = EChartAxisTick
   { _eChartAxisTick_show = _axisTick_show x
   , _eChartAxisTick_alignWithLabel = _axisTick_alignWithLabel x
@@ -262,6 +246,7 @@ toEChartAxisTick x = EChartAxisTick
   , _eChartAxisTick_lineStyle = fmap toEChartLineStyle $ _axisTick_lineStyle x
   }
 
+toEChartAxisLine :: AxisLine -> EChartAxisLine
 toEChartAxisLine a = EChartAxisLine
   { _eChartAxisLine_onZero = _axisLine_onZero a
   , _eChartAxisLine_onZeroAxisIndex = _axisLine_onZeroAxisIndex a
@@ -272,6 +257,7 @@ toEChartAxisLine a = EChartAxisLine
   , _eChartAxisLine_symbolSize = _axisLine_symbolSize a
   }
 
+toEChartLineStyle :: LineStyle -> EChartLineStyle
 toEChartLineStyle x = EChartLineStyle
   { _eChartLineStyle_color = _lineStyle_color x
   , _eChartLineStyle_width = _lineStyle_width x

@@ -4,18 +4,12 @@
 
 module ECharts.Internal.EChartGrid where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
-import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
+import Data.Text (Text)
 import GHC.Generics (Generic)
 import qualified Data.Aeson as Aeson
-import Data.Default (Default, def)
 
 import ECharts.Types
-import ECharts.Internal.EChartTypes
-import ECharts.Series
 import ECharts.ChartOptions
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
@@ -44,16 +38,6 @@ data EChartGrid = EChartGrid
 
 instance ToJSVal EChartGrid where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartGrid_")
-
-instance ToJSON EChartGrid where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartGrid_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartGrid_"
-    , omitNothingFields = True
-    }
 
 toEChartGrid :: Grid -> EChartGrid
 toEChartGrid g = EChartGrid

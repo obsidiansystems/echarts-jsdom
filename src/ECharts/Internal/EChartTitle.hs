@@ -4,20 +4,13 @@
 
 module ECharts.Internal.EChartTitle where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
 import GHC.Generics (Generic)
-import Data.Default (Default, def)
-import qualified Data.Aeson as Aeson
+import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
 import ECharts.Types
 import ECharts.Internal.EChartTypes
-import ECharts.Series
-import ECharts.ChartOptions
-import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
 data EChartTitle = EChartTitle
   { _eChartTitle_show :: Maybe Bool
@@ -48,16 +41,6 @@ data EChartTitle = EChartTitle
   , _eChartTitle_shadowOffsetY :: Maybe Int
   }
   deriving (Generic)
-
-instance ToJSON EChartTitle where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartTitle_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartTitle_"
-    , omitNothingFields = True
-    }
 
 instance ToJSVal EChartTitle where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartTitle_")

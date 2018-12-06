@@ -4,22 +4,14 @@
 
 module ECharts.Internal.EChartToolBox where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
 import GHC.Generics (Generic)
 import qualified Data.Aeson as Aeson
-import Data.Default (Default, def)
 import qualified Data.HashMap.Strict as HashMap
-
-import Reflex.Class (ffor)
 
 import ECharts.Types
 import ECharts.Internal.EChartTypes
-import ECharts.Series
-import ECharts.ChartOptions
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
 data EChartToolBox = EChartToolBox
@@ -44,16 +36,6 @@ data EChartToolBox = EChartToolBox
 
 instance ToJSVal EChartToolBox where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartToolBox_")
-
-instance ToJSON EChartToolBox where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartToolBox_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartToolBox_"
-    , omitNothingFields = True
-    }
 
 toEChartToolBox :: ToolBox -> EChartToolBox
 toEChartToolBox v = EChartToolBox
@@ -81,3 +63,6 @@ toEChartToolBox v = EChartToolBox
         (Feature_SaveAsImage _ _ _ _ _ _ _ _) -> ("saveAsImage", ob)
         (Feature_Restore _ _ _ _) -> ("restore", ob)
         (Feature_DataZoom _ _ _ _ _) -> ("dataZoom", ob)
+        (Feature_DataView _ _ _ _ _ _ _ _ _ _ _ _ _ _) -> ("dataView", ob)
+        (Feature_MagicType _ _ _ _ _ _) -> ("magicType", ob)
+        (Feature_Brush _ _) -> ("brush", ob)

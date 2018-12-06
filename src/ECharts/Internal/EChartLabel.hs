@@ -4,23 +4,18 @@
 
 module ECharts.Internal.EChartLabel where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
-import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
-import GHC.Generics (Generic)
-import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
+import Data.Text (Text)
+import GHC.Generics (Generic)
 
 import ECharts.Types
 
 data EChartLabel = EChartLabel
   { _eChartLabel_show :: Maybe Bool
   , _eChartLabel_position :: Maybe Position
-  , _eChartLabel_distance :: Maybe Scientific
-  , _eChartLabel_rotate :: Maybe Scientific
-  , _eChartLabel_offset :: Maybe (Scientific, Scientific)
+  , _eChartLabel_distance :: Maybe Double
+  , _eChartLabel_rotate :: Maybe Double
+  , _eChartLabel_offset :: Maybe (Double, Double)
   , _eChartLabel_formatter :: Maybe Aeson.Value
   , _eChartLabel_color :: Maybe Text
   , _eChartLabel_fontStyle :: Maybe FontStyle
@@ -31,7 +26,7 @@ data EChartLabel = EChartLabel
   , _eChartLabel_verticalAlign :: Maybe VerticalAlign
   , _eChartLabel_lineHeight :: Maybe Int
   , _eChartLabel_backgroundColor :: Maybe Text
-  , _eChartLabel_padding :: Maybe [Scientific]
+  , _eChartLabel_padding :: Maybe [Double]
   , _eChartLabel_borderColor :: Maybe Text
   , _eChartLabel_borderWidth :: Maybe Int
   , _eChartLabel_borderRadius :: Maybe (Int, Int, Int, Int)

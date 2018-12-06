@@ -12,20 +12,12 @@
 module ECharts.Series
   where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
-import Data.Default (Default, def)
-import qualified Data.Aeson as Aeson
+import Data.Default (Default)
 import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Scientific
-import Data.Time
 import GHC.Generics (Generic)
 import Data.Proxy
 import Control.Lens
 import ECharts.Types
-import ECharts.Internal.EChartLabel
 import ECharts.Series.Internal
 import ECharts.Data
 

@@ -5,26 +5,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 module ECharts.Internal.EChartSeries where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
 import GHC.Generics (Generic)
 import Data.Default (Default, def)
-import qualified Data.Aeson as Aeson
-import Data.Proxy
 import Data.Some (Some)
 import qualified Data.Some as Some
 import Control.Lens
+import Language.Javascript.JSaddle
 
-import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
-import ECharts.Types
-import ECharts.Internal.EChartTypes
 import ECharts.Series
-import ECharts.Internal.EChartToolTip
-import ECharts.ChartOptions
+import ECharts.Internal.EChartTypes ()
+import ECharts.Internal.EChartToolTip ()
 
 data EChartSeries = EChartSeries
   -- line options
@@ -214,18 +207,6 @@ instance Default EChartSeries where
 
 instance ToJSVal EChartSeries where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartSeries_")
-
-instance ToJSON EChartSeries where
-  toJSON = undefined
--- instance ToJSON EChartSeries where
---   toJSON = genericToJSON $ defaultOptions
---     { fieldLabelModifier = drop $ T.length "_eChartSeries_"
---     , omitNothingFields = True
---     }
---   toEncoding = genericToEncoding $ defaultOptions
---     { fieldLabelModifier = drop $ T.length "_eChartSeries_"
---     , omitNothingFields = True
---     }
 
 toEChartSeries :: Some SeriesT -> JSM EChartSeries
 toEChartSeries (Some.This st) = def

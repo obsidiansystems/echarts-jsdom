@@ -1,10 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -16,15 +13,13 @@ import qualified Data.Aeson as Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Map (Map)
-import qualified Data.Map as Map
-import Data.Scientific
 import Data.Time
 import Data.Time.Clock.POSIX
 import GHC.Generics (Generic)
 import Control.Lens
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
-type ZeroToOne = Scientific
+type ZeroToOne = Double
 type CoordinateSystem = Aeson.Value
 type Symbol = Text -- TODO
 type SymbolSize = Aeson.Value
@@ -33,18 +28,15 @@ type SmoothMonotone = Aeson.Value
 type Sampling = Aeson.Value
 type Encode = Aeson.Value
 type MarkPoint = Aeson.Value
-type Animation = Aeson.Value
 type SelectedMode = Aeson.Value
-type RippleEffect = Aeson.Value
-type TextOrScientific = Aeson.Value
 type Color = Text
 type IconStyle = Aeson.Value
 
 utcTimeToEpoch :: UTCTime -> Int
 utcTimeToEpoch t = round $ (utcTimeToPOSIXSeconds t * 1000)
 
-instance ToJSVal Scientific where
-  toJSVal v = toJSVal $ (toRealFloat v :: Double)
+ffor :: Functor f => f a -> (a -> b) -> f b
+ffor = flip fmap
 
 data Target = Target_Blank
             | Target_Self
@@ -53,10 +45,6 @@ instance ToJSVal Target where
   toJSVal = \case
     Target_Blank -> toJSVal ("blank" :: Text)
     Target_Self -> toJSVal ("self" :: Text)
-
-instance ToJSON Target where
-  toJSON Target_Blank = Aeson.String "blank"
-  toJSON Target_Self = Aeson.String "self"
 
 data FontStyle = FontStyle_Normal
                | FontStyle_Italic
@@ -160,12 +148,6 @@ instance ToJSVal Step where
     Step_Middle -> toJSVal ("middle" :: Text)
     Step_End -> toJSVal ("end" :: Text)
 
-instance ToJSON Step where
-  toJSON (Step_Enable b) = Aeson.toJSON b
-  toJSON Step_Start = Aeson.String "start"
-  toJSON Step_Middle = Aeson.String "middle"
-  toJSON Step_End = Aeson.String "end"
-
 data AbsOrPercent = AbsOrPercent_Abs Int
                   | AbsOrPercent_Percent Int
 
@@ -176,9 +158,6 @@ absOrPercentToSN = \case
 
 instance ToJSVal AbsOrPercent where
   toJSVal = toJSVal . absOrPercentToSN
-
-instance ToJSON AbsOrPercent where
-  toJSON = Aeson.toJSON . absOrPercentToSN
 
 data SizeValue = SizeValue_Auto
                | SizeValue_Percent Int
@@ -192,9 +171,6 @@ sizeValueToSN = \case
 
 instance ToJSVal SizeValue where
   toJSVal = toJSVal . sizeValueToSN
-
-instance ToJSON SizeValue where
-  toJSON = Aeson.toJSON . sizeValueToSN
 
 data TextStyle = TextStyle
   { _textStyle_color :: Maybe Text
@@ -223,9 +199,6 @@ data Border = Border
   deriving (Generic)
 
 instance Default Border where
-
-instance ToJSON Border where
-  toJSON = error "ToJSON Border not implemented"
 
 data Shadow = Shadow
   { _shadow_color :: Maybe Text
@@ -291,7 +264,7 @@ instance ToJSVal Position where
   toJSVal = \case
     (Position_Array a) -> toJSVal a
     (Position_String a) -> toJSVal a
-    (Position_Function a) -> error "not implemented"
+    (Position_Function _) -> error "not implemented"
 
 instance ToJSON Position where
   toJSON = genericToJSON $ defaultOptions
@@ -315,12 +288,6 @@ instance ToJSVal Orientation where
     Orientation_Auto -> toJSVal ("auto" :: Text)
     Orientation_Horizontal -> toJSVal ("horizontal" :: Text)
     Orientation_Vertical -> toJSVal ("vertical" :: Text)
-
-instance ToJSON Orientation where
-  toJSON = \case
-    Orientation_Auto -> Aeson.String "auto"
-    Orientation_Horizontal -> Aeson.String "horizontal"
-    Orientation_Vertical -> Aeson.String "vertical"
 
 data Title = Title
   { _title_show :: Maybe Bool
@@ -351,10 +318,6 @@ instance ToJSVal LegendType where
   toJSVal = \case
     LegendType_Plain -> toJSVal ("plain" :: Text)
     LegendType_Scroll -> toJSVal ("scroll" :: Text)
-
-instance ToJSON LegendType where
-  toJSON LegendType_Plain = Aeson.String "plain"
-  toJSON LegendType_Scroll = Aeson.String "scroll"
 
 data Icon = Icon_Circle
           | Icon_Rect
@@ -412,11 +375,6 @@ instance ToJSVal PageButtonPosition where
   toJSVal = \case
     PageButtonPosition_Start -> toJSVal ("start" :: Text)
     PageButtonPosition_End -> toJSVal ("end" :: Text)
-
-instance ToJSON PageButtonPosition where
-  toJSON = Aeson.String . \case
-    PageButtonPosition_Start -> "start"
-    PageButtonPosition_End -> "end"
 
 data Legend = Legend
   { _legend_type :: Maybe LegendType
@@ -476,11 +434,6 @@ instance ToJSVal AxisPosition where
     AxisPosition_Top -> "top" :: Text
     AxisPosition_Bottom -> "bottom"
 
-instance ToJSON AxisPosition where
-  toJSON = Aeson.String . \case
-    AxisPosition_Top -> "top"
-    AxisPosition_Bottom -> "bottom"
-
 data AxisType = AxisType_Value
                | AxisType_Category
                | AxisType_Time
@@ -493,13 +446,6 @@ instance ToJSVal AxisType where
     AxisType_Time -> "time"
     AxisType_Log -> "log"
 
-instance ToJSON AxisType where
-  toJSON = Aeson.String . \case
-    AxisType_Value -> "value"
-    AxisType_Category -> "category"
-    AxisType_Time -> "time"
-    AxisType_Log -> "log"
-
 data AxisNameLocation = AxisNameLocation_Start
                       | AxisNameLocation_Center
                       | AxisNameLocation_End
@@ -507,12 +453,6 @@ data AxisNameLocation = AxisNameLocation_Start
 instance ToJSVal AxisNameLocation where
   toJSVal = toJSVal . \case
     AxisNameLocation_Start -> "start" :: Text
-    AxisNameLocation_Center -> "center"
-    AxisNameLocation_End -> "end"
-
-instance ToJSON AxisNameLocation where
-  toJSON = Aeson.String . \case
-    AxisNameLocation_Start -> "start"
     AxisNameLocation_Center -> "center"
     AxisNameLocation_End -> "end"
 
@@ -677,10 +617,10 @@ data SeriesCustom
 data AreaStyle = AreaStyle
   { _areaStyle_color :: Maybe Color
   , _areaStyle_origin :: Maybe Text
-  , _areaStyle_shadowBlur :: Maybe Scientific
+  , _areaStyle_shadowBlur :: Maybe Double
   , _areaStyle_shadowColor :: Maybe Color
-  , _areaStyle_shadowOffsetX :: Maybe Scientific
-  , _areaStyle_shadowOffsetY :: Maybe Scientific
+  , _areaStyle_shadowOffsetX :: Maybe Double
+  , _areaStyle_shadowOffsetY :: Maybe Double
   , _areaStyle_opacity :: Maybe ZeroToOne
   }
   deriving (Generic)
@@ -688,20 +628,14 @@ data AreaStyle = AreaStyle
 instance ToJSVal AreaStyle where
   toJSVal = toJSVal_generic (drop $ T.length "_areaStyle_")
 
-instance ToJSON AreaStyle where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_areaStyle_"
-    , omitNothingFields = True
-    }
-
 instance Default AreaStyle where
 
 data Label = Label
   { _label_show :: Maybe Bool
   , _label_position :: Maybe Position
-  , _label_distance :: Maybe Scientific
-  , _label_rotate :: Maybe Scientific
-  , _label_offset :: Maybe (Scientific, Scientific)
+  , _label_distance :: Maybe Double
+  , _label_rotate :: Maybe Double
+  , _label_offset :: Maybe (Double, Double)
   , _label_formatter :: Maybe Aeson.Value
   , _label_color :: Maybe Color
   , _label_font :: Maybe Font
@@ -710,7 +644,7 @@ data Label = Label
   , _label_lineHeight :: Maybe Int
   , _label_backgroundColor :: Maybe Color
   , _label_border :: Maybe Border
-  , _label_padding :: Maybe [Scientific]
+  , _label_padding :: Maybe [Double]
   , _label_shadow :: Maybe Shadow
   , _label_size :: Maybe Size
   , _label_textBorder :: Maybe Border
@@ -734,7 +668,7 @@ data ToolTip = ToolTip
   , _toolTip_hideDelay :: Maybe Int
   , _toolTip_enterable :: Maybe Bool
   , _toolTip_confine :: Maybe Bool
-  , _toolTip_transitionDuration :: Maybe Scientific
+  , _toolTip_transitionDuration :: Maybe Double
   , _toolTip_position :: Maybe Aeson.Value
   , _toolTip_formatter :: Maybe Aeson.Value
   , _toolTip_backgroundColor :: Maybe Color
@@ -772,7 +706,7 @@ data Feature =
   , _feature_title :: Maybe Text
   , _feature_icon :: Maybe Aeson.Value
   , _feature_iconStyle :: Maybe IconStyle
-  , _feature_pixelRatio :: Maybe Scientific
+  , _feature_pixelRatio :: Maybe Double
   }
   | Feature_Restore
   { _feature_show :: Maybe Bool

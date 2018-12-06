@@ -1,22 +1,24 @@
-module ECharts where
+module ECharts
+  ( initECharts
+  , setOption
+  , module X
+  , ECharts
+  )
+  where
 
-import ECharts.Types
-import ECharts.ChartOptions
+import ECharts.Types as X
+import ECharts.ChartOptions as X
+import ECharts.Series as X
+import ECharts.Data as X
 import ECharts.Internal
 
-import Control.Monad (join, void)
-import Control.Monad.IO.Class
+import Control.Monad (void)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import qualified Data.Aeson as Aeson
-import JSDOM.Types (JSVal, toJSVal, JSM, MonadJSM, liftJSM)
-import Language.Javascript.JSaddle.Evaluate
-import Language.Javascript.JSaddle.Object
 import Language.Javascript.JSaddle
 import GHCJS.DOM.Types (Element)
 
-init :: GHCJS.DOM.Types.Element -> JSM ECharts
-init e = do
+initECharts :: GHCJS.DOM.Types.Element -> JSM ECharts
+initECharts e = do
   f <- eval $ T.pack "(function(e) { return echarts['init'](e) })"
   arg <- toJSVal e
   ECharts <$> call f f [arg]

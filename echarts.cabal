@@ -12,11 +12,7 @@ library
                , data-default
                , ghcjs-dom
                , jsaddle
-               , jsaddle-dom
                , dependent-sum
-               , network-uri
-               , reflex-dom
-               , reflex
                , lens
                , scientific
                , text

@@ -4,20 +4,14 @@
 
 module ECharts.Internal.EChartLegend where
 
-import Data.Aeson (ToJSON, genericToEncoding, genericToJSON, defaultOptions, Options(..))
-import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Scientific
-import Data.Time
+import Data.Text (Text)
 import GHC.Generics (Generic)
-import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
 
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 import ECharts.Types
 import ECharts.Internal.EChartTypes
-import ECharts.Series
-import ECharts.ChartOptions
 
 data EChartLegend = EChartLegend
   { _eChartLegend_type :: Maybe LegendType
@@ -61,16 +55,6 @@ data EChartLegend = EChartLegend
   , _eChartLegend_animationDurationUpdate :: Maybe Int
   }
   deriving (Generic)
-
-instance ToJSON EChartLegend where
-  toJSON = genericToJSON $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartLegend_"
-    , omitNothingFields = True
-    }
-  toEncoding = genericToEncoding $ defaultOptions
-    { fieldLabelModifier = drop $ T.length "_eChartLegend_"
-    , omitNothingFields = True
-    }
 
 instance ToJSVal EChartLegend where
   toJSVal = toJSVal_generic (drop $ T.length "_eChartLegend_")
