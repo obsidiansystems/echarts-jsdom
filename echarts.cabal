@@ -1,4 +1,4 @@
-name: frontend
+name: echarts
 version: 0.1
 cabal-version: >= 1.8
 build-type: Simple
@@ -12,14 +12,9 @@ library
                , containers
                , data-default
                , ghcjs-dom
-               , iso8601-time
                , jsaddle
                , jsaddle-dom
                , network-uri
-               , obelisk-executable-config
-               , obelisk-frontend
-               , obelisk-generated-static
-               , obelisk-route
                , reflex-dom
                , reflex
                , lens
@@ -29,21 +24,17 @@ library
                , text
                , time
                , unordered-containers
-               , jsaddle
                , vector
   if impl(ghcjs)
      build-depends: ghcjs-base
   exposed-modules:
-    Frontend
-    ECharts.Examples
-    ECharts.ExamplesData
     ECharts
+    ECharts.ChartOptions
     ECharts.Data
-    ECharts.DeriveToJSVal
     ECharts.Data.Internal
+    ECharts.DeriveToJSVal
     ECharts.Series
     ECharts.Series.Internal
-    ECharts.ChartOptions
     ECharts.Types
     ECharts.Internal
     ECharts.Internal.EChartSeries
@@ -55,18 +46,3 @@ library
     ECharts.Internal.EChartTitle
     ECharts.Internal.EChartLabel
   ghc-options: -Wall
-
-executable frontend
-  main-is: main.hs
-  hs-source-dirs: src-bin
-  build-depends: base
-               , common
-               , obelisk-frontend
-               , obelisk-route
-               , reflex-dom
-               , obelisk-generated-static
-               , frontend
-  --TODO: Make these ghc-options optional
-  ghc-options: -threaded
-  if os(darwin)
-     ghc-options: -dynamic
