@@ -14,7 +14,6 @@ import Language.Javascript.JSaddle.Evaluate
 import Language.Javascript.JSaddle.Object
 import Language.Javascript.JSaddle
 import GHCJS.DOM.Types (Element)
-import Debug.Trace
 
 init :: GHCJS.DOM.Types.Element -> JSM ECharts
 init e = do
@@ -28,4 +27,3 @@ setOption c opts = do
   let chart = unECharts c
   options <- toJSVal =<< toEChartConfig opts
   void $ call f f [chart, options]
-    -- `catch` \(JSException e) -> (valToText e) >>= (liftIO . putStrLn . show) >> return (e)
