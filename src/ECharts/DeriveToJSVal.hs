@@ -1,3 +1,10 @@
+-- A lot of ECharts options have a default value
+-- If the user does not specify an option, its default value is used
+-- So we need to ensure that the fields having Nothing value are omitted from the JSVal
+
+-- The below code is taken from GHCJS.Marshal.Internal
+-- And two overlappable instances for the 'Maybe' have been added to omit the Nothing values
+
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
