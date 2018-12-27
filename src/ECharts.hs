@@ -1,8 +1,11 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 module ECharts
   ( initECharts
   , setOption
   , setOptionJSVal
+  , onRenderedAction
+  , onFinishedAction
   , module X
   , ECharts
   )
@@ -20,6 +23,11 @@ import qualified Data.Text as T
 import Language.Javascript.JSaddle
 import GHCJS.DOM.Types (Element)
 import Data.Some (Some)
+import GHCJS.DOM.EventM
+import GHCJS.DOM.Types
+import GHCJS.DOM.EventTargetClosures
+
+data ECharts = ECharts { unECharts :: JSVal }
 
 initECharts :: GHCJS.DOM.Types.Element -> JSM ECharts
 initECharts e = do
@@ -37,6 +45,20 @@ setOptionJSVal c options = do
   f <- eval $ T.pack "(function(e, opt) { e['setOption'](opt); })"
   let chart = unECharts c
   void $ call f f [chart, options]
+
+onRenderedAction :: ECharts -> (JSM ()) -> JSM ()
+onRenderedAction c action = do
+  jsF <- toJSVal =<< function (fun $ \_ _ _ -> action)
+  f <- eval $ T.pack "(function(e, opt) { e['on']('rendered', opt); })"
+  let chart = unECharts c
+  void $ call f f [chart, jsF]
+
+onFinishedAction :: ECharts -> (JSM ()) -> JSM ()
+onFinishedAction c action = do
+  jsF <- toJSVal =<< function (fun $ \_ _ _ -> action)
+  f <- eval $ T.pack "(function(e, opt) { e['on']('finished', opt); })"
+  let chart = unECharts c
+  void $ call f f [chart, jsF]
 
 instance ToJSVal ChartOptions where
   toJSVal o = toJSVal =<< toEChartConfig o

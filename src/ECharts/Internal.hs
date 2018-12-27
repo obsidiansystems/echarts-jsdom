@@ -154,8 +154,6 @@ toEChartConfig c = def
       , _eChartLegend_animationDurationUpdate = _legend_animationDurationUpdate x
       }
 
-data ECharts = ECharts { unECharts :: JSVal }
-
 toEChartAxis :: Axis -> EChartAxis
 toEChartAxis x = EChartAxis
   { _eChartAxis_show = _axis_show x
