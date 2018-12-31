@@ -20,7 +20,7 @@ import ECharts.Internal.EChartSeries
 
 import Control.Monad (void)
 import qualified Data.Text as T
-import Language.Javascript.JSaddle
+import Language.Javascript.JSaddle (eval, call, function, fun, toJSVal)
 import GHCJS.DOM.Types (Element)
 import Data.Some (Some)
 import GHCJS.DOM.EventM
