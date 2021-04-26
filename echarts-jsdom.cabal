@@ -12,7 +12,7 @@ library
                , data-default
                , ghcjs-dom
                , jsaddle
-               , dependent-sum
+               , dependent-sum >= 0.7.1.0
                , lens
                , scientific
                , text
