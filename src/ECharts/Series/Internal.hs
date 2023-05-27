@@ -359,3 +359,6 @@ instance SeriesOptions SeriesLine where
 instance SeriesOptions SeriesPie where
   getSeriesTypeInt _ = "pie"
   type SeriesOptions_selectedMode SeriesPie = Maybe SelectedMode
+
+instance SeriesOptions SeriesBar where
+  getSeriesTypeInt _ = "bar" 

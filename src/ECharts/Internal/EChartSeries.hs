@@ -19,6 +19,7 @@ import ECharts.Series
 import ECharts.Internal.EChartTypes ()
 import ECharts.Internal.EChartToolTip ()
 
+-- | A bunch of options with a data attribute 
 data EChartSeries = EChartSeries
   -- line options
   { _eChartSeries_type :: Maybe Text
@@ -213,8 +214,8 @@ toEChartSeries (Some.Some st) =
   def
   -- common options
     { _eChartSeries_type = Just $ getSeriesType st
-    , _eChartSeries_id = _series_id s
-    , _eChartSeries_name = _series_name s
+    , _eChartSeries_id = _series_id series
+    , _eChartSeries_name = _series_name series
     }
   -- SeriesOptions
   & eChartSeries_coordinateSystem %%~ (const $ series_coordinateSystem_toJSVal st)
@@ -365,7 +366,7 @@ toEChartSeries (Some.Some st) =
   >>= eChartSeries_pointer %%~ (const $ series_pointer_toJSVal st)
   >>= eChartSeries_details %%~ (const $ series_details_toJSVal st)
   where
-    s = getSeries st
+    series = getSeries st
 
 series_coordinateSystem_toJSVal :: SeriesT s -> JSM (Maybe JSVal)
 series_coordinateSystem_toJSVal = \case

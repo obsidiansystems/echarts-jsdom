@@ -24,19 +24,23 @@ import ECharts.Data
 data SeriesT s where
   SeriesT_Line :: Series SeriesLine -> SeriesT SeriesLine
   SeriesT_Pie :: Series SeriesPie -> SeriesT SeriesPie
+  SeriesT_Bar :: Series SeriesBar -> SeriesT SeriesBar
 
 getSeries :: SeriesT s -> Series s
 getSeries (SeriesT_Line s) = s
 getSeries (SeriesT_Pie s) = s
+getSeries (SeriesT_Bar s) = s
 
 getSeriesType :: forall s . SeriesT s -> Text
 getSeriesType (SeriesT_Line _) = getSeriesTypeInt (Proxy :: Proxy s)
 getSeriesType (SeriesT_Pie _) = getSeriesTypeInt (Proxy :: Proxy s)
+getSeriesType (SeriesT_Bar _) = getSeriesTypeInt (Proxy :: Proxy s)
 
 data Series seriesType = Series
   -- Common options
   { _series_name                   :: Maybe Text
   , _series_id                     :: Maybe Text
+  , _series_data                   :: Maybe [Data seriesType]
   , _series_color                  :: Maybe [Text]
   , _series_backgroundColor        :: Maybe [Text]
   -- SeriesOptions based on seriesType
@@ -71,7 +75,6 @@ data Series seriesType = Series
   , _series_encode                 :: SeriesOptions_encode seriesType
   , _series_seriesLayoutBy         :: SeriesOptions_seriesLayoutBy seriesType
   , _series_datasetIndex           :: SeriesOptions_datasetIndex seriesType
-  , _series_data                   :: Maybe [Data seriesType]
   , _series_markPoint              :: SeriesOptions_markPoint seriesType
   , _series_markLine               :: SeriesOptions_markLine seriesType
   , _series_markArea               :: SeriesOptions_markArea seriesType

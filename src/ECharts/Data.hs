@@ -29,15 +29,16 @@ import ECharts.Types
 import ECharts.Data.Internal
 import ECharts.DeriveToJSVal (toJSVal_generic, ToJSVal(..))
 
-data Data seriesType = DataObject
-  -- Common options
-  { _data_name                   :: DataOptions_name seriesType
-  , _data_value                  :: DataOptions_value seriesType
-  -- , _data_symbol                 :: DataOptions_symbol seriesType
-  }
-  | DataInt Int
+data Data seriesType =
+  DataInt Int
   | DataDouble Double
   | DataText Text
+  -- Common options
+  | DataObject
+    { _data_name                   :: DataOptions_name seriesType
+    , _data_value                  :: DataOptions_value seriesType
+    -- , _data_symbol                 :: DataOptions_symbol seriesType
+    }
   deriving (Generic)
 
 makeLenses ''Data
@@ -71,6 +72,21 @@ instance ToJSVal (Data SeriesLine) where
       OI.setProp "value" bO o
       toJSVal o
 
+instance ToJSVal (Data SeriesBar) where
+  toJSVal = \case
+    (DataInt a) -> toJSVal a
+    (DataDouble a) -> toJSVal a
+    (DataText a) -> toJSVal a
+    (DataObject a b) -> do
+      o <- OI.create
+      aO <- toJSVal a
+      bO <- toJSVal b
+      OI.setProp "name" aO o
+      OI.setProp "value" bO o
+      toJSVal o
+
+
+
 instance ToJSON (Data SeriesLine) where
   toJSON = genericToJSON $ defaultOptions
     { fieldLabelModifier = drop $ T.length "_data_"
@@ -82,5 +98,18 @@ instance ToJSON (Data SeriesLine) where
     , omitNothingFields = True
     , sumEncoding = Aeson.UntaggedValue
     }
+
+instance ToJSON (Data SeriesBar) where
+  toJSON = genericToJSON $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_data_"
+    , omitNothingFields = True
+    , sumEncoding = Aeson.UntaggedValue
+    }
+  toEncoding = genericToEncoding $ defaultOptions
+    { fieldLabelModifier = drop $ T.length "_data_"
+    , omitNothingFields = True
+    , sumEncoding = Aeson.UntaggedValue
+    }
+
 
 instance ToJSON (Data SeriesPie) where
