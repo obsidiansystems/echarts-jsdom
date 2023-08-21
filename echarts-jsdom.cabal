@@ -6,7 +6,7 @@ build-type: Simple
 library
   hs-source-dirs: src
   build-depends: base
-               , aeson
+               , aeson >= 2
                , bytestring
                , containers
                , data-default

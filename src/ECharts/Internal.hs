@@ -12,10 +12,11 @@ module ECharts.Internal where
 import Control.Monad (join)
 import Data.Default (Default, def)
 import qualified Data.Aeson as Aeson
+import qualified Data.Aeson.Key as Key
+import qualified Data.Aeson.KeyMap as KeyMap
 import qualified Data.Text as T
 import qualified Data.Map as Map
 import GHC.Generics (Generic)
-import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Vector as V
 import Control.Lens
 import Language.Javascript.JSaddle
@@ -126,10 +127,10 @@ toEChartConfig c = def
       , _eChartLegend_inactiveColor = _legend_inactiveColor x
       , _eChartLegend_selected =
         flip fmap (_legend_selected x) $ \s -> Aeson.Object $
-          HashMap.fromList $ fmap (\(k, v) -> (k, Aeson.toJSON v)) $ Map.toList s
+          KeyMap.fromList $ fmap (\(k, v) -> (Key.fromText k, Aeson.toJSON v)) $ Map.toList s
       , _eChartLegend_textStyle = fmap toEChartTextStyle $ _legend_textStyle x
       , _eChartLegend_data =
-        let toLegendDataObject (k, v) = Aeson.Object $ HashMap.mapMaybe id $ HashMap.fromList
+        let toLegendDataObject (k, v) = Aeson.Object $ KeyMap.mapMaybe id $ KeyMap.fromList
               [ ("name", Just $ Aeson.toJSON k)
               , ("icon", fmap Aeson.toJSON $ _legendData_icon v)
               , ("textStyle", Aeson.toJSON . toEChartTextStyle <$> _legendData_textStyle v)
@@ -194,7 +195,7 @@ toEChartAxis x = EChartAxis
   , _eChartAxis_data = case _axis_data x of
       Nothing -> Nothing
       Just d -> Just $ Aeson.Array $ V.fromList $
-        fmap (\(k, v) -> Aeson.Object $ HashMap.fromList
+        fmap (\(k, v) -> Aeson.Object $ KeyMap.fromList
           [ ("value", Aeson.toJSON k)
           , ("textStyle", Aeson.toJSON $ fmap toEChartTextStyle v)
           ]) d

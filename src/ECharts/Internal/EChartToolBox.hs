@@ -8,7 +8,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
 import qualified Data.Aeson as Aeson
-import qualified Data.HashMap.Strict as HashMap
+import qualified Data.Aeson.KeyMap as KeyMap
 
 import ECharts.Types
 import ECharts.Internal.EChartTypes
@@ -57,7 +57,7 @@ toEChartToolBox v = EChartToolBox
   , _eChartToolBox_height = sizeValueToSN <$> (_size_height =<< _toolBox_size v)
   }
   where
-    features = Aeson.Object $ HashMap.fromList $ ffor (_toolBox_features v) $ \f ->
+    features = Aeson.Object $ KeyMap.fromList $ ffor (_toolBox_features v) $ \f ->
       let ob = Aeson.toJSON f
       in case f of
         (Feature_SaveAsImage _ _ _ _ _ _ _ _) -> ("saveAsImage", ob)
